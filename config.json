@@ -1,0 +1,32 @@
+{
+  "server":  {
+    "port": 8080
+  },
+  "router": {
+    "ip": "10.101.41.2",
+    "address": 254,
+    "model": "NK-3G72"
+  },
+  "inputs": [
+    {
+      "id" : 1,
+      "label": "VMU MV 1",
+      "tsl": 1
+    },
+    {
+      "id" : 2,
+      "label": "VMU MV 2",
+      "tsl": 2
+    }
+  ],
+  "outputs": [
+    {
+      "id" : 65,
+      "label": "Server IP 1"
+    },
+    {
+      "id" : 66,
+      "label": "Server IP 2"
+    }
+  ]
+}
