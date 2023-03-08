@@ -2,9 +2,9 @@ module github.com/monoxane/rtr
 
 go 1.17
 
-replace github.com/monoxane/nk v0.1.0 => ../nk
+// replace github.com/monoxane/nk v0.1.0 => ../nk
 
-require github.com/monoxane/nk v0.1.0
+require github.com/monoxane/nk v0.1.1-0.20230307101300-89408a241c96
 
 require (
 	github.com/bytedance/sonic v1.8.0 // indirect

@@ -7,10 +7,9 @@ import (
 )
 
 type Configuration struct {
-	Server       Server         `json:"server"`
-	Router       Router         `json:"router"`
-	Sources      []Sources      `json:"sources"`
-	Destinations []Destinations `json:"destinations"`
+	Server Server `json:"server"`
+	Router Router `json:"router"`
+	Probe  Probe  `json:"probe"`
 }
 type Server struct {
 	Port int `json:"port"`
@@ -20,14 +19,11 @@ type Router struct {
 	Address int    `json:"address"`
 	Model   string `json:"model"`
 }
-type Sources struct {
-	RtrInput int    `json:"rtr_input"`
-	Label    string `json:"label"`
-	Tsl      int    `json:"tsl"`
-}
-type Destinations struct {
-	RtrOutput int    `json:"rtr_output"`
-	Label     string `json:"label"`
+
+type Probe struct {
+	Enabled           bool   `json:"enabled"`
+	RouterDestination int    `json:"router_destination"`
+	EmbedURL          string `json:"embed_url"`
 }
 
 var Config Configuration

@@ -45,6 +45,13 @@ func main() {
 		WebsocketConnectionsMutex.Unlock()
 	})
 
+	data, err := os.ReadFile("labels.lbl")
+	if err == nil {
+		router.LoadLabels(string(data))
+	} else {
+		log.Printf("unable to load DashBoard labels.lbl")
+	}
+
 	go router.Connect()
 	go serveHTTP()
 
@@ -69,12 +76,18 @@ func serveHTTP() {
 	svc := gin.Default()
 	svc.Use(CORSMiddleware())
 
-	svc.GET("/matrix", HandleMatrix)
-	svc.GET("/ws", HandleWS)
+	svc.StaticFile("/", "/dist/index.html")
+	svc.NoRoute(func(c *gin.Context) {
+		c.File("/dist/index.html")
+	})
+	svc.Static("/dist", "/dist")
 
-	svc.POST("/route/:dst/:src", HandleRouteRequest)
+	svc.GET("/v1/ws", HandleWS)
 
-	svc.StaticFS("/static", http.Dir("ui/static"))
+	svc.GET("/v1/matrix", HandleMatrix)
+	svc.POST("/v1/matrix/:dst/:src", HandleRouteRequest)
+
+	svc.GET("/v1/config", HandleConfig)
 
 	err := svc.Run(fmt.Sprintf(":%d", Config.Server.Port))
 	if err != nil {
@@ -121,6 +134,10 @@ func HandleRouteRequest(c *gin.Context) {
 
 func HandleMatrix(c *gin.Context) {
 	c.JSON(http.StatusOK, &router.Matrix)
+}
+
+func HandleConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, Config)
 }
 
 func HandleWS(c *gin.Context) {

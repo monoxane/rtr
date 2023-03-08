@@ -1,0 +1,28 @@
+$feature-flags: (
+  grid-columns-16: true,
+);
+
+@use '@carbon/react/scss/themes';
+@use '@carbon/react/scss/theme' with ($theme: themes.$g90);
+
+@use '@carbon/react';
+
+.iolist {
+  height: 80vh;
+  overflow-y: scroll;
+}
+
+@media (max-width: 1056px) {
+  .iolist {
+    height: 40vh;
+  }
+
+  .destinations {
+    max-height: 40vh;
+  }
+
+  .sources {
+    top: -39vh;
+    position: relative;
+  }
+}
