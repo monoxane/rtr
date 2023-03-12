@@ -25,6 +25,9 @@ const JSmpegPlayer = ({ url, active }) => {
 
   return (
     <div
+      onClick={() => {
+        player.player.isPlaying ? player.player.pause() : player.player.play()
+      }}
       className="probePlayer"
       ref={videoRef}>
     </div>
