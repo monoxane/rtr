@@ -10,6 +10,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -92,6 +93,8 @@ type ProbeSocketHandler struct {
 	broadcast  chan *[]byte
 
 	upgrader *websocket.Upgrader
+
+	mux sync.Mutex
 }
 
 func (h *ProbeSocketHandler) Run() {
@@ -138,7 +141,9 @@ func (h *ProbeSocketHandler) ServeWS(c *gin.Context) {
 }
 
 func (h *ProbeSocketHandler) BroadcastData(data *[]byte) {
+	h.mux.Lock()
 	for client := range h.clients {
 		client.sendChan <- data
 	}
+	h.mux.Unlock()
 }
