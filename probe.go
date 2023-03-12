@@ -1,0 +1,144 @@
+package main
+
+// The vast majority of this is modified from jsmpeg-stream-go by Chanishk
+// Their package does not have a license and I was unable to contact them to ask if I could use it
+// If anyone has a problem with the code being used here please let me know and I'll do my best to handle it
+// Go check out Chanshik's stuff because it's pretty cool
+// https://github.com/chanshik/jsmpeg-stream-go
+// https://github.com/chanshik/
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+)
+
+type ProbeClient struct {
+	ws       *websocket.Conn
+	sendChan chan *[]byte
+
+	unregisterChan chan *ProbeClient
+}
+
+var (
+	readBufferSize  int = 8192
+	writeBufferSize int = 8192
+)
+
+func NewProbeClient(ws *websocket.Conn, unregisterChan chan *ProbeClient) *ProbeClient {
+	client := &ProbeClient{
+		ws:             ws,
+		sendChan:       make(chan *[]byte, 512),
+		unregisterChan: unregisterChan,
+	}
+
+	return client
+}
+
+func (c *ProbeClient) Close() {
+	log.Println("Closing client's send channel")
+	close(c.sendChan)
+}
+
+func (c *ProbeClient) ReadHandler() {
+	defer func() {
+		c.unregisterChan <- c
+	}()
+
+	for {
+		msgType, msg, err := c.ws.ReadMessage()
+		if err != nil {
+			break
+		}
+
+		if msgType == websocket.CloseMessage {
+			break
+		}
+
+		log.Println("Received from client: " + string(msg))
+	}
+}
+
+func (c *ProbeClient) WriteHandler() {
+	defer func() {
+		c.unregisterChan <- c
+	}()
+
+	for {
+		select {
+		case data, ok := <-c.sendChan:
+			if !ok {
+				log.Println("Client send failed")
+				c.ws.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+
+			c.ws.WriteMessage(websocket.BinaryMessage, *data)
+		}
+	}
+}
+
+func (c *ProbeClient) Run() {
+	go c.ReadHandler()
+	go c.WriteHandler()
+}
+
+type ProbeSocketHandler struct {
+	clients    map[*ProbeClient]bool // *client -> is connected (true/false)
+	register   chan *ProbeClient
+	unregister chan *ProbeClient
+	broadcast  chan *[]byte
+
+	upgrader *websocket.Upgrader
+}
+
+func (h *ProbeSocketHandler) Run() {
+	for {
+		select {
+		case client := <-h.register:
+			h.clients[client] = true
+			log.Printf("New client registered. Total: %d\n", len(h.clients))
+
+		case client := <-h.unregister:
+			_, ok := h.clients[client]
+			if ok {
+				delete(h.clients, client)
+			}
+			log.Printf("Client unregistered.   Total: %d\n", len(h.clients))
+
+		case data := <-h.broadcast:
+			h.BroadcastData(data)
+		}
+	}
+}
+
+func (h *ProbeSocketHandler) ServeWS(c *gin.Context) {
+	if c.Request.Method != "GET" {
+		c.JSON(http.StatusMethodNotAllowed, gin.H{"code": http.StatusMethodNotAllowed, "error": "Method Not Allowed"})
+		return
+	}
+
+	w := c.Writer
+	r := c.Request
+
+	ws, err := h.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Println("New client connected")
+	client := NewProbeClient(ws, h.unregister)
+
+	h.register <- client
+
+	go client.Run()
+}
+
+func (h *ProbeSocketHandler) BroadcastData(data *[]byte) {
+	for client := range h.clients {
+		client.sendChan <- data
+	}
+}

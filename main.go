@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -19,9 +21,10 @@ import (
 var (
 	router *nk.Router
 
-	WebsocketConnections      = make(map[WebsocketConnection]uuid.UUID)
-	WebsocketConnectionsMutex sync.Mutex
-	Upgrader                  = websocket.Upgrader{
+	ProbeHandler             *ProbeSocketHandler
+	MatrixWSConnections      = make(map[WebsocketConnection]uuid.UUID)
+	MatrixWSConnectionsMutex sync.Mutex
+	Upgrader                 = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin:     func(r *http.Request) bool { return true },
@@ -38,11 +41,11 @@ func main() {
 
 	router.SetOnUpdate(func(d *nk.Destination) {
 		log.Printf("Received update for %s, current source %s", d.Label, d.Source.Label)
-		WebsocketConnectionsMutex.Lock()
-		for conn := range WebsocketConnections {
+		MatrixWSConnectionsMutex.Lock()
+		for conn := range MatrixWSConnections {
 			conn.Socket.WriteJSON(d)
 		}
-		WebsocketConnectionsMutex.Unlock()
+		MatrixWSConnectionsMutex.Unlock()
 	})
 
 	data, err := os.ReadFile("labels.lbl")
@@ -50,6 +53,24 @@ func main() {
 		router.LoadLabels(string(data))
 	} else {
 		log.Printf("unable to load DashBoard labels.lbl")
+	}
+
+	if Config.Probe.Enabled {
+		ProbeHandler = &ProbeSocketHandler{
+			clients:    make(map[*ProbeClient]bool),
+			register:   make(chan *ProbeClient),
+			unregister: make(chan *ProbeClient),
+			broadcast:  make(chan *[]byte),
+			upgrader: &websocket.Upgrader{
+				ReadBufferSize:  readBufferSize,
+				WriteBufferSize: writeBufferSize,
+				CheckOrigin: func(r *http.Request) bool {
+					return true
+				},
+			},
+		}
+
+		go ProbeHandler.Run()
 	}
 
 	go router.Connect()
@@ -82,12 +103,17 @@ func serveHTTP() {
 	})
 	svc.Static("/dist", "/dist")
 
-	svc.GET("/v1/ws", HandleWS)
+	svc.GET("/v1/ws/matrix", HandleMatrixWS)
 
 	svc.GET("/v1/matrix", HandleMatrix)
 	svc.POST("/v1/matrix/:dst/:src", HandleRouteRequest)
 
 	svc.GET("/v1/config", HandleConfig)
+
+	if Config.Probe.Enabled {
+		svc.GET("/v1/ws/probe", ProbeHandler.ServeWS)
+		svc.POST("/v1/probe/stream", HandleProbeStream)
+	}
 
 	err := svc.Run(fmt.Sprintf(":%d", Config.Server.Port))
 	if err != nil {
@@ -140,7 +166,7 @@ func HandleConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, Config)
 }
 
-func HandleWS(c *gin.Context) {
+func HandleMatrixWS(c *gin.Context) {
 	w := c.Writer
 	r := c.Request
 
@@ -157,9 +183,9 @@ func HandleWS(c *gin.Context) {
 		Mux:    new(sync.Mutex),
 	}
 
-	WebsocketConnectionsMutex.Lock()
-	WebsocketConnections[connection] = uuid.Must(uuid.NewRandom())
-	WebsocketConnectionsMutex.Unlock()
+	MatrixWSConnectionsMutex.Lock()
+	MatrixWSConnections[connection] = uuid.Must(uuid.NewRandom())
+	MatrixWSConnectionsMutex.Unlock()
 
 	defer connection.Socket.Close()
 	for {
@@ -172,19 +198,34 @@ func HandleWS(c *gin.Context) {
 					websocket.CloseNoStatusReceived,
 					websocket.CloseGoingAway,
 				) {
-					WebsocketConnectionsMutex.Lock()
-					delete(WebsocketConnections, connection)
-					WebsocketConnectionsMutex.Unlock()
+					MatrixWSConnectionsMutex.Lock()
+					delete(MatrixWSConnections, connection)
+					MatrixWSConnectionsMutex.Unlock()
 
 					return
 				}
 			}
 
-			WebsocketConnectionsMutex.Lock()
-			delete(WebsocketConnections, connection)
-			WebsocketConnectionsMutex.Unlock()
+			MatrixWSConnectionsMutex.Lock()
+			delete(MatrixWSConnections, connection)
+			MatrixWSConnectionsMutex.Unlock()
 
 			break
 		}
 	}
+}
+
+func HandleProbeStream(c *gin.Context) {
+	log.Printf("IncomingStream connected: %s\n", c.RemoteIP())
+
+	for {
+		data, err := ioutil.ReadAll(io.LimitReader(c.Request.Body, 1024))
+		if err != nil || len(data) == 0 {
+			break
+		}
+
+		ProbeHandler.BroadcastData(&data)
+	}
+
+	log.Printf("IncomingStream disconnected: %s\n", c.RemoteIP())
 }

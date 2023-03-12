@@ -26,3 +26,32 @@ $feature-flags: (
     position: relative;
   }
 }
+
+.cds--modal-container div {
+  margin-bottom: 0;
+}
+
+.cds--content {
+  min-height: calc(100vh - 48px);
+}
+
+.cds--modal-container {
+  aspect-ratio: auto 1.65;
+  width: 75vw;
+  max-height: 90vh;
+  padding-bottom: 0.8rem;
+}
+
+@media (max-width: 1200px) {
+  .cds--modal-container {
+    aspect-ratio: auto 1.65;
+    width: 95vw;
+    max-height: 95vh;
+    top: 1em;
+  }  
+}
+
+.probePlayer {
+  aspect-ratio: auto 1920 / 1080;
+  width: 100%;
+}

@@ -12,6 +12,8 @@ import Header from './Header.jsx';
 
 import useMatrix from './useMatrix'
 
+import JSmpegPlayer from './JSmpegPlayer.jsx'
+
 const route = (dst, src) => {
   console.log("routing", src, "to", dst)
   axios.post(`/v1/matrix/${dst}/${src}`)
@@ -66,7 +68,6 @@ const App = function App() {
       <>
         <Header />
         <Content style={{
-              maxHeight: '96vh',
               overflow: 'clip',
               background: gray[80],
             }}>
@@ -80,13 +81,9 @@ const App = function App() {
                 modalHeading={<><strong>Probe: </strong> {matrix.destinations?.[config.probe.router_destination - 1]?.source.label}</>}
                 passiveModal
                 onRequestClose={()=> setProbeFullscreen(false)}
-                isFullWidth
+                className="fullscreenProbe"
               >
-                <div style={{
-                  height: '51vh'
-                }}>
-                  {probeFullscreen && <iframe src={config.probe.embed_url} height="100%" width="100%" />}
-                </div>
+                <JSmpegPlayer url={'ws://'+document.location.hostname+':'+document.location.port+'/v1/ws/probe'} active={probeFullscreen}/>
               </Modal>
             }
             <Grid>
@@ -148,7 +145,8 @@ const App = function App() {
                       <Row style={{
                         height: '19.5vh',
                       }}>
-                        {!probeFullscreen && <iframe src={config.probe.embed_url} height="100%" width="100%" />}
+                        <JSmpegPlayer url={'ws://'+document.location.hostname+':'+document.location.port+'/v1/ws/probe'} active={!probeFullscreen}/>
+                        <br/>
                         {ProbeSOTRouting && <>
                           <strong>Probe Follow:</strong> {matrix.destinations?.[selectedDestination - 1]?.label}
                           <br/>

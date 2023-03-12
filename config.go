@@ -21,9 +21,8 @@ type Router struct {
 }
 
 type Probe struct {
-	Enabled           bool   `json:"enabled"`
-	RouterDestination int    `json:"router_destination"`
-	EmbedURL          string `json:"embed_url"`
+	Enabled           bool `json:"enabled"`
+	RouterDestination int  `json:"router_destination"`
 }
 
 var Config Configuration

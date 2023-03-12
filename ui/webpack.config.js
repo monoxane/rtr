@@ -34,13 +34,13 @@ module.exports = (_, argv) => {
         short_name: 'rtr',
         description: 'Broadcast Router Controller',
         background_color: '#ffffff',
-        crossorigin: null, //can be null, use-credentials or anonymous
+        crossorigin: null,
         inject: true,
         ios: true,
         icons: [
           {
             src: path.resolve('src/router.png'),
-            sizes: [96, 128, 192, 256, 384, 512] // multiple sizes
+            sizes: [96, 128, 192, 256, 384, 512]
           },
         ]
       }),

@@ -5,7 +5,7 @@ import useWebSocket from 'react-use-websocket';
 function useMatrix() {
   const [matrix, setMatrix] = useState([]);
   const [haveRecievedData, setHaveRecievedData] = useState(false);
-  const wsuri = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/v1/ws`;
+  const wsuri = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/v1/ws/matrix`;
 
   const [{ data, loading, error }, refreshAxios] = useAxios(
     '/v1/matrix'
