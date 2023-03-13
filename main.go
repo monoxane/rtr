@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -8,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"sync"
 	"syscall"
 
@@ -36,14 +36,48 @@ type WebsocketConnection struct {
 	Socket *websocket.Conn
 }
 
+type MatrixWSMessage struct {
+	Type string          `json:"type"`
+	Data json.RawMessage `json:"data"`
+}
+
+type RouteRequest struct {
+	Destination int `json:"destination"`
+	Source      int `json:"source"`
+}
+
+type DestinationUpdate struct {
+	Id     int          `json:"id"`
+	Label  string       `json:"label"`
+	Source SourceUpdate `json:"source"`
+}
+
+type SourceUpdate struct {
+	Id    int    `json:"id"`
+	Label string `json:"label"`
+}
+
 func main() {
 	router = nk.New(Config.Router.IP, uint8(Config.Router.Address), Config.Router.Model)
 
 	router.SetOnUpdate(func(d *nk.Destination) {
 		log.Printf("Received update for %s, current source %s", d.Label, d.Source.Label)
+		payload, _ := json.Marshal(DestinationUpdate{
+			Id:    int(d.Id),
+			Label: d.GetLabel(),
+			Source: SourceUpdate{
+				Id:    int(d.Source.Id),
+				Label: d.Source.GetLabel(),
+			},
+		})
+		update := MatrixWSMessage{
+			Type: "destination_update",
+			Data: payload,
+		}
+
 		MatrixWSConnectionsMutex.Lock()
 		for conn := range MatrixWSConnections {
-			conn.Socket.WriteJSON(d)
+			conn.Socket.WriteJSON(update)
 		}
 		MatrixWSConnectionsMutex.Unlock()
 	})
@@ -106,7 +140,6 @@ func serveHTTP() {
 	svc.GET("/v1/ws/matrix", HandleMatrixWS)
 
 	svc.GET("/v1/matrix", HandleMatrix)
-	svc.POST("/v1/matrix/:dst/:src", HandleRouteRequest)
 
 	svc.GET("/v1/config", HandleConfig)
 
@@ -136,26 +169,6 @@ func CORSMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
-}
-
-func HandleRouteRequest(c *gin.Context) {
-	dst, dstErr := strconv.Atoi(c.Param("dst"))
-	if dstErr != nil {
-		c.Status(400)
-		return
-	}
-	src, srcErr := strconv.Atoi(c.Param("src"))
-	if srcErr != nil {
-		c.Status(400)
-		return
-	}
-
-	nkErr := router.Route(uint16(dst), uint16(src))
-	if nkErr != nil {
-		log.Printf("unable to route source %d to target %d: %s", src, dst, nkErr)
-		c.Status(500)
-	}
-	c.Status(202)
 }
 
 func HandleMatrix(c *gin.Context) {
@@ -189,28 +202,35 @@ func HandleMatrixWS(c *gin.Context) {
 
 	defer connection.Socket.Close()
 	for {
-		_, _, err := connection.Socket.ReadMessage()
+		_, messageBytes, err := connection.Socket.ReadMessage()
 		if err != nil {
-			if _, ok := err.(*websocket.CloseError); ok {
-				if websocket.IsCloseError(
-					err,
-					websocket.CloseNormalClosure,
-					websocket.CloseNoStatusReceived,
-					websocket.CloseGoingAway,
-				) {
-					MatrixWSConnectionsMutex.Lock()
-					delete(MatrixWSConnections, connection)
-					MatrixWSConnectionsMutex.Unlock()
-
-					return
-				}
-			}
-
+			log.Printf("WSErr %s", err)
 			MatrixWSConnectionsMutex.Lock()
 			delete(MatrixWSConnections, connection)
 			MatrixWSConnectionsMutex.Unlock()
 
+			return
+		}
+
+		var message MatrixWSMessage
+		unmarshalErr := json.Unmarshal(messageBytes, &message)
+		if unmarshalErr != nil {
+			log.Printf("unable to unmarshal Matrix WS Message %s", unmarshalErr)
+
 			break
+		}
+
+		switch message.Type {
+		case "route_request":
+			var request RouteRequest
+			unmarshalErr := json.Unmarshal(message.Data, &request)
+			if unmarshalErr != nil {
+				log.Printf("unable to unmarshal Route Request %s", unmarshalErr)
+			}
+
+			log.Printf("routing %d to %d", request.Source, request.Destination)
+
+			router.Route(uint16(request.Destination), uint16(request.Source))
 		}
 	}
 }

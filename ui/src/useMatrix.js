@@ -20,6 +20,7 @@ function useMatrix() {
   }, [haveRecievedData]);
 
   const {
+    sendJsonMessage,
     lastMessage,
   } = useWebSocket(
     wsuri,
@@ -27,7 +28,6 @@ function useMatrix() {
       shouldReconnect: () => true,
       reconnectAttempts: 10,
       reconnectInterval: 1000,
-      shared: true,
     },
   );
 
@@ -36,25 +36,36 @@ function useMatrix() {
       setHaveRecievedData(true);
       const tempMatrix = {...matrix};
       const update = JSON.parse(lastMessage.data);
-      let found = false;
-      tempMatrix.destinations.forEach((dst, i) => {
-        if (update.id === dst.id) {
-          tempMatrix.destinations[i] = update;
-          found = true;
-        }
-      });
-      if (!found) {
-        tempMatrix.destinations.push(update);
+      console.log("received Matrix Update", update)
+      switch (update.type) {
+        case "destination_update":
+          let found = false;
+          tempMatrix.destinations.forEach((dst, i) => {
+            if (update.data.id === dst.id) {
+              tempMatrix.destinations[i] = update.data;
+              found = true;
+            }
+          });
+          if (!found) {
+            tempMatrix.destinations.push(update.data);
+          }
       }
+
       setMatrix(tempMatrix);
     }
   }, [lastMessage]);
 
-  useEffect(() => {
-    console.log("matrix updated", matrix)
-  }, [matrix]);
+  const route = (destination, source) => {
+    sendJsonMessage({
+      type: "route_request",
+      data: {
+        destination: destination,
+        source: source
+      }
+    })
+  }
 
-  return {matrix, loading, error};
+  return {matrix, loading, error, route};
 }
 
 export default useMatrix;
