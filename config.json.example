@@ -1,0 +1,15 @@
+{
+	"server": {
+		"port": 8080
+	},
+	"router": {
+		"ip": "10.101.0.2",
+		"address": 254,
+		"model": "NK-3G72"
+	},
+	"probe": {
+		"enabled": true,
+		"router_destination": 72
+	},
+	"salvos": []
+}

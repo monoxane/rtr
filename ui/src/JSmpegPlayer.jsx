@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import JSMpeg from '@cycjimmy/jsmpeg-player';
 
+import imgs from './imgs'
+
 const JSmpegPlayer = ({ url, active }) => {
   const videoRef = useRef(null)
   const [player, setPlayer] = useState(null)
@@ -9,14 +11,16 @@ const JSmpegPlayer = ({ url, active }) => {
   useEffect(() => {
     console.log(player, active)
     if (active && !player) {
-      setPlayer(new JSMpeg.VideoElement(
+      const p = new JSMpeg.VideoElement(
         videoRef.current,
         url,
         {
-          autoplay: false
+          autoplay: false,
+          poster: imgs.probe_slate
         },
         {}
-      ));
+      )
+      setPlayer(p);
     } else {
       player?.destroy()
       setPlayer(null)

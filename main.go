@@ -141,6 +141,8 @@ func serveHTTP() {
 
 	svc.GET("/v1/matrix", HandleMatrix)
 
+	svc.POST("/v1/salvos", HandleSalvoPost)
+
 	svc.GET("/v1/config", HandleConfig)
 
 	if Config.Probe.Enabled {
@@ -177,6 +179,36 @@ func HandleMatrix(c *gin.Context) {
 
 func HandleConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, Config)
+}
+
+func HandleSalvoPost(c *gin.Context) {
+	var salvo Salvo
+	err := c.BindJSON(&salvo)
+	if err != nil {
+		log.Printf("unable to bind salvo to object: %s", err)
+		c.Status(http.StatusBadRequest)
+
+		return
+	}
+
+	log.Printf("saving salvo: %+v", salvo)
+
+	for i, existingSalvo := range Config.Salvos {
+		if existingSalvo.Label == salvo.Label {
+			log.Printf("updating existing salvo")
+			Config.Salvos[i] = salvo
+			c.Status(http.StatusOK)
+			Config.Save()
+
+			return
+		}
+	}
+
+	Config.Salvos = append(Config.Salvos, salvo)
+	log.Printf("added new salvo")
+	Config.Save()
+
+	c.Status(http.StatusOK)
 }
 
 func HandleMatrixWS(c *gin.Context) {

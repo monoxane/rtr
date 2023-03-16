@@ -2,14 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/monoxane/nk"
 )
 
 type Configuration struct {
-	Server Server `json:"server"`
-	Router Router `json:"router"`
-	Probe  Probe  `json:"probe"`
+	Server Server  `json:"server"`
+	Router Router  `json:"router"`
+	Probe  Probe   `json:"probe"`
+	Salvos []Salvo `json:"salvos"`
 }
 type Server struct {
 	Port int `json:"port"`
@@ -23,6 +27,27 @@ type Router struct {
 type Probe struct {
 	Enabled           bool `json:"enabled"`
 	RouterDestination int  `json:"router_destination"`
+}
+
+type Salvo struct {
+	Label        string           `json:"label"`
+	Destinations []nk.Destination `json:"destinations"`
+}
+
+func (c *Configuration) Save() {
+	file, err := json.MarshalIndent(c, "", "	")
+	if err != nil {
+		log.Printf("unable to marshal config: %s", err)
+		return
+	}
+
+	err = ioutil.WriteFile("config.json", file, 0777)
+	if err != nil {
+		log.Printf("unable to save config: %s", err)
+		return
+	}
+
+	log.Print("saved config")
 }
 
 var Config Configuration
