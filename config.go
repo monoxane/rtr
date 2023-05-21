@@ -25,8 +25,8 @@ type Router struct {
 }
 
 type Probe struct {
-	Enabled           bool `json:"enabled"`
-	RouterDestination int  `json:"router_destination"`
+	Enabled            bool  `json:"enabled"`
+	RouterDestinations []int `json:"router_destinations"`
 }
 
 type Salvo struct {

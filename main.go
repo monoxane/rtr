@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
 
@@ -21,7 +22,7 @@ import (
 var (
 	router *nk.Router
 
-	ProbeHandler             *ProbeSocketHandler
+	ProbeHandlers            []*ProbeSocketHandler
 	MatrixWSConnections      = make(map[WebsocketConnection]uuid.UUID)
 	MatrixWSConnectionsMutex sync.Mutex
 	Upgrader                 = websocket.Upgrader{
@@ -90,21 +91,24 @@ func main() {
 	}
 
 	if Config.Probe.Enabled {
-		ProbeHandler = &ProbeSocketHandler{
-			clients:    make(map[*ProbeClient]bool),
-			register:   make(chan *ProbeClient),
-			unregister: make(chan *ProbeClient),
-			broadcast:  make(chan *[]byte),
-			upgrader: &websocket.Upgrader{
-				ReadBufferSize:  readBufferSize,
-				WriteBufferSize: writeBufferSize,
-				CheckOrigin: func(r *http.Request) bool {
-					return true
+		ProbeHandlers = make([]*ProbeSocketHandler, len(Config.Probe.RouterDestinations))
+		for i := range Config.Probe.RouterDestinations {
+			ProbeHandlers[i] = &ProbeSocketHandler{
+				clients:    make(map[*ProbeClient]bool),
+				register:   make(chan *ProbeClient),
+				unregister: make(chan *ProbeClient),
+				broadcast:  make(chan *[]byte),
+				upgrader: &websocket.Upgrader{
+					ReadBufferSize:  readBufferSize,
+					WriteBufferSize: writeBufferSize,
+					CheckOrigin: func(r *http.Request) bool {
+						return true
+					},
 				},
-			},
-		}
+			}
 
-		go ProbeHandler.Run()
+			go ProbeHandlers[i].Run()
+		}
 	}
 
 	go router.Connect()
@@ -146,8 +150,26 @@ func serveHTTP() {
 	svc.GET("/v1/config", HandleConfig)
 
 	if Config.Probe.Enabled {
-		svc.GET("/v1/ws/probe", ProbeHandler.ServeWS)
-		svc.POST("/v1/probe/stream", HandleProbeStream)
+		svc.GET("/v1/ws/probe/:id", func(ctx *gin.Context) {
+			id := ctx.Param("id")
+			index, err := strconv.Atoi(id)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "message": "invalid probe id", "error": err.Error()})
+				log.Printf("[probe-viewer] unable to handle stream: %s", err)
+				return
+			}
+
+			if index > len(ProbeHandlers) || index < 0 {
+				ctx.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "message": "invalid probe id"})
+				log.Printf("[probe-viewer] unable to handle stream: %s", err)
+				return
+			}
+
+			ProbeHandlers[index].ServeWS(ctx)
+
+		})
+
+		svc.POST("/v1/probe/stream/:id", HandleProbeStream)
 	}
 
 	err := svc.Run(fmt.Sprintf(":%d", Config.Server.Port))
@@ -268,7 +290,15 @@ func HandleMatrixWS(c *gin.Context) {
 }
 
 func HandleProbeStream(c *gin.Context) {
-	log.Printf("IncomingStream connected: %s\n", c.RemoteIP())
+	id := c.Param("id")
+	index, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "message": "invalid probe id", "error": err.Error()})
+		log.Printf("[probe] unable to handle stream: %s", err)
+		return
+	}
+
+	log.Printf("stream for probe %d connected from %s", index, c.RemoteIP())
 
 	for {
 		data, err := ioutil.ReadAll(io.LimitReader(c.Request.Body, 1024))
@@ -276,8 +306,8 @@ func HandleProbeStream(c *gin.Context) {
 			break
 		}
 
-		ProbeHandler.BroadcastData(&data)
+		ProbeHandlers[index].BroadcastData(&data)
 	}
 
-	log.Printf("IncomingStream disconnected: %s\n", c.RemoteIP())
+	log.Printf("stream for probe %d disconnected from %s", index, c.RemoteIP())
 }

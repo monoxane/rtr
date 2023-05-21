@@ -9,7 +9,7 @@
 	},
 	"probe": {
 		"enabled": true,
-		"router_destination": 72
+		"router_destinations": [71, 72]
 	},
 	"salvos": []
 }

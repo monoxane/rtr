@@ -21,7 +21,8 @@ import {
   PortInput,
   PortOutput,
   Maximize,
-  QueryQueue
+  QueryQueue,
+  ChooseItem
 } from '@carbon/icons-react';
 
 import Header from './Header.jsx';
@@ -37,6 +38,7 @@ const App = function App() {
   )
 
   const {matrix, loading: matrixLoading, error: matrixError, route} = useMatrix()
+  const [selectedProbe, setSelectedProbe] = useState(0)
   const [selectedDestination, setSelectedDestination] = useState(1)
   const [ProbeSOTRouting, setProbeSODRouting] = useState(false)
   const [probeFullscreen, setProbeFullscreen] = useState(false)
@@ -44,25 +46,25 @@ const App = function App() {
 
   useEffect(() => {
     if (config?.probe.enabled && ProbeSOTRouting) {
-      route(config.probe.router_destination, matrix.destinations[selectedDestination - 1].source.id)
+      route(config.probe.router_destinations[selectedProbe], matrix.destinations[selectedDestination - 1].source.id)
     }
-    if (config?.probe.enabled && selectedDestination == config.probe.router_destination && ProbeSOTRouting) {
+    if (config?.probe.enabled && selectedDestination == config.probe.router_destinations[selectedProbe] && ProbeSOTRouting) {
       setProbeSODRouting(false)
     }
   }, [selectedDestination]);
 
   useEffect(() => {
     if (config?.probe.enabled && ProbeSOTRouting) {
-      if (matrix.destinations[selectedDestination - 1].source.id != matrix.destinations[config.probe.router_destination - 1].source.id) {
-        route(config.probe.router_destination, matrix.destinations[selectedDestination - 1].source.id)
+      if (matrix.destinations[selectedDestination - 1].source.id != matrix.destinations[config.probe.router_destinations[selectedProbe] - 1].source.id) {
+        route(config.probe.router_destinations[selectedProbe], matrix.destinations[selectedDestination - 1].source.id)
       }
     }
   }, [matrix]);
 
   useEffect(() => {
     if (config?.probe.enabled && ProbeSOTRouting) {
-      if (matrix.destinations[selectedDestination - 1].source.id != matrix.destinations[config.probe.router_destination - 1].source.id) {
-        route(config.probe.router_destination, matrix.destinations[selectedDestination - 1].source.id)
+      if (matrix.destinations[selectedDestination - 1].source.id != matrix.destinations[config.probe.router_destinations[selectedProbe] - 1].source.id) {
+        route(config.probe.router_destinations[selectedProbe], matrix.destinations[selectedDestination - 1].source.id)
       }
     }
   }, [ProbeSOTRouting]);
@@ -83,12 +85,12 @@ const App = function App() {
             {config.probe.enabled &&
               <Modal
                 open={probeFullscreen}
-                modalHeading={<><strong>Probe: </strong> {matrix.destinations?.[config.probe.router_destination - 1]?.source?.label}</>}
+                modalHeading={<><strong>Probe {selectedProbe + 1}: </strong> {matrix.destinations?.[config.probe.router_destinations[selectedProbe] - 1]?.source?.label}</>}
                 passiveModal
                 onRequestClose={()=> setProbeFullscreen(false)}
                 className="fullscreenProbe"
               >
-                <JSmpegPlayer url={'ws://'+document.location.hostname+':'+document.location.port+'/v1/ws/probe'} active={probeFullscreen}/>
+                <JSmpegPlayer url={'ws://'+document.location.hostname+':'+document.location.port+'/v1/ws/probe/'+selectedProbe} active={probeFullscreen}/>
               </Modal>
             }
             <Modal
@@ -124,7 +126,6 @@ const App = function App() {
                             display: 'table',
                             marginBottom: '1px',
                             background: button.id == selectedDestination ? blue[60] : gray[70],
-                            outline: button.id == selectedDestination ? '1px white solid' : '',
                           }}
                         >
                           <>
@@ -152,13 +153,31 @@ const App = function App() {
                   <Column sm={4} lg={4}>
                     { config.probe.enabled && 
                       <>
-                        <h3>Probe</h3>
+                        { config.probe.router_destinations.map((dst, index) => (
+                          <Button 
+                            key={`probe-${dst}`}
+                            onClick={() => {
+                              setSelectedProbe(index)
+                            }}
+                            renderIcon={ChooseItem}
+                            style={{
+                              minWidth: '10px',
+                              display: 'table',
+                              marginBottom: "1px",
+                              width: '100%',
+                              background: selectedProbe == index ? blue[60] : gray[70],
+                            }}
+                          >
+                            Probe Channel {index + 1} ({matrix.destinations?.[config.probe.router_destinations[selectedProbe] - 1]?.label})
+                          </Button>
+                        ))}
+                        <br/>
                         <Row>
-                          <JSmpegPlayer url={'ws://'+document.location.hostname+':'+document.location.port+'/v1/ws/probe'} active={!probeFullscreen}/>
+                          <JSmpegPlayer url={'ws://'+document.location.hostname+':'+document.location.port+'/v1/ws/probe/'+selectedProbe} active={!probeFullscreen}/>
                           <br/>
                           <strong>Probe Follow:</strong> {ProbeSOTRouting ? matrix.destinations?.[selectedDestination - 1]?.label : "None"}
                           <br/>
-                          <strong>Probe Source:</strong> {matrix.destinations?.[config.probe.router_destination - 1]?.source?.label}
+                          <strong>Probe Source:</strong> {matrix.destinations?.[config.probe.router_destinations[selectedProbe] - 1]?.source?.label}
                         </Row>
                         <br/>
                         <Button
@@ -180,7 +199,7 @@ const App = function App() {
                         </Button>
                         <Button
                             onClick={() => {
-                              setSelectedDestination(config.probe.router_destination)
+                              setSelectedDestination(config.probe.router_destinations[selectedProbe])
                             }}
                             renderIcon={PortInput}
                             style={{
@@ -188,7 +207,7 @@ const App = function App() {
                               display: 'table',
                               marginBottom: "1px",
                               width: '100%',
-                              background: selectedDestination == config.probe.router_destination ? blue[60] : gray[60],
+                              background: selectedDestination == config.probe.router_destinations[selectedProbe] ? blue[60] : gray[60],
                             }}
                           >
                           <>
@@ -261,7 +280,6 @@ const App = function App() {
                             display: 'table',
                             marginBottom: '1px',
                             background: button.id == matrix.destinations[selectedDestination-1]?.source?.id ? purple[60] : gray[70],
-                            outline: button.id == matrix.destinations[selectedDestination-1]?.source?.id ? '1px white solid' : ''
                           }}
                         >
                           <>

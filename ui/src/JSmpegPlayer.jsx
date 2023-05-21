@@ -9,8 +9,8 @@ const JSmpegPlayer = ({ url, active }) => {
   const [player, setPlayer] = useState(null)
 
   useEffect(() => {
-    console.log(player, active)
-    if (active && !player) {
+    if (active) {
+      player?.destroy()
       const p = new JSMpeg.VideoElement(
         videoRef.current,
         url,
@@ -25,7 +25,7 @@ const JSmpegPlayer = ({ url, active }) => {
       player?.destroy()
       setPlayer(null)
     }
-  }, [active]);
+  }, [active, url]);
 
   return (
     <div
