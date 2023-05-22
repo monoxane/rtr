@@ -2,7 +2,7 @@
 const path = require('path');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const WebpackPwaManifest = require('webpack-pwa-manifest')
+const WebpackPwaManifest = require('webpack-pwa-manifest');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const port = process.env.PORT || 3000;
@@ -40,9 +40,9 @@ module.exports = (_, argv) => {
         icons: [
           {
             src: path.resolve('src/router.png'),
-            sizes: [96, 128, 192, 256, 384, 512]
+            sizes: [96, 128, 192, 256, 384, 512],
           },
-        ]
+        ],
       }),
       isDevelopment && new ReactRefreshWebpackPlugin(),
     ].filter(Boolean),
@@ -73,11 +73,11 @@ module.exports = (_, argv) => {
           test: /\.s[ac]ss$/i,
           use: [
             // Creates `style` nodes from JS strings
-            "style-loader",
+            'style-loader',
             // Translates CSS into CommonJS
-            "css-loader",
+            'css-loader',
             // Compiles Sass to CSS
-            "sass-loader",
+            'sass-loader',
           ],
         },
         {

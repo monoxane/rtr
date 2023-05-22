@@ -87,6 +87,7 @@ func (c *ProbeClient) Run() {
 }
 
 type ProbeSocketHandler struct {
+	Id         int
 	clients    map[*ProbeClient]bool // *client -> is connected (true/false)
 	register   chan *ProbeClient
 	unregister chan *ProbeClient
@@ -102,14 +103,18 @@ func (h *ProbeSocketHandler) Run() {
 		select {
 		case client := <-h.register:
 			h.clients[client] = true
-			log.Printf("New client registered. Total: %d\n", len(h.clients))
+			log.Printf("[probe %d] client connected. active clients: %d\n", h.Id, len(h.clients))
+			ProbeStats[h.Id].Clients = len(h.clients)
+			SendProbeStats()
 
 		case client := <-h.unregister:
 			_, ok := h.clients[client]
 			if ok {
 				delete(h.clients, client)
 			}
-			log.Printf("Client unregistered.   Total: %d\n", len(h.clients))
+			log.Printf("[probe %d] client disconnected. active clients: %d\n", h.Id, len(h.clients))
+			ProbeStats[h.Id].Clients = len(h.clients)
+			SendProbeStats()
 
 		case data := <-h.broadcast:
 			h.BroadcastData(data)
@@ -132,7 +137,6 @@ func (h *ProbeSocketHandler) ServeWS(c *gin.Context) {
 		return
 	}
 
-	log.Println("New client connected")
 	client := NewProbeClient(ws, h.unregister)
 
 	h.register <- client

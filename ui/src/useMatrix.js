@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import useAxios from 'axios-hooks'
+import useAxios from 'axios-hooks';
 import useWebSocket from 'react-use-websocket';
 
 function useMatrix() {
   const [matrix, setMatrix] = useState([]);
+  const [probeStats, setProbeStats] = useState([]);
   const [haveRecievedData, setHaveRecievedData] = useState(false);
   const wsuri = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/v1/ws/matrix`;
 
   const [{ data, loading, error }, refreshAxios] = useAxios(
-    '/v1/matrix'
-  )
+    '/v1/matrix',
+  );
 
   if (data && matrix.length === 0 && !haveRecievedData) setMatrix(data);
 
@@ -34,12 +35,11 @@ function useMatrix() {
   useEffect(() => {
     if (lastMessage !== null) {
       setHaveRecievedData(true);
-      const tempMatrix = {...matrix};
+      const tempMatrix = { ...matrix };
       const update = JSON.parse(lastMessage.data);
-      console.log("received Matrix Update", update)
+      let found = false;
       switch (update.type) {
-        case "destination_update":
-          let found = false;
+        case 'destination_update':
           tempMatrix.destinations.forEach((dst, i) => {
             if (update.data.id === dst.id) {
               tempMatrix.destinations[i] = update.data;
@@ -49,6 +49,12 @@ function useMatrix() {
           if (!found) {
             tempMatrix.destinations.push(update.data);
           }
+          break;
+        case 'probe_stats':
+          setProbeStats(update.data);
+          break;
+        default:
+          console.log('unexpected message', update);
       }
 
       setMatrix(tempMatrix);
@@ -57,15 +63,17 @@ function useMatrix() {
 
   const route = (destination, source) => {
     sendJsonMessage({
-      type: "route_request",
+      type: 'route_request',
       data: {
-        destination: destination,
-        source: source
-      }
-    })
-  }
+        destination,
+        source,
+      },
+    });
+  };
 
-  return {matrix, loading, error, route};
+  return {
+    matrix, probeStats, loading, error, route,
+  };
 }
 
 export default useMatrix;

@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -30,6 +31,8 @@ var (
 		WriteBufferSize: 1024,
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
+
+	ProbeStats []*ProbeChannelStatus
 )
 
 type WebsocketConnection struct {
@@ -51,6 +54,12 @@ type DestinationUpdate struct {
 	Id     int          `json:"id"`
 	Label  string       `json:"label"`
 	Source SourceUpdate `json:"source"`
+}
+
+type ProbeChannelStatus struct {
+	Id           int  `json:"id"`
+	ActiveSource bool `json:"active_source"`
+	Clients      int  `json:"clients"`
 }
 
 type SourceUpdate struct {
@@ -92,8 +101,16 @@ func main() {
 
 	if Config.Probe.Enabled {
 		ProbeHandlers = make([]*ProbeSocketHandler, len(Config.Probe.RouterDestinations))
+		ProbeStats = make([]*ProbeChannelStatus, len(Config.Probe.RouterDestinations))
+		for i := range ProbeStats {
+			ProbeStats[i] = &ProbeChannelStatus{
+				Id: i,
+			}
+		}
+
 		for i := range Config.Probe.RouterDestinations {
 			ProbeHandlers[i] = &ProbeSocketHandler{
+				Id:         i,
 				clients:    make(map[*ProbeClient]bool),
 				register:   make(chan *ProbeClient),
 				unregister: make(chan *ProbeClient),
@@ -127,6 +144,20 @@ func main() {
 	log.Println("Server Start Awaiting Signal")
 	<-done
 	log.Println("Exiting")
+}
+
+func SendProbeStats() {
+	payload, _ := json.Marshal(ProbeStats)
+	update := MatrixWSMessage{
+		Type: "probe_stats",
+		Data: payload,
+	}
+
+	MatrixWSConnectionsMutex.Lock()
+	for conn := range MatrixWSConnections {
+		conn.Socket.WriteJSON(update)
+	}
+	MatrixWSConnectionsMutex.Unlock()
 }
 
 func serveHTTP() {
@@ -255,6 +286,12 @@ func HandleMatrixWS(c *gin.Context) {
 	MatrixWSConnectionsMutex.Unlock()
 
 	defer connection.Socket.Close()
+
+	go func() {
+		time.Sleep(500 * time.Millisecond)
+		SendProbeStats()
+	}()
+
 	for {
 		_, messageBytes, err := connection.Socket.ReadMessage()
 		if err != nil {
@@ -300,6 +337,9 @@ func HandleProbeStream(c *gin.Context) {
 
 	log.Printf("stream for probe %d connected from %s", index, c.RemoteIP())
 
+	ProbeStats[index].ActiveSource = true
+	SendProbeStats()
+
 	for {
 		data, err := ioutil.ReadAll(io.LimitReader(c.Request.Body, 1024))
 		if err != nil || len(data) == 0 {
@@ -308,6 +348,9 @@ func HandleProbeStream(c *gin.Context) {
 
 		ProbeHandlers[index].BroadcastData(&data)
 	}
+
+	ProbeStats[index].ActiveSource = false
+	SendProbeStats()
 
 	log.Printf("stream for probe %d disconnected from %s", index, c.RemoteIP())
 }
