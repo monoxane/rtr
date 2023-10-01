@@ -7,9 +7,15 @@ $feature-flags: (
 
 @use '@carbon/react';
 
+
+.main-content {
+  height: calc(100vh - 3.4em);
+  margin-left: 48px
+}
+
 .iolist {
-  height: 80vh;
-  overflow-y: scroll;
+  max-height: 40vh;
+  overflow-y: auto;
 }
 
 @media (max-width: 1056px) {

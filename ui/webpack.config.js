@@ -109,12 +109,21 @@ module.exports = (_, argv) => {
         index: '/dist/index.html',
       },
       magicHtml: true,
+      // proxy: {
+      //   '/v1': {
+      //     target: 'http://localhost:8080',
+      //   },
+      //   '/v1/ws': {
+      //     target: 'http://localhost:8080',
+      //     ws: true,
+      //   },
+      // },
       proxy: {
         '/v1': {
-          target: 'http://localhost:8080',
+          target: 'http://10.101.41.21:8080',
         },
         '/v1/ws': {
-          target: 'http://localhost:8080',
+          target: 'http://10.101.41.21:8080',
           ws: true,
         },
       },
