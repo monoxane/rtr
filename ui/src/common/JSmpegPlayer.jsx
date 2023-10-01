@@ -27,6 +27,12 @@ function JSmpegPlayer({ url, active }) {
     }
   }, [active, url]);
 
+  useEffect(() => () => {
+    player?.destroy();
+    setPlayer(null);
+    console.log('destroying probe instance');
+  }, []);
+
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div

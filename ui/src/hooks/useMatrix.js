@@ -54,7 +54,6 @@ function useMatrix() {
           setProbeStats(update.data);
           break;
         default:
-          console.log('unexpected message', update);
       }
 
       setMatrix(tempMatrix);

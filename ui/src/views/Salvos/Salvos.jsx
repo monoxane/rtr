@@ -22,7 +22,7 @@ import {
   TrashCan,
   Redo,
 } from '@carbon/icons-react';
-import useMatrix from './useMatrix';
+import useMatrix from '../../hooks/useMatrix';
 
 const Salvos = function Salvos() {
   const {
@@ -50,7 +50,6 @@ const Salvos = function Salvos() {
   const saveCurrentSalvo = () => {
     const salvo = { ...currentSalvo };
     salvo.destinations.map((destination) => destination = matrix.destinations[destination.id - 1]);
-    console.log(salvo);
     axios.post('/v1/salvos', salvo)
       .then(() => {
         refresh();
