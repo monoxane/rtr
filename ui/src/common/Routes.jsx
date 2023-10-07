@@ -1,4 +1,4 @@
-import React, { lazy } from 'react';
+import React, { lazy, useEffect } from 'react';
 
 import {
   createBrowserRouter,
@@ -31,7 +31,13 @@ export default createBrowserRouter(
 function Root() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    navigate('/router');
+  }, []);
+
   return (
-    <>{navigate('/router')}</>
+    <>
+      Redirecting...
+    </>
   );
 }
