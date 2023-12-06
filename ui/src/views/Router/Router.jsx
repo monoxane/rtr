@@ -18,10 +18,15 @@ import {
   PortInput,
   PortOutput,
   ChooseItem,
+  Launch,
 } from '@carbon/icons-react';
 
 import useMatrix from '../../hooks/useMatrix.js';
 import JSmpegPlayer from '../../common/JSmpegPlayer.jsx';
+
+function openInNewTab(url) {
+  window.open(url, '_blank').focus();
+}
 
 function Router() {
   const [{ data: config, loading: configLoading, error: configError }] = useAxios(
@@ -178,51 +183,62 @@ function Router() {
                     <strong>
                       Status:
                     </strong>
-                    {' '}
-                    {probeStats[selectedProbe]?.active_source ? `Streaming, ${probeStats[selectedProbe]?.clients} viewer${probeStats[selectedProbe]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
+                      {' '}
+                      {probeStats[selectedProbe]?.active_source ? `Streaming, ${probeStats[selectedProbe]?.clients} viewer${probeStats[selectedProbe]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
                     <br />
                     <strong>
                       Probe
                       {' '}
                       Follow:
                     </strong>
-                    {' '}
-                    {ProbeSOTRouting ? matrix.destinations?.[selectedDestination - 1]?.label : 'None'}
+                      {' '}
+                      {ProbeSOTRouting ? matrix.destinations?.[selectedDestination - 1]?.label : 'None'}
                     <br />
                     <strong>
                       Probe
                       {' '}
                       Source:
                     </strong>
-                    {' '}
-                    {matrix.destinations?.[config.probe.router_destinations[selectedProbe] - 1]?.source?.label}
+                      {' '}
+                      {matrix.destinations?.[config.probe.router_destinations[selectedProbe] - 1]?.source?.label}
                     <br />
                     <br />
+                    <div className="openProbeOverlay">
+                      <Button
+                        hasIconOnly
+                        renderIcon={Launch}
+                        kind="ghost"
+                        iconDescription="Open Probe in New Tab"
+                        onClick={() => {
+                          openInNewTab(`${document.location.protocol}//${document.location.hostname}:${document.location.port}/probe`);
+                        }}
+                      />
+                    </div>
                     <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${selectedProbe}`} active={probeStats[selectedProbe]?.active_source} />
                     <br />
-                    { config.probe.router_destinations.map((dst, index) => (
-                      <Button
-                        key={`probe-${dst}`}
-                        onClick={() => {
-                          setSelectedProbe(index);
-                        }}
-                        renderIcon={ChooseItem}
-                        style={{
-                          minWidth: '100%',
-                          width: '100%',
-                          marginBottom: '1px',
-                          background: selectedProbe === index ? blue[60] : gray[70],
-                        }}
-                      >
-                        Probe
-                        {' '}
-                        {index + 1}
-                        {' '}
-                        (
-                        {matrix.destinations?.[dst - 1]?.label}
-                        )
-                      </Button>
-                    ))}
+                      { config.probe.router_destinations.map((dst, index) => (
+                        <Button
+                          key={`probe-${dst}`}
+                          onClick={() => {
+                            setSelectedProbe(index);
+                          }}
+                          renderIcon={ChooseItem}
+                          style={{
+                            minWidth: '100%',
+                            width: '100%',
+                            marginBottom: '1px',
+                            background: selectedProbe === index ? blue[60] : gray[70],
+                          }}
+                        >
+                          Probe
+                          {' '}
+                          {index + 1}
+                          {' '}
+                          (
+                          {matrix.destinations?.[dst - 1]?.label}
+                          )
+                        </Button>
+                      ))}
                     <br />
                     <br />
                     <Button
