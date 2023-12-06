@@ -40,7 +40,7 @@ function Layout() {
               Router Controller
             </HeaderName>
             <HeaderGlobalBar />
-            <SidebarNav onClick={onClickSideNavExpand} />
+            <SidebarNav onClick={onClickSideNavExpand} isActive={isSideNavExpanded} />
           </Header>
           <Content className="main-content" style={{ background: gray[80] }}>
             <Suspense fallback={<Loading />}>
