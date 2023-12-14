@@ -4,13 +4,13 @@ import PropTypes from 'prop-types';
 import {
   SideNav,
   SideNavItems,
-  SideNavDivider,
+  // SideNavDivider,
 } from '@carbon/react';
 
 import {
   Router,
   Package,
-  Settings,
+  // Settings,
   View,
 } from '@carbon/icons-react';
 
@@ -23,8 +23,8 @@ function SidebarNav({ isActive }) {
         <SideNavLink to="/router" label="Router" renderIcon={Router} />
         <SideNavLink to="/probe" label="Probe" renderIcon={View} />
         <SideNavLink to="/salvos" label="Salvos" renderIcon={Package} />
-        <SideNavDivider />
-        <SideNavLink to="/config" label="Configuration" renderIcon={Settings} />
+        {/* <SideNavDivider /> */}
+        {/* <SideNavLink to="/config" label="Configuration" renderIcon={Settings} /> */}
       </SideNavItems>
     </SideNav>
   );

@@ -1,13 +1,22 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import JSMpeg from '@cycjimmy/jsmpeg-player';
 
+import {
+  Button,
+} from '@carbon/react';
+
+import {
+  Minimize,
+  FitToScreen,
+} from '@carbon/icons-react';
 import imgs from './imgs';
 
 function JSmpegPlayer({ url, active }) {
   const videoRef = useRef(null);
   const player = useRef(null);
+  const [fullscreen, setFullscreen] = useState(false);
 
   useEffect(() => {
     if (active) {
@@ -33,18 +42,31 @@ function JSmpegPlayer({ url, active }) {
   }, []);
 
   return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-    <div
-      onClick={() => {
-        if (player?.player.isPlaying) {
-          player?.player.pause();
-        } else {
-          player?.player.play();
-        }
-      }}
-      className={active ? 'probePlayer' : 'probeSlate'}
-      ref={videoRef}
-    />
+    <div className={fullscreen && 'probeFullscreen'}>
+      <div className="probeFullscreenButton">
+        <Button
+          hasIconOnly
+          renderIcon={fullscreen ? Minimize : FitToScreen}
+          kind="ghost"
+          iconDescription="FullScreen"
+          onClick={() => {
+            setFullscreen(!fullscreen);
+          }}
+        />
+      </div>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      <div
+        onClick={() => {
+          if (player?.player?.isPlaying) {
+            player?.player?.pause();
+          } else {
+            player?.player?.play();
+          }
+        }}
+        className={active ? 'probePlayer' : 'probeSlate'}
+        ref={videoRef}
+      />
+    </div>
   );
 }
 
