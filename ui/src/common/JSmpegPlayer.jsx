@@ -42,7 +42,7 @@ function JSmpegPlayer({ url, active }) {
   }, []);
 
   return (
-    <div className={fullscreen && 'probeFullscreen'}>
+    <div className={fullscreen ? 'probeFullscreen' : 'probe'}>
       <div className="probeFullscreenButton">
         <Button
           hasIconOnly
