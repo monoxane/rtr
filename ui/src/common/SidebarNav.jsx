@@ -9,7 +9,7 @@ import {
 
 import {
   Router,
-  Package,
+  DocumentExport,
   // Settings,
   View,
 } from '@carbon/icons-react';
@@ -22,7 +22,7 @@ function SidebarNav({ isActive }) {
       <SideNavItems>
         <SideNavLink to="/router" label="Router" renderIcon={Router} />
         <SideNavLink to="/probe" label="Probe" renderIcon={View} />
-        <SideNavLink to="/salvos" label="Salvos" renderIcon={Package} />
+        <SideNavLink to="/salvos" label="Salvos" renderIcon={DocumentExport} />
         {/* <SideNavDivider /> */}
         {/* <SideNavLink to="/config" label="Configuration" renderIcon={Settings} /> */}
       </SideNavItems>
