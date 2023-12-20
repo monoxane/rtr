@@ -19,6 +19,7 @@ import {
   TableToolbarContent,
   TableToolbarSearch,
   IconButton,
+  DataTableSkeleton,
 } from '@carbon/react';
 
 import {
@@ -33,7 +34,7 @@ import useMatrix from '../../hooks/useMatrix';
 
 const Salvo = function Salvo() {
   const {
-    matrix, route,
+    matrix, loading: matrixLoading, route,
   } = useMatrix();
 
   const [{ data: config, loading: configLoading, error: configError }, refresh] = useAxios(
@@ -99,7 +100,12 @@ const Salvo = function Salvo() {
 
   return (
     <Grid>
-      {configLoading && !salvo && 'Loading...'}
+      {(configLoading || matrixLoading)
+        && (
+          <Column sm={4} lg={16}>
+            <DataTableSkeleton headers={headers} aria-label="sample table" />
+          </Column>
+        )}
       {configError && 'Error'}
       { !configError
         && (
