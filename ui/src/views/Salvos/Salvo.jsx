@@ -19,15 +19,12 @@ import {
   TableToolbarContent,
   TableToolbarSearch,
   IconButton,
-  TableToolbarMenu,
-  TableToolbarAction,
 } from '@carbon/react';
 
 import {
   TrashCan,
   MagicWand,
   WarningAlt,
-  Edit,
   Save,
   AddAlt,
   Add,
@@ -53,15 +50,13 @@ const Salvo = function Salvo() {
   const [filteredRouterDestinations, setFilteredRouterDestinations] = useState([]);
 
   useEffect(() => {
-    if (salvo.label !== id) {
-      config?.salvos.forEach((configSalvo) => {
-        if (configSalvo.label === id) {
-          setCurrentSalvo(configSalvo);
-          setOriginalSalvo(configSalvo);
-          setFilteredSalvoDestinations(configSalvo.destinations);
-        }
-      });
-    }
+    config?.salvos.forEach((configSalvo) => {
+      if (configSalvo.label === id) {
+        setCurrentSalvo(configSalvo);
+        setOriginalSalvo(configSalvo);
+        setFilteredSalvoDestinations(configSalvo.destinations);
+      }
+    });
   }, [config, id]);
 
   const getFilteredSalvoDestinations = () => (
@@ -104,9 +99,9 @@ const Salvo = function Salvo() {
 
   return (
     <Grid>
-      {configLoading && 'Loading...'}
+      {configLoading && !salvo && 'Loading...'}
       {configError && 'Error'}
-      {!configLoading && !configError
+      { !configError
         && (
           <Column sm={4} md={8} lg={16}>
               {salvo.label
