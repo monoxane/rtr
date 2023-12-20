@@ -16,6 +16,7 @@ import {
   TableToolbarContent,
   TableToolbarSearch,
   IconButton,
+  DataTableSkeleton,
 } from '@carbon/react';
 
 import {
@@ -32,11 +33,16 @@ const Salvos = function Salvos() {
 
   const navigate = useNavigate();
 
-  const headers = ['Salvo', 'Destinations', 'Versions', 'Actions'];
+  const headers = ['Salvo', 'Destinations', 'Actions'];
 
   return (
     <Grid>
-      {configLoading && 'Loading...'}
+      {configLoading
+        && (
+          <Column sm={4} lg={16}>
+            <DataTableSkeleton headers={headers} aria-label="sample table" />
+          </Column>
+        )}
       {configError && 'Error'}
       {!configLoading && !configError
         && (
@@ -71,7 +77,6 @@ const Salvos = function Salvos() {
                 <TableRow key={row.label}>
                   <TableCell>{row.label}</TableCell>
                   <TableCell>{row.destinations.length}</TableCell>
-                  <TableCell>1</TableCell>
                   <TableCell>
                     <IconButton
                       kind="ghost"
