@@ -7,6 +7,9 @@ $feature-flags: (
 
 @use '@carbon/react';
 
+.cds--content {
+  min-height: calc(100vh - 48px);
+}
 
 .main-content {
   margin-left: 48px
@@ -60,36 +63,6 @@ $feature-flags: (
 .probeInfo {
   margin-top: -48px;
   height: 0;
-}
-
-@media (max-width: 1056px) {
-  // .iolist {
-  //   height: 40vh;
-  // }
-}
-
-.cds--modal-container div {
-  margin-bottom: 0;
-}
-
-.cds--content {
-  min-height: calc(100vh - 48px);
-}
-
-.cds--modal-container {
-  aspect-ratio: auto 1.65;
-  width: 75vw;
-  max-height: 90vh;
-  padding-bottom: 0.8rem;
-}
-
-@media (max-width: 1200px) {
-  .cds--modal-container {
-    aspect-ratio: auto 1.65;
-    width: 95vw;
-    max-height: 95vh;
-    top: 1em;
-  }  
 }
 
 .openProbeOverlay {
