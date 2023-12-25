@@ -16,7 +16,8 @@ type Configuration struct {
 	Salvos []Salvo `json:"salvos"`
 }
 type Server struct {
-	Port int `json:"port"`
+	Port                 int `json:"port"`
+	FirstProbeStreamPort int `json:"first_probe_stream_port"`
 }
 type Router struct {
 	IP      string `json:"ip"`

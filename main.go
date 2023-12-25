@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -125,6 +124,7 @@ func main() {
 			}
 
 			go ProbeHandlers[i].Run()
+			go ProbeHandlers[i].ServeTCPIngest()
 		}
 	}
 
@@ -200,7 +200,7 @@ func serveHTTP() {
 
 		})
 
-		svc.POST("/v1/probe/stream/:id", HandleProbeStream)
+		svc.POST("/v1/probe/stream/:id", HandleHTTPProbeStream)
 	}
 
 	err := svc.Run(fmt.Sprintf(":%d", Config.Server.Port))
@@ -326,7 +326,7 @@ func HandleMatrixWS(c *gin.Context) {
 	}
 }
 
-func HandleProbeStream(c *gin.Context) {
+func HandleHTTPProbeStream(c *gin.Context) {
 	id := c.Param("id")
 	index, err := strconv.Atoi(id)
 	if err != nil {
@@ -341,7 +341,7 @@ func HandleProbeStream(c *gin.Context) {
 	SendProbeStats()
 
 	for {
-		data, err := ioutil.ReadAll(io.LimitReader(c.Request.Body, 1024))
+		data, err := io.ReadAll(io.LimitReader(c.Request.Body, 1024))
 		if err != nil || len(data) == 0 {
 			break
 		}

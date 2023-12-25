@@ -8,7 +8,10 @@ package main
 // https://github.com/chanshik/
 
 import (
+	"bufio"
+	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"sync"
 
@@ -119,6 +122,50 @@ func (h *ProbeSocketHandler) Run() {
 		case data := <-h.broadcast:
 			h.BroadcastData(data)
 		}
+	}
+}
+
+func (c *ProbeSocketHandler) ServeTCPIngest() {
+	listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", Config.Server.FirstProbeStreamPort+c.Id))
+	if err != nil {
+		log.Fatalf("unable to listen for transport stream on %s: %s", listener.Addr(), err)
+	}
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Printf("error handling tcp transport stream connection: %s", err)
+		}
+
+		log.Printf("stream for probe %d connected from %s", c.Id, conn.RemoteAddr())
+
+		ProbeStats[c.Id].ActiveSource = true
+		SendProbeStats()
+
+		reader := bufio.NewReader(conn)
+
+		for {
+			data := make([]byte, 1024)
+			length, err := reader.Read(data)
+			if err != nil || length == 0 {
+				conn.Close()
+				ProbeStats[c.Id].ActiveSource = false
+				SendProbeStats()
+
+				log.Printf("stream for probe %d disconnected from %s", c.Id, conn.RemoteAddr())
+
+				break
+			}
+
+			txData := data[:length]
+
+			c.BroadcastData(&txData)
+		}
+
+		ProbeStats[c.Id].ActiveSource = false
+		SendProbeStats()
+
+		log.Printf("stream for probe %d disconnected from %s", c.Id, conn.RemoteAddr())
 	}
 }
 
