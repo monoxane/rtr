@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -36,13 +35,13 @@ type Salvo struct {
 }
 
 func (c *Configuration) Save() {
-	file, err := json.MarshalIndent(c, "", "	")
+	file, err := json.MarshalIndent(c, "", "	  ")
 	if err != nil {
 		log.Printf("unable to marshal config: %s", err)
 		return
 	}
 
-	err = ioutil.WriteFile("config.json", file, 0777)
+	err = os.WriteFile("config.json", file, 0777)
 	if err != nil {
 		log.Printf("unable to save config: %s", err)
 		return
