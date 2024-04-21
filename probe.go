@@ -9,6 +9,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -70,23 +71,28 @@ func (c *ProbeClient) WriteHandler() {
 		c.unregisterChan <- c
 	}()
 
-	for {
-		select {
-		case data, ok := <-c.sendChan:
-			if !ok {
-				log.Println("Client send failed")
-				c.ws.WriteMessage(websocket.CloseMessage, []byte{})
-				return
-			}
-
-			c.ws.WriteMessage(websocket.BinaryMessage, *data)
-		}
+	for data := range c.sendChan {
+		c.ws.WriteMessage(websocket.BinaryMessage, *data)
 	}
 }
 
 func (c *ProbeClient) Run() {
 	go c.ReadHandler()
 	go c.WriteHandler()
+}
+
+func SendProbeStats() {
+	payload, _ := json.Marshal(ProbeStats)
+	update := MatrixWSMessage{
+		Type: "probe_stats",
+		Data: payload,
+	}
+
+	MatrixWSConnectionsMutex.Lock()
+	for conn := range MatrixWSConnections {
+		conn.Socket.WriteJSON(update)
+	}
+	MatrixWSConnectionsMutex.Unlock()
 }
 
 type ProbeSocketHandler struct {

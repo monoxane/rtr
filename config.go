@@ -8,25 +8,41 @@ import (
 	"github.com/monoxane/nk"
 )
 
-type Configuration struct {
-	Server Server  `json:"server"`
-	Router Router  `json:"router"`
-	Probe  Probe   `json:"probe"`
-	Salvos []Salvo `json:"salvos"`
+type LabelValue struct {
+	Label string      `json:"label"`
+	Value interface{} `json:"value"`
 }
-type Server struct {
-	Port                 int `json:"port"`
+type Configuration struct {
+	Server ServerConfig `json:"server"`
+	Router RouterConfig `json:"router"`
+	Probe  ProbeConfig  `json:"probe"`
+	Salvos []Salvo      `json:"salvos"`
+}
+type ServerConfig struct {
+	HTTPPort             int `json:"http_port"`
 	FirstProbeStreamPort int `json:"first_probe_stream_port"`
 }
-type Router struct {
-	IP      string `json:"ip"`
-	Address int    `json:"address"`
-	Model   string `json:"model"`
+type RouterConfig struct {
+	Provider string `json:"provider"`
+	IP       string `json:"ip"`
+	Address  int    `json:"address"`
+	Model    string `json:"model"`
+	Label    string `json:"label"`
 }
 
-type Probe struct {
-	Enabled            bool  `json:"enabled"`
-	RouterDestinations []int `json:"router_destinations"`
+type ProbeConfig struct {
+	Enabled  bool           `json:"enabled"`
+	Channels []ProbeChannel `json:"channels"`
+}
+
+type ProbeChannel struct {
+	ID                int    `json:"id"`
+	Label             string `json:"label"`
+	RouterDestination int    `json:"router_destination"`
+	IngestTypeString  string `json:"ingest_type"` // ts-http, ts-tcp
+	IngestType        LabelValue
+	HTTPPath          string `json:"http_path"`
+	TCPPort           int    `json:"tcp_port"`
 }
 
 type Salvo struct {

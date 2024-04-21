@@ -26,15 +26,14 @@ func serveHTTP() {
 	})
 	svc.Static("/dist", "/dist")
 
-	svc.GET("/v1/ws/matrix", HandleMatrixWS)
+	svc.GET("/v1/ws/rtr", HandleRtrWS)
 
 	svc.GET("/v1/matrix", HandleMatrix)
 
 	svc.POST("/v1/salvos", HandleSalvoPost)
 
 	svc.GET("/v1/config", HandleConfig)
-
-	svc.POST("/v1/config", HandleConfigSave)
+	svc.POST("/v1/config/router", HandleConfigRouterSave)
 
 	if Config.Probe.Enabled {
 		svc.GET("/v1/ws/probe/:id", func(ctx *gin.Context) {
@@ -53,13 +52,12 @@ func serveHTTP() {
 			}
 
 			ProbeHandlers[index].ServeWS(ctx)
-
 		})
 
 		svc.POST("/v1/probe/stream/:id", HandleHTTPProbeStream)
 	}
 
-	err := svc.Run(fmt.Sprintf(":%d", Config.Server.Port))
+	err := svc.Run(fmt.Sprintf(":%d", Config.Server.HTTPPort))
 	if err != nil {
 		log.Fatalln("unable to start http server", err)
 	}
@@ -73,9 +71,9 @@ func HandleConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, Config)
 }
 
-func HandleConfigSave(c *gin.Context) {
-	var newConfig Configuration
-	err := c.BindJSON(&newConfig)
+func HandleConfigRouterSave(c *gin.Context) {
+	var newRouterConfig RouterConfig
+	err := c.BindJSON(&newRouterConfig)
 	if err != nil {
 		log.Printf("unable to bind config to object: %s", err)
 		c.Status(http.StatusBadRequest)
@@ -83,8 +81,19 @@ func HandleConfigSave(c *gin.Context) {
 		return
 	}
 
-	Config.Router = newConfig.Router
-	Config.Probe = newConfig.Probe
+	Config.Router = newRouterConfig
+	Config.Save()
+	log.Printf("saved new router config")
+
+	log.Printf("closing existing router connection")
+	router.Conn.Close()
+
+	router = nil
+
+	log.Printf("connecting new router connection")
+	ConnectRouter()
+
+	time.Sleep(1 * time.Second)
 
 	c.Status(http.StatusOK)
 }
@@ -119,7 +128,7 @@ func HandleSalvoPost(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func HandleMatrixWS(c *gin.Context) {
+func HandleRtrWS(c *gin.Context) {
 	w := c.Writer
 	r := c.Request
 

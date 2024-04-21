@@ -10,21 +10,26 @@ import {
 import {
   Router,
   DocumentExport,
-  Settings,
+  SettingsServices,
+  SettingsView,
   View,
 } from '@carbon/icons-react';
 
 import SideNavLink from './SideNavLink.jsx';
 
+import useWindowDimensions from '../hooks/useWindowDimensions';
+
 function SidebarNav({ isActive }) {
+  const { width } = useWindowDimensions();
   return (
-    <SideNav aria-label="Side navigation" isRail expanded={isActive}>
+    <SideNav aria-label="Side navigation" isRail expanded={isActive || width > 2000}>
       <SideNavItems>
         <SideNavLink to="/router" label="Router" renderIcon={Router} />
         <SideNavLink to="/probe" label="Probe" renderIcon={View} />
         <SideNavLink to="/salvos" label="Salvos" renderIcon={DocumentExport} />
         <SideNavDivider />
-        <SideNavLink to="/config" label="Configuration" renderIcon={Settings} />
+        <SideNavLink to="/config/router" label="Router Config" renderIcon={SettingsServices} />
+        <SideNavLink to="/config/probe" label="Probe Config" renderIcon={SettingsView} />
       </SideNavItems>
     </SideNav>
   );

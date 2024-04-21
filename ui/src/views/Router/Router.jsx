@@ -42,40 +42,40 @@ function Router() {
 
   useEffect(() => {
     if (config?.probe.enabled && ProbeSOTRouting) {
-      route(config.probe.router_destinations[selectedProbe], matrix.destinations[selectedDestination - 1].source.id);
+      route(config.probe.channels[selectedProbe].router_destination, matrix.destinations[selectedDestination - 1].source.id);
     }
-    if (config?.probe.enabled && selectedDestination === config.probe.router_destinations[selectedProbe] && ProbeSOTRouting) {
+    if (config?.probe.enabled && selectedDestination === config.probe.channels[selectedProbe].router_destination && ProbeSOTRouting) {
       setProbeSODRouting(false);
     }
   }, [selectedDestination]);
 
   useEffect(() => {
     if (config?.probe.enabled && ProbeSOTRouting) {
-      if (matrix.destinations[selectedDestination - 1].source.id !== matrix.destinations[config.probe.router_destinations[selectedProbe] - 1].source.id) {
-        route(config.probe.router_destinations[selectedProbe], matrix.destinations[selectedDestination - 1].source.id);
+      if (matrix.destinations[selectedDestination - 1].source.id !== matrix.destinations[config.probe.channels[selectedProbe].router_destination - 1].source.id) {
+        route(config.probe.channels[selectedProbe].router_destination, matrix.destinations[selectedDestination - 1].source.id);
       }
     }
   }, [matrix]);
 
   useEffect(() => {
     if (config?.probe.enabled && ProbeSOTRouting) {
-      if (matrix.destinations[selectedDestination - 1].source.id !== matrix.destinations[config.probe.router_destinations[selectedProbe] - 1].source.id) {
-        route(config.probe.router_destinations[selectedProbe], matrix.destinations[selectedDestination - 1].source.id);
+      if (matrix.destinations[selectedDestination - 1].source.id !== matrix.destinations[config.probe.channels[selectedProbe].router_destination - 1].source.id) {
+        route(config.probe.channels[selectedProbe].router_destination, matrix.destinations[selectedDestination - 1].source.id);
       }
     }
   }, [ProbeSOTRouting]);
 
   useEffect(() => {
     if (config?.probe.enabled) {
-      if (selectedDestination !== config.probe.router_destinations[selectedProbe]) {
-        setSelectedDestination(config.probe.router_destinations[selectedProbe]);
+      if (selectedDestination !== config.probe.channels[selectedProbe].router_destination) {
+        setSelectedDestination(config.probe.channels[selectedProbe].router_destination);
       }
     }
   }, [selectedProbe]);
 
   useEffect(() => {
     if (config?.probe.enabled && selectedDestination === -1) {
-      setSelectedDestination(config.probe.router_destinations[0]);
+      setSelectedDestination(config.probe.channels[0].router_destination);
     }
   });
 
@@ -200,7 +200,7 @@ function Router() {
                       Source:
                     </strong>
                       {' '}
-                      {matrix.destinations?.[config.probe.router_destinations[selectedProbe] - 1]?.source?.label}
+                      {matrix.destinations?.[config.probe.channels[selectedProbe].router_destinations - 1]?.source?.label}
                     <br />
                     <br />
                     <div className="openProbeOverlay">
@@ -216,9 +216,9 @@ function Router() {
                     </div>
                     <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${selectedProbe}`} active={probeStats[selectedProbe]?.active_source} />
                     <br />
-                      { config.probe.router_destinations.map((dst, index) => (
+                      { config.probe.channels.map((channel, index) => (
                         <Button
-                          key={`probe-${dst}`}
+                          key={`probe-${channel.id}`}
                           onClick={() => {
                             setSelectedProbe(index);
                           }}
@@ -230,12 +230,10 @@ function Router() {
                             background: selectedProbe === index ? blue[60] : gray[70],
                           }}
                         >
-                          Probe
-                          {' '}
-                          {index + 1}
+                          {channel.label}
                           {' '}
                           (
-                          {matrix.destinations?.[dst - 1]?.label}
+                          {matrix.destinations?.[channel.router_destination - 1]?.label}
                           )
                         </Button>
                       ))}
@@ -264,7 +262,7 @@ function Router() {
                     </Button>
                     <Button
                       onClick={() => {
-                        setSelectedDestination(config.probe.router_destinations[selectedProbe]);
+                        setSelectedDestination(config.probe.channels[selectedProbe].router_destination);
                       }}
                       renderIcon={PortInput}
                       style={{
@@ -272,7 +270,7 @@ function Router() {
                         maxWidth: '100em',
                         width: '100%',
                         marginBottom: '1px',
-                        background: selectedDestination === config.probe.router_destinations[selectedProbe] ? blue[60] : gray[60],
+                        background: selectedDestination === config.probe.channels[selectedProbe].router_destination ? blue[60] : gray[60],
                       }}
                     >
                       <strong>Standalone Probe</strong>

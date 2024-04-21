@@ -11,12 +11,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/monoxane/nk"
 )
 
 var (
-	router *nk.Router
-
 	ProbeHandlers            []*ProbeSocketHandler
 	MatrixWSConnections      = make(map[WebsocketConnection]uuid.UUID)
 	MatrixWSConnectionsMutex sync.Mutex
@@ -62,47 +59,18 @@ type SourceUpdate struct {
 }
 
 func main() {
-	router = nk.New(Config.Router.IP, uint8(Config.Router.Address), Config.Router.Model)
-
-	router.SetOnUpdate(func(d *nk.Destination) {
-		log.Printf("Received update for %s, current source %s", d.Label, d.Source.Label)
-		payload, _ := json.Marshal(DestinationUpdate{
-			Id:    int(d.Id),
-			Label: d.GetLabel(),
-			Source: SourceUpdate{
-				Id:    int(d.Source.Id),
-				Label: d.Source.GetLabel(),
-			},
-		})
-		update := MatrixWSMessage{
-			Type: "destination_update",
-			Data: payload,
-		}
-
-		MatrixWSConnectionsMutex.Lock()
-		for conn := range MatrixWSConnections {
-			conn.Socket.WriteJSON(update)
-		}
-		MatrixWSConnectionsMutex.Unlock()
-	})
-
-	data, err := os.ReadFile("labels.lbl")
-	if err == nil {
-		router.LoadLabels(string(data))
-	} else {
-		log.Printf("unable to load DashBoard labels.lbl")
-	}
+	ConnectRouter()
 
 	if Config.Probe.Enabled {
-		ProbeHandlers = make([]*ProbeSocketHandler, len(Config.Probe.RouterDestinations))
-		ProbeStats = make([]*ProbeChannelStatus, len(Config.Probe.RouterDestinations))
+		ProbeHandlers = make([]*ProbeSocketHandler, len(Config.Probe.Channels))
+		ProbeStats = make([]*ProbeChannelStatus, len(Config.Probe.Channels))
 		for i := range ProbeStats {
 			ProbeStats[i] = &ProbeChannelStatus{
 				Id: i,
 			}
 		}
 
-		for i := range Config.Probe.RouterDestinations {
+		for i := range Config.Probe.Channels {
 			ProbeHandlers[i] = &ProbeSocketHandler{
 				Id:         i,
 				clients:    make(map[*ProbeClient]bool),
@@ -123,7 +91,6 @@ func main() {
 		}
 	}
 
-	go router.Connect()
 	go serveHTTP()
 
 	sigs := make(chan os.Signal, 1)
@@ -139,18 +106,4 @@ func main() {
 	log.Println("Server Start Awaiting Signal")
 	<-done
 	log.Println("Exiting")
-}
-
-func SendProbeStats() {
-	payload, _ := json.Marshal(ProbeStats)
-	update := MatrixWSMessage{
-		Type: "probe_stats",
-		Data: payload,
-	}
-
-	MatrixWSConnectionsMutex.Lock()
-	for conn := range MatrixWSConnections {
-		conn.Socket.WriteJSON(update)
-	}
-	MatrixWSConnectionsMutex.Unlock()
 }

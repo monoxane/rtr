@@ -33,28 +33,26 @@ function ProbeWrapper() {
     <>
       {(matrixLoading || configLoading) && <Loading withOverlay />}
       {(matrixError || configError) && JSON.stringify({ matrixError, configError })}
-      {config && config.probe.router_destinations.length !== 0
+      {config && config.probe.channels.length !== 0
       && (
       <Tabs selectedIndex={channel} onChange={(e) => setChannel(e.selectedIndex)}>
-        <TabList contained aria-label="channels" activation="manual">
-          { config && config.probe.router_destinations.map((dst, index) => (
+        <TabList contained aria-label="channels" activation="manual" fullWidth>
+          { config && config.probe.channels.map((probeChannel) => (
             <Tab
-              key={`probe-${dst}`}
+              key={`probe-${probeChannel.id}`}
             >
-              Probe
-              {' '}
-              {index + 1}
+              {probeChannel.label}
               {' '}
               (
-              {matrix.destinations?.[dst - 1]?.label}
+              {matrix.destinations?.[probeChannel.router_destination - 1]?.label}
               )
             </Tab>
           ))}
         </TabList>
         <TabPanels>
-          { config && config.probe.router_destinations.map((dst, index) => (
+          { config && config.probe.channels.map((probeChannel, index) => (
             <TabPanel
-              key={`probe-${dst}`}
+              key={`probe-${probeChannel.id}`}
             >
               <Probe channel={index} active={channel === index} />
             </TabPanel>
@@ -112,7 +110,7 @@ function Probe({ channel, active }) {
                 Source:
               </strong>
               {' '}
-              {matrix.destinations?.[config.probe.router_destinations[channel] - 1]?.source?.label}
+              {matrix.destinations?.[config.probe.channels[channel].router_destination - 1]?.source?.label}
               <br />
               <strong>
                 Status:
