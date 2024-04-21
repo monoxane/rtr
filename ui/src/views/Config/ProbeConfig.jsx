@@ -50,7 +50,7 @@ function ProbeConfig() {
                   }}
                 />
               ))}
-              <Button renderIcon={Add} onClick={() => setChannels([...channels, { label: 'New Channel', new: true, id: channels.length + 1 }])}>
+              <Button disabled renderIcon={Add} onClick={() => setChannels([...channels, { label: 'New Channel', new: true, id: channels.length + 1 }])}>
                 Add Probe Channel
                 {' '}
               </Button>

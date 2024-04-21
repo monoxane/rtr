@@ -40,10 +40,11 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
           <Button
             hasIconOnly
             kind={hasChanges ? 'primary' : 'ghost'}
-            disabled={!hasChanges}
+            // disabled={!hasChanges}
             iconDescription="Save Channel"
             // onClick={function noRefCheck(){}}
             renderIcon={Save}
+            disabled
           />
           <Button
             hasIconOnly
@@ -51,6 +52,7 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
             iconDescription="Delete Channel"
             onClick={deleteThisChannel}
             renderIcon={TrashCan}
+            disabled
           />
         </Column>
         <Column sm={2} md={4}>
@@ -63,6 +65,7 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
               setConfig({ ...channel, label: e.target.value });
               setHasChanges(true);
             }}
+            disabled
           />
           <br />
           <TextInput
@@ -74,6 +77,7 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
               setConfig({ ...channel, router_destination: e.target.value });
               setHasChanges(true);
             }}
+            disabled
           />
         </Column>
         <Column sm={2} md={4}>
@@ -93,6 +97,7 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
               },
             ]}
             onChange={(e) => setConfig({ ...config, ingest_type: e.selectedItem.value })}
+            disabled
           />
         </Column>
         <Column sm={2} md={4}>
@@ -102,6 +107,7 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
               type="text"
               labelText="HTTP Path"
               value={config.http_path}
+              disabled
             />
           )}
           {config.ingest_type === 'ts-tcp' && (
@@ -110,6 +116,7 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
               type="text"
               labelText="TCP Port"
               value={config.tcp_port}
+              disabled
             />
           )}
         </Column>
