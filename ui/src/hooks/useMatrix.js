@@ -6,7 +6,7 @@ function useMatrix() {
   const [matrix, setMatrix] = useState([]);
   const [probeStats, setProbeStats] = useState([]);
   const [haveRecievedData, setHaveRecievedData] = useState(false);
-  const wsuri = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/v1/ws/matrix`;
+  const wsuri = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/v1/ws/rtr`;
 
   const [{ data, loading, error }, refreshAxios] = useAxios(
     '/v1/matrix',
