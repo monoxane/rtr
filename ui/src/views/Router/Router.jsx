@@ -24,6 +24,9 @@ import {
 import useMatrix from '../../hooks/useMatrix.js';
 import JSmpegPlayer from '../../common/JSmpegPlayer.jsx';
 
+import Destination from './DestinationButton.jsx';
+import { Source, EditSourceModal } from './SourceButton.jsx';
+
 function openInNewTab(url) {
   window.open(url, '_blank').focus();
 }
@@ -79,103 +82,81 @@ function Router() {
     }
   });
 
+  const [editSourceModalOpen, setEditSourceModalOpen] = useState(false);
+  const [selectedEditSource, setSelectedEditSource] = useState({});
+
   return (
     <>
       {(matrixLoading || configLoading) && <Loading withOverlay />}
       {(matrixError || configError) && JSON.stringify({ matrixError, configError })}
       {config && matrix
       && (
-      <Grid>
-        <Column sm={4} lg={6} className="destinations">
-          <Grid condensed>
-            <Column sm={4} lg={6}>
-              <h1>Destinations</h1>
-            </Column>
-          </Grid>
-          <Grid
-            condensed
-            className="iolist"
-          >
-            { matrix.destinations && matrix.destinations.map((button) => (
-              <Column sm={2} lg={2} key={button.id}>
-                <Button
-                  onClick={() => { setSelectedDestination(button.id); }}
-                  style={{
-                    minWidth: '10px',
-                    padding: '10px',
-                    width: '100%',
-                    height: '4em',
-                    display: 'table',
-                    marginBottom: '1px',
-                    background: button.id === selectedDestination ? blue[60] : gray[70],
-                  }}
-                  size="xl"
-                >
-                  <>
-                    <strong>{button.label}</strong>
-                    <br />
-                    {button.source?.label}
-                  </>
-                </Button>
-              </Column>
-            ))}
-          </Grid>
-        </Column>
-        <Column sm={4} lg={6} className="sources">
-          <Grid condensed>
-            <Column sm={4}>
-              <h1>Sources</h1>
-            </Column>
-          </Grid>
-          <Grid
-            condensed
-            className="iolist"
-          >
-            { matrix.sources && matrix.sources.map((button) => (
-              <Column sm={2} lg={2} key={button.id}>
-                <Button
-                  onClick={() => { route(selectedDestination, button.id); }}
-                  style={{
-                    minWidth: '10px',
-                    padding: '10px',
-                    width: '100%',
-                    display: 'table',
-                    marginBottom: '1px',
-                    background: button.id === matrix.destinations[selectedDestination - 1]?.source?.id ? purple[60] : gray[70],
-                  }}
-                  size="xl"
-                >
-                  <>
-                    <strong>{button.label}</strong>
-                    <br />
-                    {button.source?.label}
-                  </>
-                </Button>
-              </Column>
-            ))}
-          </Grid>
-        </Column>
-        <Column sm={4} lg={4}>
+        <>
+          <EditSourceModal source={selectedEditSource} open={editSourceModalOpen} setOpen={setEditSourceModalOpen} />
           <Grid>
-            <Column sm={4}>
-              <h1>Status</h1>
+            <Column sm={4} lg={6} className="destinations">
+              <Grid condensed>
+                <Column sm={4} lg={6}>
+                  <h1>Destinations</h1>
+                </Column>
+              </Grid>
+              <Grid
+                condensed
+                className="iolist"
+              >
+                { matrix.destinations && matrix.destinations.map((button) => (
+                  <Column sm={2} lg={2} key={button.id}>
+                    <Destination destination={button} onClick={() => setSelectedDestination(button.id)} selected={button.id === selectedDestination} />
+                  </Column>
+                ))}
+              </Grid>
             </Column>
-          </Grid>
-          <Grid>
-            <Column sm={4} lg={8}>
-              <strong>
-                Destination:
-              </strong>
-              {' '}
-              {matrix.destinations?.[selectedDestination - 1]?.label}
-              <br />
-              <strong>
-                Source:
-              </strong>
-              {' '}
-              {matrix.sources?.[matrix.destinations?.[selectedDestination - 1]?.source.id]?.label}
-              <br />
-              { config.probe.enabled
+            <Column sm={4} lg={6} className="sources">
+              <Grid condensed>
+                <Column sm={4}>
+                  <h1>Sources</h1>
+                </Column>
+              </Grid>
+              <Grid
+                condensed
+                className="iolist"
+              >
+                { matrix.sources && matrix.sources.map((button) => (
+                  <Column sm={2} lg={2} key={button.id}>
+                    <Source
+                      source={button}
+                      onClick={() => { route(selectedDestination, button.id); }}
+                      onEdit={() => {
+                        setSelectedEditSource(button);
+                        setEditSourceModalOpen(true);
+                      }}
+                      selected={button.id === matrix.destinations[selectedDestination - 1]?.source?.id}
+                    />
+                  </Column>
+                ))}
+              </Grid>
+            </Column>
+            <Column sm={4} lg={4}>
+              <Grid>
+                <Column sm={4}>
+                  <h1>Status</h1>
+                </Column>
+              </Grid>
+              <Grid>
+                <Column sm={4} lg={8}>
+                  <strong>
+                    Destination:
+                  </strong>
+                  {' '}
+                  {matrix.destinations?.[selectedDestination - 1]?.label}
+                  <br />
+                  <strong>
+                    Source:
+                  </strong>
+                  {' '}
+                  {matrix.sources?.[matrix.destinations?.[selectedDestination - 1]?.source.id]?.label}
+                  <br />
+                  { config.probe.enabled
                 && (
                   <>
                     <hr />
@@ -277,10 +258,11 @@ function Router() {
                     </Button>
                   </>
                 )}
+                </Column>
+              </Grid>
             </Column>
           </Grid>
-        </Column>
-      </Grid>
+        </>
       )}
     </>
   );
