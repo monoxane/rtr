@@ -50,6 +50,17 @@ function useMatrix() {
             tempMatrix.destinations.push(update.data);
           }
           break;
+        case 'source_update':
+          tempMatrix.sources.forEach((dst, i) => {
+            if (update.data.id === dst.id) {
+              tempMatrix.sources[i] = update.data;
+              found = true;
+            }
+          });
+          if (!found) {
+            tempMatrix.sources.push(update.data);
+          }
+          break;
         case 'probe_stats':
           setProbeStats(update.data);
           break;

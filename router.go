@@ -15,18 +15,33 @@ var (
 func ConnectRouter() {
 	router = nk.New(Config.Router.IP, uint8(Config.Router.Address), Config.Router.Model)
 
-	router.SetOnUpdate(func(d *nk.Destination) {
-		log.Printf("Received update for %s, current source %s", d.Label, d.Source.Label)
-		payload, _ := json.Marshal(DestinationUpdate{
-			Id:    int(d.Id),
-			Label: d.GetLabel(),
-			Source: SourceUpdate{
-				Id:    int(d.Source.Id),
-				Label: d.Source.GetLabel(),
-			},
-		})
+	router.SetOnUpdate(func(u *nk.Update) {
+		log.Printf("Received %s update: %v", u.Type, u.Data)
+
+		var payload []byte
+
+		switch u.Type {
+		case "destination":
+			update := u.Data.(*nk.Destination)
+			payload, _ = json.Marshal(DestinationUpdate{
+				Id:    update.GetIDInt(),
+				Label: update.GetLabel(),
+				Source: SourceUpdate{
+					Id:    update.Source.GetIDInt(),
+					Label: update.Source.GetLabel(),
+				},
+			})
+
+		case "source":
+			update := u.Data.(*nk.Source)
+			payload, _ = json.Marshal(SourceUpdate{
+				Id:    update.GetIDInt(),
+				Label: update.GetLabel(),
+			})
+		}
+
 		update := MatrixWSMessage{
-			Type: "destination_update",
+			Type: u.Type + "_update",
 			Data: payload,
 		}
 

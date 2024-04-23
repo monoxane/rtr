@@ -14,7 +14,9 @@ import {
   Menu, MenuItem,
 } from '@carbon/react';
 
-function Destination({ destination, onClick, selected = false }) {
+function Destination({
+  destination, onClick, onEdit, selected = false,
+}) {
   const el = useRef(null);
   const menuProps = useContextMenu(el);
   const navigate = useNavigate();
@@ -42,7 +44,7 @@ function Destination({ destination, onClick, selected = false }) {
       </Button>
       {/* eslint-disable-next-line react/jsx-props-no-spreading */}
       <Menu {...menuProps}>
-        <MenuItem label="Edit" />
+        <MenuItem onClick={onEdit} label="Edit" />
         <MenuItem label="Solo" onClick={() => navigate(`/router/${destination.id}`)} />
       </Menu>
     </>
@@ -53,6 +55,7 @@ Destination.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   destination: PropTypes.object.isRequired,
   onClick: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
   selected: PropTypes.bool,
 };
 
