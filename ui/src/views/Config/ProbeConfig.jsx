@@ -7,17 +7,17 @@ import {
   Column,
   Loading,
   Form,
-  Button,
+  // Button,
 } from '@carbon/react';
 
-import {
-  Add,
-} from '@carbon/icons-react';
+// import {
+//   Add,
+// } from '@carbon/icons-react';
 
 import ProbeChannelConfig from './ProbeChannelConfig.jsx';
 
 function ProbeConfig() {
-  const [{ data: config, loading: configLoading, error: configError }] = useAxios(
+  const [{ data: config, loading: configLoading, error: configError }, refresh] = useAxios(
     '/v1/config',
   );
 
@@ -48,12 +48,13 @@ function ProbeConfig() {
                     newChannels.splice(index, 1);
                     setChannels(newChannels);
                   }}
+                  refresh={refresh}
                 />
               ))}
-              <Button disabled renderIcon={Add} onClick={() => setChannels([...channels, { label: 'New Channel', new: true, id: channels.length + 1 }])}>
+              {/* <Button disabled renderIcon={Add} onClick={() => setChannels([...channels, { label: 'New Channel', new: true, id: channels.length + 1 }])}>
                 Add Probe Channel
                 {' '}
-              </Button>
+              </Button> */}
             </Stack>
           </Form>
         </Column>

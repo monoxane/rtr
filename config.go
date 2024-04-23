@@ -36,13 +36,13 @@ type ProbeConfig struct {
 }
 
 type ProbeChannel struct {
-	ID                int    `json:"id"`
-	Label             string `json:"label"`
-	RouterDestination int    `json:"router_destination"`
-	IngestTypeString  string `json:"ingest_type"` // ts-http, ts-tcp
-	IngestType        LabelValue
-	HTTPPath          string `json:"http_path"`
-	TCPPort           int    `json:"tcp_port"`
+	ID                int        `json:"id"`
+	Label             string     `json:"label"`
+	RouterDestination int        `json:"router_destination"`
+	IngestTypeString  string     `json:"ingest_type"` // ts-http, ts-tcp
+	IngestType        LabelValue `json:"-"`
+	// HTTPPath          string `json:"http_path"`
+	TCPPort int `json:"tcp_port"`
 }
 
 type Salvo struct {
