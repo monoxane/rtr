@@ -25,7 +25,8 @@ import useMatrix from '../../hooks/useMatrix.js';
 import JSmpegPlayer from '../../common/JSmpegPlayer.jsx';
 
 import Destination from './DestinationButton.jsx';
-import { Source, EditSourceModal } from './SourceButton.jsx';
+import Source from './SourceButton.jsx';
+import EditIOModal from './EditIOModal.jsx';
 
 function openInNewTab(url) {
   window.open(url, '_blank').focus();
@@ -82,8 +83,11 @@ function Router() {
     }
   });
 
-  const [editSourceModalOpen, setEditSourceModalOpen] = useState(false);
-  const [selectedEditSource, setSelectedEditSource] = useState({});
+  const [editModalState, setEditModalState] = useState({ open: false });
+
+  const setModalOpenState = (open) => {
+    setEditModalState({ ...editModalState, open });
+  };
 
   return (
     <>
@@ -92,7 +96,7 @@ function Router() {
       {config && matrix
       && (
         <>
-          <EditSourceModal source={selectedEditSource} open={editSourceModalOpen} setOpen={setEditSourceModalOpen} />
+          <EditIOModal IO={editModalState.IO} open={editModalState.open} type={editModalState.type} setOpen={setModalOpenState} />
           <Grid>
             <Column sm={4} lg={6} className="destinations">
               <Grid condensed>
@@ -106,7 +110,14 @@ function Router() {
               >
                 { matrix.destinations && matrix.destinations.map((button) => (
                   <Column sm={2} lg={2} key={button.id}>
-                    <Destination destination={button} onClick={() => setSelectedDestination(button.id)} selected={button.id === selectedDestination} />
+                    <Destination
+                      destination={button}
+                      onClick={() => setSelectedDestination(button.id)}
+                      onEdit={() => {
+                        setEditModalState({ open: true, type: 'destination', IO: button });
+                      }}
+                      selected={button.id === selectedDestination}
+                    />
                   </Column>
                 ))}
               </Grid>
@@ -127,8 +138,7 @@ function Router() {
                       source={button}
                       onClick={() => { route(selectedDestination, button.id); }}
                       onEdit={() => {
-                        setSelectedEditSource(button);
-                        setEditSourceModalOpen(true);
+                        setEditModalState({ open: true, type: 'source', IO: button });
                       }}
                       selected={button.id === matrix.destinations[selectedDestination - 1]?.source?.id}
                     />
@@ -154,110 +164,110 @@ function Router() {
                     Source:
                   </strong>
                   {' '}
-                  {matrix.sources?.[matrix.destinations?.[selectedDestination - 1]?.source.id]?.label}
+                  {matrix.destinations?.[selectedDestination - 1]?.source.label}
                   <br />
                   { config.probe.enabled
-                && (
-                  <>
-                    <hr />
-                    <h3>Probe</h3>
-                    <strong>
-                      Status:
-                    </strong>
-                      {' '}
-                      {probeStats[selectedProbe]?.active_source ? `Streaming, ${probeStats[selectedProbe]?.clients} viewer${probeStats[selectedProbe]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
-                    <br />
-                    <strong>
-                      Probe
-                      {' '}
-                      Follow:
-                    </strong>
-                      {' '}
-                      {ProbeSOTRouting ? matrix.destinations?.[selectedDestination - 1]?.label : 'None'}
-                    <br />
-                    <strong>
-                      Probe
-                      {' '}
-                      Source:
-                    </strong>
-                      {' '}
-                      {matrix.destinations?.[config.probe.channels[selectedProbe].router_destinations - 1]?.source?.label}
-                    <br />
-                    <br />
-                    <div className="openProbeOverlay">
-                      <Button
-                        hasIconOnly
-                        renderIcon={Launch}
-                        kind="ghost"
-                        iconDescription="Open Probe in New Tab"
-                        onClick={() => {
-                          openInNewTab(`${document.location.protocol}//${document.location.hostname}:${document.location.port}/probe`);
-                        }}
-                      />
-                    </div>
-                    <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${selectedProbe}`} active={probeStats[selectedProbe]?.active_source} />
-                    <br />
-                      { config.probe.channels.map((channel, index) => (
-                        <Button
-                          key={`probe-${channel.id}`}
-                          onClick={() => {
-                            setSelectedProbe(index);
-                          }}
-                          renderIcon={ChooseItem}
-                          style={{
-                            minWidth: '100%',
-                            width: '100%',
-                            marginBottom: '1px',
-                            background: selectedProbe === index ? blue[60] : gray[70],
-                          }}
-                        >
-                          {channel.label}
-                          {' '}
-                          (
-                          {matrix.destinations?.[channel.router_destination - 1]?.label}
-                          )
-                        </Button>
-                      ))}
-                    <br />
-                    <br />
-                    <Button
-                      onClick={() => {
-                        setProbeSODRouting(!ProbeSOTRouting);
-                      }}
-                      renderIcon={PortOutput}
-                      style={{
-                        minWidth: '10px',
-                        maxWidth: '100em',
-                        width: '100%',
-                        display: 'table',
-                        marginBottom: '1px',
-                        background: ProbeSOTRouting ? purple[60] : gray[60],
-                      }}
-                    >
+                  && (
+                    <>
+                      <hr />
+                      <h3>Probe</h3>
                       <strong>
-                        Follow
-                        {ProbeSOTRouting && 'ing'}
-                        {' '}
-                        Destination
+                        Status:
                       </strong>
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setSelectedDestination(config.probe.channels[selectedProbe].router_destination);
-                      }}
-                      renderIcon={PortInput}
-                      style={{
-                        minWidth: '10px',
-                        maxWidth: '100em',
-                        width: '100%',
-                        marginBottom: '1px',
-                        background: selectedDestination === config.probe.channels[selectedProbe].router_destination ? blue[60] : gray[60],
-                      }}
-                    >
-                      <strong>Standalone Probe</strong>
-                    </Button>
-                  </>
-                )}
+                        {' '}
+                        {probeStats[selectedProbe]?.active_source ? `Streaming, ${probeStats[selectedProbe]?.clients} viewer${probeStats[selectedProbe]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
+                      <br />
+                      <strong>
+                        Probe
+                        {' '}
+                        Follow:
+                      </strong>
+                        {' '}
+                        {ProbeSOTRouting ? matrix.destinations?.[selectedDestination - 1]?.label : 'None'}
+                      <br />
+                      <strong>
+                        Probe
+                        {' '}
+                        Source:
+                      </strong>
+                        {' '}
+                        {matrix.destinations?.[config.probe.channels[selectedProbe].router_destinations - 1]?.source?.label}
+                      <br />
+                      <br />
+                      <div className="openProbeOverlay">
+                        <Button
+                          hasIconOnly
+                          renderIcon={Launch}
+                          kind="ghost"
+                          iconDescription="Open Probe in New Tab"
+                          onClick={() => {
+                            openInNewTab(`${document.location.protocol}//${document.location.hostname}:${document.location.port}/probe`);
+                          }}
+                        />
+                      </div>
+                      <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${selectedProbe}`} active={probeStats[selectedProbe]?.active_source} />
+                      <br />
+                        { config.probe.channels.map((channel, index) => (
+                          <Button
+                            key={`probe-${channel.id}`}
+                            onClick={() => {
+                              setSelectedProbe(index);
+                            }}
+                            renderIcon={ChooseItem}
+                            style={{
+                              minWidth: '100%',
+                              width: '100%',
+                              marginBottom: '1px',
+                              background: selectedProbe === index ? blue[60] : gray[70],
+                            }}
+                          >
+                            {channel.label}
+                            {' '}
+                            (
+                            {matrix.destinations?.[channel.router_destination - 1]?.label}
+                            )
+                          </Button>
+                        ))}
+                      <br />
+                      <br />
+                      <Button
+                        onClick={() => {
+                          setProbeSODRouting(!ProbeSOTRouting);
+                        }}
+                        renderIcon={PortOutput}
+                        style={{
+                          minWidth: '10px',
+                          maxWidth: '100em',
+                          width: '100%',
+                          display: 'table',
+                          marginBottom: '1px',
+                          background: ProbeSOTRouting ? purple[60] : gray[60],
+                        }}
+                      >
+                        <strong>
+                          Follow
+                          {ProbeSOTRouting && 'ing'}
+                          {' '}
+                          Destination
+                        </strong>
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setSelectedDestination(config.probe.channels[selectedProbe].router_destination);
+                        }}
+                        renderIcon={PortInput}
+                        style={{
+                          minWidth: '10px',
+                          maxWidth: '100em',
+                          width: '100%',
+                          marginBottom: '1px',
+                          background: selectedDestination === config.probe.channels[selectedProbe].router_destination ? blue[60] : gray[60],
+                        }}
+                      >
+                        <strong>Standalone Probe</strong>
+                      </Button>
+                    </>
+                  )}
                 </Column>
               </Grid>
             </Column>

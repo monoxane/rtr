@@ -11,8 +11,6 @@ import {
   useContextMenu,
   Menu,
   MenuItem,
-  Modal,
-  TextInput,
 } from '@carbon/react';
 
 function Source({
@@ -62,43 +60,4 @@ Source.defaultProps = {
   selected: false,
 };
 
-function EditSourceModal({ source, open, setOpen }) {
-  return (
-    <Modal
-      modalHeading={source?.label}
-      modalLabel="Edit Source"
-      primaryButtonText="Save"
-      secondaryButtonText="Cancel"
-      open={open}
-      onRequestClose={() => setOpen(false)}
-    >
-      <TextInput
-        data-modal-primary-focus
-        id="label"
-        labelText="Label"
-        placeholder="e.g. VTR1"
-        style={{
-          marginBottom: '1rem',
-        }}
-      />
-      <TextInput
-        data-modal-primary-focus
-        id="description"
-        labelText="Description"
-        placeholder="e.g. Primary Shotbox Playout"
-        style={{
-          marginBottom: '1rem',
-        }}
-      />
-    </Modal>
-  );
-}
-
-EditSourceModal.propTypes = {
-  // eslint-disable-next-line react/forbid-prop-types
-  source: PropTypes.object.isRequired,
-  open: PropTypes.bool.isRequired,
-  setOpen: PropTypes.func.isRequired,
-};
-
-export { Source, EditSourceModal };
+export default Source;

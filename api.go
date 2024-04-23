@@ -34,6 +34,8 @@ func serveHTTP() {
 
 	svc.GET("/v1/config", HandleConfig)
 	svc.POST("/v1/config/router", HandleConfigRouterSave)
+	svc.POST("/v1/config/source/:id", HandleSourcePOST)
+	svc.POST("/v1/config/destination/:id", HandleDestinationPOST)
 
 	if Config.Probe.Enabled {
 		svc.GET("/v1/ws/probe/:id", func(ctx *gin.Context) {
@@ -96,6 +98,48 @@ func HandleConfigRouterSave(c *gin.Context) {
 	time.Sleep(1 * time.Second)
 
 	c.Status(http.StatusOK)
+}
+
+func HandleSourcePOST(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		log.Printf("unable to read source ID: %s", err)
+		c.Status(http.StatusBadRequest)
+
+		return
+	}
+
+	var update SourceUpdate
+	err = c.BindJSON(&update)
+	if err != nil {
+		log.Printf("unable to bind update to object: %s", err)
+		c.Status(http.StatusBadRequest)
+
+		return
+	}
+
+	router.UpdateSourceLabel(id, update.Label)
+}
+
+func HandleDestinationPOST(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		log.Printf("unable to read destination ID: %s", err)
+		c.Status(http.StatusBadRequest)
+
+		return
+	}
+
+	var update DestinationUpdate
+	err = c.BindJSON(&update)
+	if err != nil {
+		log.Printf("unable to bind update to object: %s", err)
+		c.Status(http.StatusBadRequest)
+
+		return
+	}
+
+	router.UpdateDestinationLabel(id, update.Label)
 }
 
 func HandleSalvoPost(c *gin.Context) {
