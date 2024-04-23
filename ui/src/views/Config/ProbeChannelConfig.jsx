@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 // import useAxios from 'axios-hooks';
 import PropTypes from 'prop-types';
+import axios from 'axios';
 
 import {
   Dropdown,
@@ -13,7 +14,7 @@ import {
 
 import {
   Save,
-  TrashCan,
+  // TrashCan,
 } from '@carbon/icons-react';
 
 const IngestLut = {
@@ -27,9 +28,16 @@ const IngestLut = {
   },
 };
 
-function ProbeChannelConfig({ channel, deleteThisChannel }) {
+function ProbeChannelConfig({ channel, refresh }) {
   const [config, setConfig] = useState({ ...channel });
   const [hasChanges, setHasChanges] = useState(false);
+
+  const submit = () => {
+    axios.post(`/v1/config/probe/${channel.id}`, config)
+      .then(() => {
+        refresh();
+      });
+  };
 
   return (
     <Tile>
@@ -40,20 +48,19 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
           <Button
             hasIconOnly
             kind={hasChanges ? 'primary' : 'ghost'}
-            // disabled={!hasChanges}
+            disabled={!hasChanges}
             iconDescription="Save Channel"
-            // onClick={function noRefCheck(){}}
+            onClick={submit}
             renderIcon={Save}
-            disabled
           />
-          <Button
+          {/* <Button
             hasIconOnly
             kind="ghost"
             iconDescription="Delete Channel"
             onClick={deleteThisChannel}
             renderIcon={TrashCan}
             disabled
-          />
+          /> */}
         </Column>
         <Column sm={2} md={4}>
           <TextInput
@@ -65,7 +72,6 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
               setConfig({ ...channel, label: e.target.value });
               setHasChanges(true);
             }}
-            disabled
           />
           <br />
           <TextInput
@@ -77,7 +83,6 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
               setConfig({ ...channel, router_destination: e.target.value });
               setHasChanges(true);
             }}
-            disabled
           />
         </Column>
         <Column sm={2} md={4}>
@@ -106,7 +111,7 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
               id={`${config.id}.http_path`}
               type="text"
               labelText="HTTP Path"
-              value={config.http_path}
+              value={`/v1/probe/stream/${config.id}`}
               disabled
             />
           )}
@@ -128,7 +133,8 @@ function ProbeChannelConfig({ channel, deleteThisChannel }) {
 ProbeChannelConfig.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   channel: PropTypes.object.isRequired,
-  deleteThisChannel: PropTypes.func.isRequired,
+  // deleteThisChannel: PropTypes.func.isRequired,
+  refresh: PropTypes.func.isRequired,
 };
 
 export default ProbeChannelConfig;

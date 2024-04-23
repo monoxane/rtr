@@ -36,6 +36,8 @@ func serveHTTP() {
 	svc.POST("/v1/config/router", HandleConfigRouterSave)
 	svc.POST("/v1/config/source/:id", HandleSourcePOST)
 	svc.POST("/v1/config/destination/:id", HandleDestinationPOST)
+	svc.POST("/v1/config/probe/:id", HandleProbePOST)
+	// svc.DELETE("/v1/config/probe/:id", HandleProbeDELETE)
 
 	if Config.Probe.Enabled {
 		svc.GET("/v1/ws/probe/:id", func(ctx *gin.Context) {
@@ -170,6 +172,29 @@ func HandleSalvoPost(c *gin.Context) {
 	Config.Save()
 
 	c.Status(http.StatusOK)
+}
+
+func HandleProbePOST(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		log.Printf("unable to read probe channel ID: %s", err)
+		c.Status(http.StatusBadRequest)
+
+		return
+	}
+
+	var update ProbeChannel
+	err = c.BindJSON(&update)
+	if err != nil {
+		log.Printf("unable to bind update to object: %s", err)
+		c.Status(http.StatusBadRequest)
+
+		return
+	}
+
+	Config.Probe.Channels[id-1] = update
+
+	c.JSON(http.StatusOK, Config.Probe.Channels[id-1])
 }
 
 func HandleRtrWS(c *gin.Context) {
