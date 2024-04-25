@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	ProbeHandlers            []*ProbeSocketHandler
 	MatrixWSConnections      = make(map[WebsocketConnection]uuid.UUID)
 	MatrixWSConnectionsMutex sync.Mutex
 	Upgrader                 = websocket.Upgrader{
@@ -22,8 +21,6 @@ var (
 		WriteBufferSize: 1024,
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
-
-	ProbeStats []*ProbeChannelStatus
 )
 
 type WebsocketConnection struct {
@@ -61,33 +58,9 @@ type SourceUpdate struct {
 func main() {
 	ConnectRouter()
 
-	if Config.Probe.Enabled {
-		ProbeHandlers = make([]*ProbeSocketHandler, len(Config.Probe.Channels))
-		ProbeStats = make([]*ProbeChannelStatus, len(Config.Probe.Channels))
-		for i := range ProbeStats {
-			ProbeStats[i] = &ProbeChannelStatus{
-				Id: i,
-			}
-		}
-
-		for i := range Config.Probe.Channels {
-			ProbeHandlers[i] = &ProbeSocketHandler{
-				Id:         i,
-				clients:    make(map[*ProbeClient]bool),
-				register:   make(chan *ProbeClient),
-				unregister: make(chan *ProbeClient),
-				broadcast:  make(chan *[]byte),
-				upgrader: &websocket.Upgrader{
-					ReadBufferSize:  readBufferSize,
-					WriteBufferSize: writeBufferSize,
-					CheckOrigin: func(r *http.Request) bool {
-						return true
-					},
-				},
-			}
-
-			go ProbeHandlers[i].Run()
-			go ProbeHandlers[i].ServeTCPIngest()
+	if len(Config.Probe.Channels) != 0 {
+		for _, c := range Config.Probe.Channels {
+			c.Start()
 		}
 	}
 
