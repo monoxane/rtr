@@ -17,7 +17,7 @@ function EditIOModal({
   }, [IO]);
 
   const submit = () => {
-    axios.post(`/v1/config/${type}/${IO.id}`, { label: data.label })
+    axios.put(`/v1/config/${type}/${IO.id}`, { label: data.label })
       .then(() => {
         setOpen(false);
       });

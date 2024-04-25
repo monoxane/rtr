@@ -39,6 +39,8 @@ function Router() {
               <Column sm={4} lg={8}>
                 <h1>
                   {matrix.destinations?.[destination - 1]?.label}
+                  {': '}
+                  <em>{matrix.destinations?.[destination - 1]?.source?.label}</em>
                 </h1>
               </Column>
             </Grid>
