@@ -73,6 +73,14 @@ const Salvos = function Salvos() {
                 </TableRow>
               </TableHead>
               <TableBody>
+                {config.salvos.length === 0
+                && (
+                <TableRow>
+                  <TableCell>There are no Salvos saved, click the Add button to create one</TableCell>
+                  <TableCell />
+                  <TableCell />
+                </TableRow>
+                )}
                 {config.salvos?.map((row) => row != null && (
                 <TableRow key={row.label}>
                   <TableCell>{row.label}</TableCell>

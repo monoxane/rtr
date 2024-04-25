@@ -1,6 +1,8 @@
 import React, {
   Suspense,
+  useContext,
 } from 'react';
+
 import {
   Outlet,
 } from 'react-router-dom';
@@ -20,11 +22,14 @@ import {
   Loading,
   SkipToContent,
 } from '@carbon/react';
+import configContext from '../context/configContext';
 
 import ReactError from './ReactError.jsx';
 import SidebarNav from './SidebarNav.jsx';
 
 function Layout() {
+  const { config } = useContext(configContext);
+
   return (
     <HeaderContainer
       render={({ isSideNavExpanded, onClickSideNavExpand }) => (
@@ -37,7 +42,7 @@ function Layout() {
               isActive={isSideNavExpanded}
             />
             <HeaderName prefix="rtr //">
-              Router Controller
+              {config?.router?.label || 'Router Controller'}
             </HeaderName>
             <HeaderGlobalBar />
             <SidebarNav onClick={onClickSideNavExpand} isActive={isSideNavExpanded} />

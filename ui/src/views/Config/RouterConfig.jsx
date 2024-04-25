@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-import useAxios from 'axios-hooks';
 import axios from 'axios';
 
 import {
@@ -10,12 +9,13 @@ import {
   Grid,
   Column,
   TextInput,
-  Loading,
   Button,
   DefinitionTooltip,
   Tile,
   ToastNotification,
 } from '@carbon/react';
+
+import configContext from '../../context/configContext';
 
 const RouterProviders = [
   'Ross NK-IPS',
@@ -35,17 +35,16 @@ const RouterModels = {
   ],
 };
 
-const ProviderPorts = {
+const ProviderSettings = {
   'Ross NK-IPS': {
     port: 9000,
+    address: 254,
     editable: false,
   },
 };
 
 function RouterConfig() {
-  const [{ data, loading, error }, refresh] = useAxios(
-    '/v1/config',
-  );
+  const { config, refreshConfig } = useContext(configContext);
 
   return (
     <Grid>
@@ -53,9 +52,7 @@ function RouterConfig() {
         <Tile>
           <Stack gap={4}>
             <h3>Router Configuration</h3>
-            {loading && <Loading />}
-            {(error) && JSON.stringify({ error })}
-            {!loading && !error && <RouterConfigForm data={data.router} refresh={refresh} />}
+            <RouterConfigForm data={config.router} refresh={refreshConfig} />
           </Stack>
         </Tile>
       </Column>
@@ -70,7 +67,7 @@ function RouterConfigForm({ data, refresh }) {
 
   const submit = () => {
     setStatus({ kind: 'submitting' });
-    axios.post('/v1/config/router', router)
+    axios.put('/v1/config/router', router)
       .then(() => {
         setStatus({ kind: 'success' });
         refresh();
@@ -80,6 +77,16 @@ function RouterConfigForm({ data, refresh }) {
       });
   };
 
+  useEffect(() => {
+    if (router.provider === 'Ross NK-IPS' && router.address === 0) {
+      setRouter({ ...router, address: ProviderSettings['Ross NK-IPS'].address });
+    }
+
+    if (router.provider === 'Ross NK-IPS' && router.port === null) {
+      setRouter({ ...router, address: ProviderSettings['Ross NK-IPS'].port });
+    }
+  }, [router]);
+
   return (
     <Stack gap={4}>
       <Grid>
@@ -87,19 +94,21 @@ function RouterConfigForm({ data, refresh }) {
           <Dropdown
             id="provider"
             titleText="Router Provider"
+            label="Select your Router Provider"
             initialSelectedItem={router.provider}
             items={RouterProviders}
-            onChange={((e) => setRouter({ ...router, provider: e }))}
+            onChange={((e) => setRouter({ ...router, provider: e.selectedItem }))}
           />
         </Column>
         <Column sm={4} md={8}>
           <Dropdown
             id="model"
             titleText="Router Model"
+            label="Select your Router Model"
             initialSelectedItem={router.model}
             items={RouterModels[router.provider]}
             disabled={!router.provider}
-            onChange={((e) => setRouter({ ...router, model: e.value }))}
+            onChange={((e) => setRouter({ ...router, model: e.selectedItem }))}
           />
         </Column>
       </Grid>
@@ -108,8 +117,8 @@ function RouterConfigForm({ data, refresh }) {
           <TextInput
             id="label"
             type="text"
-            labelText="Label"
-            helperText="Label to show in the UI"
+            labelText="Name"
+            helperText="A user friendly name to show in rtr"
             value={router.label}
             onChange={(e) => setRouter({ ...router, label: e.target.value })}
           />
@@ -119,7 +128,7 @@ function RouterConfigForm({ data, refresh }) {
             id="ip"
             type="text"
             labelText="IP"
-            helperText="IP Address of the Router or Interface"
+            helperText="IP Address of the Router or Protocol Gateway"
             value={router.ip}
             onChange={(e) => setRouter({ ...router, ip: e.target.value })}
           />
@@ -129,8 +138,8 @@ function RouterConfigForm({ data, refresh }) {
             id="port"
             type="text"
             labelText="Port"
-            value={ProviderPorts[router.provider].port}
-            disabled={!ProviderPorts[router.provider].editable}
+            value={ProviderSettings[router.provider]?.port}
+            disabled={!router.provider || ProviderSettings[router.provider]?.editable === false}
             onChange={(e) => setRouter({ ...router, port: e.target.value })}
           />
         </Column>
@@ -144,6 +153,7 @@ function RouterConfigForm({ data, refresh }) {
                 Optional
               </DefinitionTooltip>
             )}
+            disabled={router.provider !== 'Ross NK-IPS'}
             value={router.address}
             onChange={(e) => setRouter({ ...router, address: e.target.value })}
           />

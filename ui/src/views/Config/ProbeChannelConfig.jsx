@@ -33,7 +33,7 @@ function ProbeChannelConfig({ channel, refresh }) {
   const [hasChanges, setHasChanges] = useState(false);
 
   const submit = () => {
-    axios.post(`/v1/config/probe/${channel.id}`, config)
+    axios.put(`/v1/config/probe/${channel.slug}`, config)
       .then(() => {
         refresh();
       });
@@ -69,18 +69,31 @@ function ProbeChannelConfig({ channel, refresh }) {
             labelText="Name"
             value={config.label}
             onChange={(e) => {
-              setConfig({ ...channel, label: e.target.value });
+              setConfig({ ...config, label: e.target.value });
               setHasChanges(true);
             }}
           />
           <br />
+          <TextInput
+            id={`${config.id}.slug`}
+            type="text"
+            labelText="Slug"
+            helperText="Unique Identifier for this Channel's Stream"
+            value={config.slug}
+            onChange={(e) => {
+              setConfig({ ...config, slug: e.target.value.replace(' ', '-') });
+              setHasChanges(true);
+            }}
+          />
+        </Column>
+        <Column sm={2} md={4}>
           <TextInput
             id={`${config.id}.router_destination`}
             type="text"
             labelText="Router Destination"
             value={config.router_destination}
             onChange={(e) => {
-              setConfig({ ...channel, router_destination: e.target.value });
+              setConfig({ ...config, router_destination: Number(e.target.value) });
               setHasChanges(true);
             }}
           />
@@ -104,25 +117,24 @@ function ProbeChannelConfig({ channel, refresh }) {
             onChange={(e) => setConfig({ ...config, ingest_type: e.selectedItem.value })}
             disabled
           />
-        </Column>
-        <Column sm={2} md={4}>
+          <br />
           {config.ingest_type === 'ts-http' && (
-            <TextInput
-              id={`${config.id}.http_path`}
-              type="text"
-              labelText="HTTP Path"
-              value={`/v1/probe/stream/${config.id}`}
-              disabled
-            />
+          <TextInput
+            id={`${config.id}.http_path`}
+            type="text"
+            labelText="HTTP Path"
+            value={config.http_path}
+            disabled
+          />
           )}
           {config.ingest_type === 'ts-tcp' && (
-            <TextInput
-              id={`${config.id}.tcp_port`}
-              type="text"
-              labelText="TCP Port"
-              value={config.tcp_port}
-              disabled
-            />
+          <TextInput
+            id={`${config.id}.tcp_port`}
+            type="text"
+            labelText="TCP Port"
+            value={config.tcp_port}
+            disabled
+          />
           )}
         </Column>
       </Grid>
@@ -133,7 +145,6 @@ function ProbeChannelConfig({ channel, refresh }) {
 ProbeChannelConfig.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   channel: PropTypes.object.isRequired,
-  // deleteThisChannel: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,
 };
 

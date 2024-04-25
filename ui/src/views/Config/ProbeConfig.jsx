@@ -1,66 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import useAxios from 'axios-hooks';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
 
 import {
   Stack,
   Grid,
   Column,
-  Loading,
-  Form,
-  // Button,
+  Button,
 } from '@carbon/react';
 
-// import {
-//   Add,
-// } from '@carbon/icons-react';
+import {
+  Add,
+} from '@carbon/icons-react';
 
 import ProbeChannelConfig from './ProbeChannelConfig.jsx';
 
+import configContext from '../../context/configContext';
+
 function ProbeConfig() {
-  const [{ data: config, loading: configLoading, error: configError }, refresh] = useAxios(
-    '/v1/config',
-  );
+  const { config, refreshConfig } = useContext(configContext);
 
   const [channels, setChannels] = useState([]);
 
   useEffect(() => {
-    if (config) {
-      setChannels(config.probe.channels);
-    }
+    setChannels(config.probe.channels);
   }, [config]);
 
+  const newChannel = () => {
+    axios.post('/v1/config/probe')
+      .then(() => {
+        refreshConfig();
+      });
+  };
+
   return (
-    <>
-      {(configLoading) && <Loading withOverlay />}
-      {(configError) && JSON.stringify({ configError })}
-      { !configLoading && !configError
-      && (
-      <Grid>
-        <Column lg={16} md={8} sm={4}>
-          <Form>
-            <Stack gap={7}>
-              {channels.map((channel, index) => (
-                <ProbeChannelConfig
-                  key={channel.id}
-                  channel={channel}
-                  deleteThisChannel={() => {
-                    const newChannels = [...channels];
-                    newChannels.splice(index, 1);
-                    setChannels(newChannels);
-                  }}
-                  refresh={refresh}
-                />
-              ))}
-              {/* <Button disabled renderIcon={Add} onClick={() => setChannels([...channels, { label: 'New Channel', new: true, id: channels.length + 1 }])}>
-                Add Probe Channel
-                {' '}
-              </Button> */}
-            </Stack>
-          </Form>
-        </Column>
-      </Grid>
-      )}
-    </>
+    <Grid>
+      <Column lg={16} md={8} sm={4}>
+        <Stack gap={7}>
+          <h2>Probe Configuration</h2>
+          {channels.length === 0 && (
+            <p>There are no Probe channels configured.</p>
+          )}
+          {channels.map((channel) => (
+            <ProbeChannelConfig
+              key={channel.slug}
+              channel={channel}
+              refresh={refreshConfig}
+            />
+          ))}
+          <Button
+            renderIcon={Add}
+            onClick={newChannel}
+          >
+            Add Probe Channel
+            {' '}
+          </Button>
+        </Stack>
+      </Column>
+    </Grid>
   );
 }
 

@@ -1,11 +1,11 @@
-import React, { lazy, useEffect } from 'react';
-
+import React, { lazy, useEffect, useContext } from 'react';
 import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
   useNavigate,
 } from 'react-router-dom';
+import configContext from '../context/configContext';
 
 import Layout from './Layout.jsx';
 
@@ -35,13 +35,22 @@ export default createBrowserRouter(
 function Root() {
   const navigate = useNavigate();
 
+  const { config } = useContext(configContext);
+
   useEffect(() => {
-    navigate('/router');
-  }, []);
+    if (config && !config.configuration_required) {
+      navigate('/router');
+    }
+
+    if (config && config.configuration_required) {
+      navigate('/config/router');
+    }
+  }, [config]);
 
   return (
     <>
-      Redirecting...
+      {config.error && 'Unable to Connect to rtr'}
+      {!config.error && 'Loading...'}
     </>
   );
 }

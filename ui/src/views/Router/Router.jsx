@@ -96,7 +96,7 @@ function Router() {
       {config && matrix
       && (
         <>
-          <EditIOModal IO={editModalState.IO} open={editModalState.open} type={editModalState.type} setOpen={setModalOpenState} />
+          <EditIOModal IO={editModalState.IO || {}} open={editModalState.open} type={editModalState.type || 'none'} setOpen={setModalOpenState} />
           <Grid>
             <Column sm={4} lg={6} className="destinations">
               <Grid condensed>
@@ -154,17 +154,22 @@ function Router() {
               </Grid>
               <Grid>
                 <Column sm={4} lg={8}>
-                  <strong>
-                    Destination:
-                  </strong>
-                  {' '}
-                  {matrix.destinations?.[selectedDestination - 1]?.label}
-                  <br />
-                  <strong>
-                    Source:
-                  </strong>
-                  {' '}
-                  {matrix.destinations?.[selectedDestination - 1]?.source.label}
+                  {selectedDestination === -1 && <em> No Destination Selected</em>}
+                  {selectedDestination !== -1 && (
+                  <>
+                    <strong>
+                      Destination:
+                    </strong>
+                    {' '}
+                    {matrix.destinations?.[selectedDestination - 1]?.label}
+                    <br />
+                    <strong>
+                      Source:
+                    </strong>
+                    {' '}
+                    {matrix.destinations?.[selectedDestination - 1]?.source.label}
+                  </>
+                  )}
                   <br />
                   { config.probe.enabled
                   && (
@@ -223,9 +228,13 @@ function Router() {
                           >
                             {channel.label}
                             {' '}
-                            (
-                            {matrix.destinations?.[channel.router_destination - 1]?.label}
-                            )
+                            {channel.router_destination !== 0 && (
+                            <>
+                              (
+                              {matrix.destinations?.[channel.router_destination - 1]?.label}
+                              )
+                            </>
+                            )}
                           </Button>
                         ))}
                       <br />
