@@ -8,15 +8,12 @@ import (
 	"github.com/monoxane/nk"
 )
 
-type LabelValue struct {
-	Label string      `json:"label"`
-	Value interface{} `json:"value"`
-}
 type Configuration struct {
-	Server ServerConfig `json:"server"`
-	Router RouterConfig `json:"router"`
-	Probe  ProbeConfig  `json:"probe"`
-	Salvos []Salvo      `json:"salvos"`
+	ConfigurationRequired bool         `json:"configuration_required"`
+	Server                ServerConfig `json:"server"`
+	Router                RouterConfig `json:"router"`
+	Probe                 ProbeConfig  `json:"probe"`
+	Salvos                []Salvo      `json:"salvos"`
 }
 type ServerConfig struct {
 	HTTPPort             int `json:"http_port"`
@@ -31,18 +28,18 @@ type RouterConfig struct {
 }
 
 type ProbeConfig struct {
-	Enabled  bool           `json:"enabled"`
-	Channels []ProbeChannel `json:"channels"`
+	Enabled  bool            `json:"enabled"`
+	Channels []*ProbeChannel `json:"channels"`
 }
 
 type ProbeChannel struct {
-	ID                int        `json:"id"`
-	Label             string     `json:"label"`
-	RouterDestination int        `json:"router_destination"`
-	IngestTypeString  string     `json:"ingest_type"` // ts-http, ts-tcp
-	IngestType        LabelValue `json:"-"`
-	// HTTPPath          string `json:"http_path"`
-	TCPPort int `json:"tcp_port"`
+	Label             string              `json:"label"`
+	Slug              string              `json:"slug"`
+	RouterDestination int                 `json:"router_destination"`
+	IngestTypeString  string              `json:"ingest_type"` // ts-http, ts-tcp
+	HTTPPath          string              `json:"http_path"`
+	TCPPort           int                 `json:"tcp_port"`
+	Handler           *ProbeClientHandler `json:"-"`
 }
 
 type Salvo struct {
@@ -70,6 +67,22 @@ var Config Configuration
 
 func init() {
 	data, err := os.ReadFile("config.json")
+
+	if err != nil && os.IsNotExist(err) {
+		config := Configuration{
+			ConfigurationRequired: true,
+			Server: ServerConfig{
+				HTTPPort:             8080,
+				FirstProbeStreamPort: 9000,
+			},
+			Salvos: []Salvo{},
+		}
+
+		config.Save()
+
+		Config = config
+	}
+
 	if err == nil {
 		err = json.Unmarshal(data, &Config)
 		if err != nil {

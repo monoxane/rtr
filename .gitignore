@@ -1,5 +1,5 @@
 ui/node_modules
 ui/dist
-config.json
+config*.json
 labels.lbl
 rtr

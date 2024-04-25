@@ -9,6 +9,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -82,7 +83,13 @@ func (c *ProbeClient) Run() {
 }
 
 func SendProbeStats() {
-	payload, _ := json.Marshal(ProbeStats)
+	statuses := []ProbeChannelStatus{}
+
+	for _, channel := range Config.Probe.Channels {
+		statuses = append(statuses, channel.Handler.Status)
+	}
+
+	payload, _ := json.Marshal(statuses)
 	update := MatrixWSMessage{
 		Type: "probe_stats",
 		Data: payload,
@@ -95,25 +102,64 @@ func SendProbeStats() {
 	MatrixWSConnectionsMutex.Unlock()
 }
 
-type ProbeSocketHandler struct {
-	Id         int
+type ProbeClientHandler struct {
+	slug       string
+	Status     ProbeChannelStatus
 	clients    map[*ProbeClient]bool // *client -> is connected (true/false)
 	register   chan *ProbeClient
 	unregister chan *ProbeClient
 	broadcast  chan *[]byte
 
-	upgrader *websocket.Upgrader
+	tcpPort int
 
-	mux sync.Mutex
+	context context.Context
+	cancel  context.CancelFunc
+	mux     sync.Mutex
+
+	upgrader *websocket.Upgrader
 }
 
-func (h *ProbeSocketHandler) Run() {
+func (c *ProbeChannel) Start() {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	c.Handler = &ProbeClientHandler{
+		slug: c.Slug,
+		Status: ProbeChannelStatus{
+			ActiveSource: false,
+		},
+		clients:    make(map[*ProbeClient]bool),
+		register:   make(chan *ProbeClient),
+		unregister: make(chan *ProbeClient),
+		broadcast:  make(chan *[]byte),
+		upgrader: &websocket.Upgrader{
+			ReadBufferSize:  readBufferSize,
+			WriteBufferSize: writeBufferSize,
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+		context: ctx,
+		cancel:  cancel,
+		tcpPort: c.TCPPort,
+	}
+
+	go c.Handler.Run()
+	if c.IngestTypeString == "ts-tcp" {
+		go c.Handler.ServeTCPIngest()
+	}
+}
+
+func (c *ProbeChannel) Stop() {
+	c.Handler.cancel()
+}
+
+func (h *ProbeClientHandler) Run() {
 	for {
 		select {
 		case client := <-h.register:
 			h.clients[client] = true
-			log.Printf("[probe %d] client connected. active clients: %d\n", h.Id, len(h.clients))
-			ProbeStats[h.Id].Clients = len(h.clients)
+			log.Printf("[probe %s] client connected. active clients: %d\n", h.slug, len(h.clients))
+			h.Status.Clients = len(h.clients)
 			SendProbeStats()
 
 		case client := <-h.unregister:
@@ -121,8 +167,8 @@ func (h *ProbeSocketHandler) Run() {
 			if ok {
 				delete(h.clients, client)
 			}
-			log.Printf("[probe %d] client disconnected. active clients: %d\n", h.Id, len(h.clients))
-			ProbeStats[h.Id].Clients = len(h.clients)
+			log.Printf("[probe %s] client disconnected. active clients: %d\n", h.slug, len(h.clients))
+			h.Status.Clients = len(h.clients)
 			SendProbeStats()
 
 		case data := <-h.broadcast:
@@ -131,8 +177,8 @@ func (h *ProbeSocketHandler) Run() {
 	}
 }
 
-func (c *ProbeSocketHandler) ServeTCPIngest() {
-	listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", Config.Server.FirstProbeStreamPort+c.Id))
+func (h *ProbeClientHandler) ServeTCPIngest() {
+	listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", h.tcpPort))
 	if err != nil {
 		log.Fatalf("unable to listen for transport stream on %s: %s", listener.Addr(), err)
 	}
@@ -143,9 +189,9 @@ func (c *ProbeSocketHandler) ServeTCPIngest() {
 			log.Printf("error handling tcp transport stream connection: %s", err)
 		}
 
-		log.Printf("stream for probe %d connected from %s", c.Id, conn.RemoteAddr())
+		log.Printf("stream for probe %s connected from %s", h.slug, conn.RemoteAddr())
 
-		ProbeStats[c.Id].ActiveSource = true
+		h.Status.ActiveSource = true
 		SendProbeStats()
 
 		reader := bufio.NewReader(conn)
@@ -155,27 +201,27 @@ func (c *ProbeSocketHandler) ServeTCPIngest() {
 			length, err := reader.Read(data)
 			if err != nil || length == 0 {
 				conn.Close()
-				ProbeStats[c.Id].ActiveSource = false
+				h.Status.ActiveSource = false
 				SendProbeStats()
 
-				log.Printf("stream for probe %d disconnected from %s", c.Id, conn.RemoteAddr())
+				log.Printf("stream for probe %s disconnected from %s", h.slug, conn.RemoteAddr())
 
 				break
 			}
 
 			txData := data[:length]
 
-			c.BroadcastData(&txData)
+			h.BroadcastData(&txData)
 		}
 
-		ProbeStats[c.Id].ActiveSource = false
+		h.Status.ActiveSource = false
 		SendProbeStats()
 
-		log.Printf("stream for probe %d disconnected from %s", c.Id, conn.RemoteAddr())
+		log.Printf("stream for probe %s disconnected from %s", h.slug, conn.RemoteAddr())
 	}
 }
 
-func (h *ProbeSocketHandler) ServeWS(c *gin.Context) {
+func (h *ProbeClientHandler) ServeWS(c *gin.Context) {
 	if c.Request.Method != "GET" {
 		c.JSON(http.StatusMethodNotAllowed, gin.H{"code": http.StatusMethodNotAllowed, "error": "Method Not Allowed"})
 		return
@@ -197,7 +243,7 @@ func (h *ProbeSocketHandler) ServeWS(c *gin.Context) {
 	go client.Run()
 }
 
-func (h *ProbeSocketHandler) BroadcastData(data *[]byte) {
+func (h *ProbeClientHandler) BroadcastData(data *[]byte) {
 	h.mux.Lock()
 	for client := range h.clients {
 		client.sendChan <- data
