@@ -40,10 +40,10 @@ function ProbeConfig() {
           {channels.length === 0 && (
             <p>There are no Probe channels configured.</p>
           )}
-          {channels.map((channel) => (
+          {channels.map((channel, index) => (
             <ProbeChannelConfig
               key={channel.slug}
-              channel={channel}
+              channel={{ ...channel, index }}
               refresh={refreshConfig}
             />
           ))}

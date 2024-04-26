@@ -10,12 +10,15 @@ import {
   TextInput,
   Button,
   Tile,
+  Stack,
 } from '@carbon/react';
 
 import {
   Save,
   // TrashCan,
 } from '@carbon/icons-react';
+
+import useMatrix from '../../hooks/useMatrix';
 
 const IngestLut = {
   'ts-http': {
@@ -32,6 +35,10 @@ function ProbeChannelConfig({ channel, refresh }) {
   const [config, setConfig] = useState({ ...channel });
   const [hasChanges, setHasChanges] = useState(false);
 
+  const {
+    probeStats,
+  } = useMatrix();
+
   const submit = () => {
     axios.put(`/v1/config/probe/${channel.slug}`, config)
       .then(() => {
@@ -43,16 +50,25 @@ function ProbeChannelConfig({ channel, refresh }) {
     <Tile>
       <Grid>
         <Column sm={2} md={4}>
-          <h3>{channel.label}</h3>
-          <br />
-          <Button
-            hasIconOnly
-            kind={hasChanges ? 'primary' : 'ghost'}
-            disabled={!hasChanges}
-            iconDescription="Save Channel"
-            onClick={submit}
-            renderIcon={Save}
-          />
+          <Stack gap={2}>
+            <h3>{channel.label}</h3>
+            <span>
+              <strong>Ingest: </strong>
+              {probeStats[channel.index]?.active_source ? 'Active' : 'Idle'}
+            </span>
+            <span>
+              <strong>Viewers: </strong>
+              {probeStats[channel.index]?.clients}
+            </span>
+            <Button
+              hasIconOnly
+              kind={hasChanges ? 'primary' : 'ghost'}
+              disabled={!hasChanges}
+              iconDescription="Save Channel"
+              onClick={submit}
+              renderIcon={Save}
+            />
+          </Stack>
           {/* <Button
             hasIconOnly
             kind="ghost"
