@@ -49,12 +49,7 @@ function RouterConfig() {
   return (
     <Grid>
       <Column lg={16} md={8} sm={4}>
-        <Tile>
-          <Stack gap={4}>
-            <h3>Router Configuration</h3>
-            <RouterConfigForm data={config.router} refresh={refreshConfig} />
-          </Stack>
-        </Tile>
+        <RouterConfigForm data={config.router} refresh={refreshConfig} />
       </Column>
     </Grid>
 
@@ -88,7 +83,8 @@ function RouterConfigForm({ data, refresh }) {
   }, [router]);
 
   return (
-    <Stack gap={4}>
+    <Stack gap={6}>
+      <h2>Router Configuration</h2>
       <Grid>
         <Column sm={4} md={8}>
           <Dropdown
