@@ -11,7 +11,6 @@ import {
   TextInput,
   Button,
   DefinitionTooltip,
-  Tile,
   ToastNotification,
 } from '@carbon/react';
 
