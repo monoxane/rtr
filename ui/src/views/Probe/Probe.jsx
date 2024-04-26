@@ -10,6 +10,8 @@ import {
   TabPanels,
   TabPanel,
   Button,
+  Grid,
+  Column,
 } from '@carbon/react';
 
 import {
@@ -39,39 +41,45 @@ function ProbeWrapper() {
       {(matrixError || configError) && JSON.stringify({ matrixError, configError })}
       {config && config.probe.channels.length !== 0
       && (
-      <Tabs selectedIndex={activeTab} onChange={(e) => setTab(e.selectedIndex)}>
-        <TabList contained aria-label="channels" activation="manual" fullWidth>
-          { config && config.probe.channels.map((probeChannel, index) => (
-            <Tab
-              key={`probe-${probeChannel.id}`}
-            >
-              {probeChannel.label}
-              {' '}
-              {config.probe.channels[index].router_destination !== 0
-              && (
-              <>
-                (
-                {matrix.destinations?.[probeChannel.router_destination - 1]?.label}
-                )
-              </>
-              )}
-            </Tab>
-          ))}
-        </TabList>
-        <TabPanels>
-          { config && config.probe.channels.map((probeChannel, index) => (
-            <TabPanel
-              key={`probe-${probeChannel.slug}`}
-              style={{ backgroundColor: gray[90] }}
-            >
-              <Probe index={index} slug={probeChannel.slug} active={activeTab === index} />
-              <br />
-              <br />
-              <br />
-            </TabPanel>
-          ))}
-        </TabPanels>
-      </Tabs>
+        <Grid>
+          <Column lg={16} md={8} sm={4}>
+            <h2>Probe Viewer</h2>
+            <br />
+            <Tabs selectedIndex={activeTab} onChange={(e) => setTab(e.selectedIndex)}>
+              <TabList contained aria-label="channels" activation="manual" fullWidth>
+                { config && config.probe.channels.map((probeChannel, index) => (
+                  <Tab
+                    key={`probe-${probeChannel.id}`}
+                  >
+                    {probeChannel.label}
+                    {' '}
+                    {config.probe.channels[index].router_destination !== 0
+                    && (
+                      <>
+                        (
+                        {matrix.destinations?.[probeChannel.router_destination - 1]?.label}
+                        )
+                      </>
+                    )}
+                  </Tab>
+                ))}
+              </TabList>
+              <TabPanels>
+                { config && config.probe.channels.map((probeChannel, index) => (
+                  <TabPanel
+                    key={`probe-${probeChannel.slug}`}
+                    style={{ backgroundColor: gray[90] }}
+                  >
+                    <Probe index={index} slug={probeChannel.slug} active={activeTab === index} />
+                    <br />
+                    <br />
+                    <br />
+                  </TabPanel>
+                ))}
+              </TabPanels>
+            </Tabs>
+          </Column>
+        </Grid>
       )}
     </>
   );
