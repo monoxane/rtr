@@ -28,19 +28,19 @@ $feature-flags: (
 
 .probeFullscreenButton {
   height: 0;
-  z-index: 11;
+  z-index: 8010;
   float: bottom;
   position: relative;
 }
 
 .probeFullscreen {
   position: fixed;
-  top:48px;
+  top:0;
   bottom: 0;
-  left: 48px;
+  left: 0;
   right: 0;
   background-color: black;
-  z-index: 10;
+  z-index: 8001;
 
   .probePlayer, .probeSlate {
     max-height: 100%;
