@@ -48,7 +48,8 @@ function JSmpegPlayer({ url, active }) {
           hasIconOnly
           renderIcon={fullscreen ? Minimize : FitToScreen}
           kind="ghost"
-          iconDescription="FullScreen"
+          iconDescription={fullscreen ? 'Exit Fullscreen ' : 'Fullscreen'}
+          align="right"
           onClick={() => {
             setFullscreen(!fullscreen);
           }}
