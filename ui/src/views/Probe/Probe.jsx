@@ -13,6 +13,10 @@ import {
 } from '@carbon/react';
 
 import {
+  gray,
+} from '@carbon/colors';
+
+import {
   Information,
 } from '@carbon/icons-react';
 
@@ -58,8 +62,12 @@ function ProbeWrapper() {
           { config && config.probe.channels.map((probeChannel, index) => (
             <TabPanel
               key={`probe-${probeChannel.slug}`}
+              style={{ backgroundColor: gray[90] }}
             >
               <Probe index={index} slug={probeChannel.slug} active={activeTab === index} />
+              <br />
+              <br />
+              <br />
             </TabPanel>
           ))}
         </TabPanels>
