@@ -42,6 +42,24 @@ type ProbeChannel struct {
 	Handler           *ProbeClientHandler `json:"-"`
 }
 
+func (c *ProbeChannel) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Label             string `json:"label"`
+		Slug              string `json:"slug"`
+		RouterDestination int    `json:"router_destination"`
+		IngestTypeString  string `json:"ingest_type"` // ts-http, ts-tcp
+		HTTPPath          string `json:"http_path"`
+		TCPPort           int    `json:"tcp_port"`
+	}{
+		Label:             c.Label,
+		Slug:              c.Slug,
+		RouterDestination: c.RouterDestination,
+		IngestTypeString:  c.IngestTypeString,
+		HTTPPath:          "/v1/probe/stream/" + c.Slug,
+		TCPPort:           c.TCPPort,
+	})
+}
+
 type Salvo struct {
 	Label        string           `json:"label"`
 	Destinations []nk.Destination `json:"destinations"`

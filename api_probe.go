@@ -42,6 +42,9 @@ func HandleUpdateProbe(c *gin.Context) {
 			Config.Probe.Channels[i].Stop()
 			Config.Probe.Channels[i] = &update
 			Config.Probe.Channels[i].Start()
+
+			Config.Save()
+
 			c.JSON(http.StatusOK, channel)
 			return
 		}
@@ -94,7 +97,7 @@ func HandleHTTPProbeStream(c *gin.Context) {
 				channel.Handler.BroadcastData(&data)
 			}
 
-			channel.Handler.Status.ActiveSource = true
+			channel.Handler.Status.ActiveSource = false
 			SendProbeStats()
 
 			log.Printf("stream for probe %s disconnected from %s", slug, c.RemoteIP())

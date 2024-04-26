@@ -20,7 +20,7 @@ import useMatrix from '../../hooks/useMatrix.js';
 import JSmpegPlayer from '../../common/JSmpegPlayer.jsx';
 
 function ProbeWrapper() {
-  const [channel, setChannel] = useState(0);
+  const [activeTab, setTab] = useState(0);
   const [{ data: config, loading: configLoading, error: configError }] = useAxios(
     '/v1/config',
   );
@@ -35,26 +35,31 @@ function ProbeWrapper() {
       {(matrixError || configError) && JSON.stringify({ matrixError, configError })}
       {config && config.probe.channels.length !== 0
       && (
-      <Tabs selectedIndex={channel} onChange={(e) => setChannel(e.selectedIndex)}>
+      <Tabs selectedIndex={activeTab} onChange={(e) => setTab(e.selectedIndex)}>
         <TabList contained aria-label="channels" activation="manual" fullWidth>
-          { config && config.probe.channels.map((probeChannel) => (
+          { config && config.probe.channels.map((probeChannel, index) => (
             <Tab
               key={`probe-${probeChannel.id}`}
             >
               {probeChannel.label}
               {' '}
-              (
-              {matrix.destinations?.[probeChannel.router_destination - 1]?.label}
-              )
+              {config.probe.channels[index].router_destination !== 0
+              && (
+              <>
+                (
+                {matrix.destinations?.[probeChannel.router_destination - 1]?.label}
+                )
+              </>
+              )}
             </Tab>
           ))}
         </TabList>
         <TabPanels>
           { config && config.probe.channels.map((probeChannel, index) => (
             <TabPanel
-              key={`probe-${probeChannel.id}`}
+              key={`probe-${probeChannel.slug}`}
             >
-              <Probe channel={index} active={channel === index} />
+              <Probe index={index} slug={probeChannel.slug} active={activeTab === index} />
             </TabPanel>
           ))}
         </TabPanels>
@@ -64,7 +69,7 @@ function ProbeWrapper() {
   );
 }
 
-function Probe({ channel, active }) {
+function Probe({ index, slug, active }) {
   const [{ data: config, loading: configLoading, error: configError }] = useAxios(
     '/v1/config',
   );
@@ -77,25 +82,7 @@ function Probe({ channel, active }) {
     <>
       {(matrixLoading || configLoading) && <Loading withOverlay />}
       {(matrixError || configError) && JSON.stringify({ matrixError, configError })}
-      <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${channel}`} active={probeStats[channel]?.active_source && active} />
-      {/* <Tooltip label={(
-        <>
-          <strong>
-            Probe
-            {' '}
-            Source:
-          </strong>
-          {' '}
-          {matrix.destinations?.[config.probe.router_destinations[channel] - 1]?.source?.label}
-          <br />
-          <strong>
-            Status:
-          </strong>
-          {' '}
-          {probeStats[channel]?.active_source ? `Streaming, ${probeStats[channel]?.clients} viewer${probeStats[channel]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
-        </>
-      )}
-      > */}
+      <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${slug}`} active={probeStats[index]?.active_source && active} />
       <div className="probeInfo">
         <Button
           hasIconOnly
@@ -104,19 +91,24 @@ function Probe({ channel, active }) {
           tooltipPosition="right"
           iconDescription={(
             <>
-              <strong>
-                Probe
+              {config.probe.channels[index].router_destination !== 0
+              && (
+              <>
+                <strong>
+                  Probe
+                  {' '}
+                  Source:
+                </strong>
                 {' '}
-                Source:
-              </strong>
-              {' '}
-              {matrix.destinations?.[config.probe.channels[channel].router_destination - 1]?.source?.label}
-              <br />
+                {matrix.destinations?.[config.probe.channels[index].router_destination - 1]?.source?.label}
+                <br />
+              </>
+              )}
               <strong>
                 Status:
               </strong>
               {' '}
-              {probeStats[channel]?.active_source ? `Streaming, ${probeStats[channel]?.clients} viewer${probeStats[channel]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
+              {probeStats[index]?.active_source ? `Streaming, ${probeStats[index]?.clients} viewer${probeStats[index]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
             </>
           )}
         />
@@ -127,7 +119,8 @@ function Probe({ channel, active }) {
 }
 
 Probe.propTypes = {
-  channel: PropTypes.number.isRequired,
+  index: PropTypes.number.isRequired,
+  slug: PropTypes.string.isRequired,
   active: PropTypes.bool.isRequired,
 };
 
