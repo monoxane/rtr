@@ -35,7 +35,7 @@ func serveHTTP() {
 	svc.DELETE("/v1/config/probe/:slug", HandleDeleteProbe)
 
 	svc.GET("/v1/ws/probe/:slug", HandleProbeClient)
-	svc.POST("/v1/probe/stream/:id", HandleHTTPProbeStream)
+	svc.POST("/v1/probe/stream/:slug", HandleHTTPProbeStream)
 
 	err := svc.Run(fmt.Sprintf(":%d", Config.Server.HTTPPort))
 	if err != nil {

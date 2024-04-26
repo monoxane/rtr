@@ -91,6 +91,7 @@ function ProbeChannelConfig({ channel, refresh }) {
             id={`${config.id}.router_destination`}
             type="text"
             labelText="Router Destination"
+            helperText="Set to 0 to teat as an non-routed external source"
             value={config.router_destination}
             onChange={(e) => {
               setConfig({ ...config, router_destination: Number(e.target.value) });
@@ -115,7 +116,6 @@ function ProbeChannelConfig({ channel, refresh }) {
               },
             ]}
             onChange={(e) => setConfig({ ...config, ingest_type: e.selectedItem.value })}
-            disabled
           />
           <br />
           {config.ingest_type === 'ts-http' && (
@@ -133,7 +133,10 @@ function ProbeChannelConfig({ channel, refresh }) {
             type="text"
             labelText="TCP Port"
             value={config.tcp_port}
-            disabled
+            onChange={(e) => {
+              setConfig({ ...config, tcp_port: Number(e.target.value) });
+              setHasChanges(true);
+            }}
           />
           )}
         </Column>

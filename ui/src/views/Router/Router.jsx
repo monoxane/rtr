@@ -41,7 +41,7 @@ function Router() {
     matrix, probeStats, loading: matrixLoading, error: matrixError, route,
   } = useMatrix();
   const [selectedProbe, setSelectedProbe] = useState(0);
-  const [selectedDestination, setSelectedDestination] = useState(-1);
+  const [selectedDestination, setSelectedDestination] = useState(0);
   const [ProbeSOTRouting, setProbeSODRouting] = useState(false);
 
   useEffect(() => {
@@ -78,7 +78,7 @@ function Router() {
   }, [selectedProbe]);
 
   useEffect(() => {
-    if (config?.probe.enabled && selectedDestination === -1) {
+    if (config?.probe.enabled && selectedDestination === 0) {
       setSelectedDestination(config.probe.channels[0].router_destination);
     }
   });
@@ -154,8 +154,8 @@ function Router() {
               </Grid>
               <Grid>
                 <Column sm={4} lg={8}>
-                  {selectedDestination === -1 && <em> No Destination Selected</em>}
-                  {selectedDestination !== -1 && (
+                  {selectedDestination === 0 && <em> No Destination Selected</em>}
+                  {selectedDestination !== 0 && (
                   <>
                     <strong>
                       Destination:
@@ -171,6 +171,7 @@ function Router() {
                   </>
                   )}
                   <br />
+                  <br />
                   { config.probe.enabled
                   && (
                     <>
@@ -181,22 +182,26 @@ function Router() {
                       </strong>
                         {' '}
                         {probeStats[selectedProbe]?.active_source ? `Streaming, ${probeStats[selectedProbe]?.clients} viewer${probeStats[selectedProbe]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
-                      <br />
-                      <strong>
-                        Probe
-                        {' '}
-                        Follow:
-                      </strong>
-                        {' '}
-                        {ProbeSOTRouting ? matrix.destinations?.[selectedDestination - 1]?.label : 'None'}
-                      <br />
-                      <strong>
-                        Probe
-                        {' '}
-                        Source:
-                      </strong>
-                        {' '}
-                        {matrix.destinations?.[config.probe.channels[selectedProbe].router_destinations - 1]?.source?.label}
+                      {config.probe.channels[selectedProbe].router_destination !== 0 && (
+                        <>
+                          <br />
+                          <strong>
+                            Probe
+                            {' '}
+                            Follow:
+                          </strong>
+                          {' '}
+                          {ProbeSOTRouting ? matrix.destinations?.[selectedDestination - 1]?.label : 'None'}
+                          <br />
+                          <strong>
+                            Probe
+                            {' '}
+                            Source:
+                          </strong>
+                          {' '}
+                          {matrix.destinations?.[config.probe.channels[selectedProbe].router_destinations - 1]?.source?.label}
+                        </>
+                      )}
                       <br />
                       <br />
                       <div className="openProbeOverlay">
@@ -210,7 +215,7 @@ function Router() {
                           }}
                         />
                       </div>
-                      <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${selectedProbe}`} active={probeStats[selectedProbe]?.active_source} />
+                      <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${config.probe.channels[selectedProbe].slug}`} active={probeStats[selectedProbe]?.active_source} />
                       <br />
                         { config.probe.channels.map((channel, index) => (
                           <Button

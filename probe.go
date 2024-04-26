@@ -150,7 +150,9 @@ func (c *ProbeChannel) Start() {
 }
 
 func (c *ProbeChannel) Stop() {
-	c.Handler.cancel()
+	if c.Handler != nil {
+		c.Handler.cancel()
+	}
 }
 
 func (h *ProbeClientHandler) Run() {
