@@ -35,7 +35,7 @@ function ProbeConfig() {
   return (
     <Grid>
       <Column lg={16} md={8} sm={4}>
-        <Stack gap={7}>
+        <Stack gap={6}>
           <h2>Probe Configuration</h2>
           {channels.length === 0 && (
             <p>There are no Probe channels configured.</p>
