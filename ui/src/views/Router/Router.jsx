@@ -12,13 +12,20 @@ import {
   Column,
   Grid,
   Loading,
+  Tile,
+  Tabs,
+  TabList,
+  TabPanels,
+  TabPanel,
+  Tab,
 } from '@carbon/react';
 
 import {
   PortInput,
+  Video,
   PortOutput,
-  ChooseItem,
   Launch,
+  // Rocket,
 } from '@carbon/icons-react';
 
 import useMatrix from '../../hooks/useMatrix.js';
@@ -95,198 +102,244 @@ function Router() {
       {(matrixError || configError) && JSON.stringify({ matrixError, configError })}
       {config && matrix
       && (
-        <>
+        <div className="router">
           <EditIOModal IO={editModalState.IO || {}} open={editModalState.open} type={editModalState.type || 'none'} setOpen={setModalOpenState} />
-          <Grid>
-            <Column sm={4} lg={6} className="destinations">
-              <Grid condensed>
-                <Column sm={4} lg={6}>
-                  <h1>Destinations</h1>
-                </Column>
-              </Grid>
-              <Grid
-                condensed
-                className="iolist"
-              >
-                { matrix.destinations && matrix.destinations.map((button) => (
-                  <Column sm={2} lg={2} key={button.id}>
-                    <Destination
-                      destination={button}
-                      onClick={() => setSelectedDestination(button.id)}
-                      onEdit={() => {
-                        setEditModalState({ open: true, type: 'destination', IO: button });
-                      }}
-                      selected={button.id === selectedDestination}
-                    />
+          <Grid condensed>
+            <Column sm={4} lg={6}>
+              <Tile className="destinations">
+                <Grid condensed>
+                  <Column sm={4} lg={6}>
+                    <h2>
+                      Destinations
+                    </h2>
                   </Column>
-                ))}
-              </Grid>
+                </Grid>
+                <br />
+                <Grid
+                  condensed
+                  className="iolist"
+                >
+                  { matrix.destinations && matrix.destinations.map((button) => (
+                    <Column sm={2} lg={2} key={button.id}>
+                      <Destination
+                        destination={button}
+                        onClick={() => setSelectedDestination(button.id)}
+                        onEdit={() => {
+                          setEditModalState({ open: true, type: 'destination', IO: button });
+                        }}
+                        selected={button.id === selectedDestination}
+                      />
+                    </Column>
+                  ))}
+                </Grid>
+              </Tile>
             </Column>
-            <Column sm={4} lg={6} className="sources">
-              <Grid condensed>
-                <Column sm={4}>
-                  <h1>Sources</h1>
-                </Column>
-              </Grid>
-              <Grid
-                condensed
-                className="iolist"
-              >
-                { matrix.sources && matrix.sources.map((button) => (
-                  <Column sm={2} lg={2} key={button.id}>
-                    <Source
-                      source={button}
-                      onClick={() => { route(selectedDestination, button.id); }}
-                      onEdit={() => {
-                        setEditModalState({ open: true, type: 'source', IO: button });
-                      }}
-                      selected={button.id === matrix.destinations[selectedDestination - 1]?.source?.id}
-                    />
+            <Column sm={4} lg={6}>
+              <Tile className="sources">
+                <Grid condensed>
+                  <Column sm={4}>
+                    <h2>
+                      Sources
+                    </h2>
                   </Column>
-                ))}
-              </Grid>
+                </Grid>
+                <br />
+                <Grid
+                  condensed
+                  className="iolist"
+                >
+                  { matrix.sources && matrix.sources.map((button) => (
+                    <Column sm={2} lg={2} key={button.id}>
+                      <Source
+                        source={button}
+                        onClick={() => { route(selectedDestination, button.id); }}
+                        onEdit={() => {
+                          setEditModalState({ open: true, type: 'source', IO: button });
+                        }}
+                        selected={button.id === matrix.destinations[selectedDestination - 1]?.source?.id}
+                      />
+                    </Column>
+                  ))}
+                </Grid>
+              </Tile>
             </Column>
-            <Column sm={4} lg={4}>
-              <Grid>
-                <Column sm={4}>
-                  <h1>Status</h1>
-                </Column>
-              </Grid>
-              <Grid>
-                <Column sm={4} lg={8}>
-                  {selectedDestination === 0 && <em> No Destination Selected</em>}
-                  {selectedDestination !== 0 && (
-                  <>
-                    <strong>
-                      Destination:
-                    </strong>
-                    {' '}
-                    {matrix.destinations?.[selectedDestination - 1]?.label}
-                    <br />
-                    <strong>
-                      Source:
-                    </strong>
-                    {' '}
-                    {matrix.destinations?.[selectedDestination - 1]?.source.label}
-                  </>
-                  )}
-                  <br />
-                  <br />
-                  { config.probe.enabled
-                  && (
-                    <>
-                      <hr />
-                      <h3>Probe</h3>
-                      <strong>
-                        Status:
-                      </strong>
+            <Column sm={4} lg={4} className="routerMeta">
+              {/* <Column sm={4} lg={4} className="routerMeta hasTake"> */}
+              <Tile className="routerStatus">
+                <h2>Status</h2>
+                <br />
+                {/* <Button
+                  renderIcon={Rocket}
+                  kind="danger"
+                  disabled
+                  iconDescription="Take Source to Destination"
+                  onClick={() => {
+                    // openInNewTab(`${document.location.protocol}//${document.location.hostname}:${document.location.port}/probe`);
+                  }}
+                  style={{ width: '100%', marginBottom: '0.5em' }}
+                >
+                  TAKE
+                </Button> */}
+                <Tabs>
+                  <TabList contained fullWidth>
+                    <Tab>Destination</Tab>
+                    <Tab>Source</Tab>
+                  </TabList>
+                  <TabPanels>
+                    <TabPanel>
+                      <p>
+                        Spigot: Out
                         {' '}
-                        {probeStats[selectedProbe]?.active_source ? `Streaming, ${probeStats[selectedProbe]?.clients} viewer${probeStats[selectedProbe]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
-                      {config.probe.channels[selectedProbe].router_destination !== 0 && (
-                        <>
-                          <br />
-                          <strong>
-                            Probe
-                            {' '}
-                            Follow:
-                          </strong>
-                          {' '}
-                          {ProbeSOTRouting ? matrix.destinations?.[selectedDestination - 1]?.label : 'None'}
-                          <br />
-                          <strong>
-                            Probe
-                            {' '}
-                            Source:
-                          </strong>
-                          {' '}
-                          {matrix.destinations?.[config.probe.channels[selectedProbe].router_destinations - 1]?.source?.label}
-                        </>
-                      )}
+                        {matrix.destinations?.[selectedDestination - 1]?.id || <em>None</em>}
+                        <br />
+                        Label:
+                        {' '}
+                        {matrix.destinations?.[selectedDestination - 1]?.label || <em>None</em>}
+                        <br />
+                        Description:
+                        {' '}
+                        {matrix.destinations?.[selectedDestination - 1]?.description || <em>None</em>}
+                      </p>
+                    </TabPanel>
+                    <TabPanel>
+                      <p>
+                        Spigot: In
+                        {' '}
+                        {matrix.destinations?.[selectedDestination - 1]?.source.id || <em>None</em>}
+                        <br />
+                        Label:
+                        {' '}
+                        {matrix.destinations?.[selectedDestination - 1]?.source.label || <em>None</em>}
+                        <br />
+                        Description:
+                        {' '}
+                        {matrix.destinations?.[selectedDestination - 1]?.source.description || <em>None</em>}
+                      </p>
+                    </TabPanel>
+                  </TabPanels>
+                </Tabs>
+              </Tile>
+              { config.probe.enabled
+              && (
+                <Tile className="routerProbe">
+                  <h2>Probe</h2>
+                  <br />
+                  <div className="openProbeOverlay">
+                    <Button
+                      hasIconOnly
+                      renderIcon={Launch}
+                      align="left"
+                      kind="ghost"
+                      iconDescription="Open Probe in New Tab"
+                      onClick={() => {
+                        openInNewTab(`${document.location.protocol}//${document.location.hostname}:${document.location.port}/probe`);
+                      }}
+                    />
+                  </div>
+                  <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${config.probe.channels[selectedProbe].slug}`} active={probeStats[selectedProbe]?.active_source} />
+                  <br />
+                  <strong>
+                    Status:
+                  </strong>
+                  {' '}
+                  {probeStats[selectedProbe]?.active_source ? `Streaming, ${probeStats[selectedProbe]?.clients} viewer${probeStats[selectedProbe]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
+
+                  {config.probe.channels[selectedProbe].router_destination !== 0 ? (
+                    <>
                       <br />
+                      <strong>
+                        Probe
+                        {' '}
+                        Follow:
+                      </strong>
+                      {' '}
+                      {ProbeSOTRouting ? matrix.destinations?.[selectedDestination - 1]?.label : 'None'}
                       <br />
-                      <div className="openProbeOverlay">
-                        <Button
-                          hasIconOnly
-                          renderIcon={Launch}
-                          kind="ghost"
-                          iconDescription="Open Probe in New Tab"
-                          onClick={() => {
-                            openInNewTab(`${document.location.protocol}//${document.location.hostname}:${document.location.port}/probe`);
-                          }}
-                        />
-                      </div>
-                      <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${config.probe.channels[selectedProbe].slug}`} active={probeStats[selectedProbe]?.active_source} />
+                      <strong>
+                        Probe Source:
+                      </strong>
+                      {' '}
+                      {matrix.destinations?.[config.probe.channels[selectedProbe].router_destination - 1]?.source?.label}
+                    </>
+                  ) : (
+                    <>
                       <br />
-                        { config.probe.channels.map((channel, index) => (
-                          <Button
-                            key={`probe-${channel.id}`}
-                            onClick={() => {
-                              setSelectedProbe(index);
-                            }}
-                            renderIcon={ChooseItem}
-                            style={{
-                              minWidth: '100%',
-                              width: '100%',
-                              marginBottom: '1px',
-                              background: selectedProbe === index ? blue[60] : gray[70],
-                            }}
-                          >
-                            {channel.label}
-                            {' '}
-                            {channel.router_destination !== 0 && (
-                            <>
-                              (
-                              {matrix.destinations?.[channel.router_destination - 1]?.label}
-                              )
-                            </>
-                            )}
-                          </Button>
-                        ))}
+                      <em>Non-Routable External Source</em>
                       <br />
-                      <br />
-                      <Button
-                        onClick={() => {
-                          setProbeSODRouting(!ProbeSOTRouting);
-                        }}
-                        renderIcon={PortOutput}
-                        style={{
-                          minWidth: '10px',
-                          maxWidth: '100em',
-                          width: '100%',
-                          display: 'table',
-                          marginBottom: '1px',
-                          background: ProbeSOTRouting ? purple[60] : gray[60],
-                        }}
-                      >
-                        <strong>
-                          Follow
-                          {ProbeSOTRouting && 'ing'}
-                          {' '}
-                          Destination
-                        </strong>
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setSelectedDestination(config.probe.channels[selectedProbe].router_destination);
-                        }}
-                        renderIcon={PortInput}
-                        style={{
-                          minWidth: '10px',
-                          maxWidth: '100em',
-                          width: '100%',
-                          marginBottom: '1px',
-                          background: selectedDestination === config.probe.channels[selectedProbe].router_destination ? blue[60] : gray[60],
-                        }}
-                      >
-                        <strong>Standalone Probe</strong>
-                      </Button>
                     </>
                   )}
-                </Column>
-              </Grid>
+                  <br />
+                  <br />
+                    { config.probe.channels.map((channel, index) => (
+                      <Button
+                        key={`probe-${channel.id}`}
+                        onClick={() => {
+                          setSelectedProbe(index);
+                          setSelectedDestination(config.probe.channels[index].router_destination);
+                        }}
+                        renderIcon={channel.router_destination === 0 ? Video : PortInput}
+                        style={{
+                          minWidth: '100%',
+                          width: '100%',
+                          marginBottom: '1px',
+                          background: selectedProbe === index ? blue[60] : gray[70],
+                        }}
+                      >
+                        {channel.label}
+                        {' '}
+                        {channel.router_destination !== 0 && (
+                        <>
+                          (
+                          {matrix.destinations?.[channel.router_destination - 1]?.label}
+                          )
+                        </>
+                        )}
+                      </Button>
+                    ))}
+                  <br />
+                  <br />
+                  <Button
+                    onClick={() => {
+                      setProbeSODRouting(!ProbeSOTRouting);
+                    }}
+                    renderIcon={PortOutput}
+                    style={{
+                      minWidth: '10px',
+                      maxWidth: '100em',
+                      width: '100%',
+                      display: 'table',
+                      // marginBottom: '1px',
+                      background: ProbeSOTRouting ? purple[60] : gray[60],
+                    }}
+                    disabled={config.probe.channels[selectedProbe].router_destination === 0}
+                  >
+                    <strong>
+                      Follow
+                      {ProbeSOTRouting && 'ing'}
+                      {' '}
+                      Destination
+                    </strong>
+                  </Button>
+                    {/* <Button
+                      onClick={() => {
+                        setSelectedDestination(config.probe.channels[selectedProbe].router_destination);
+                      }}
+                      renderIcon={PortInput}
+                      style={{
+                        minWidth: '10px',
+                        maxWidth: '100em',
+                        width: '50%',
+                        // marginBottom: '1px',
+                        background: selectedDestination !== 0 && selectedDestination === config.probe.channels[selectedProbe].router_destination ? blue[60] : gray[60],
+                      }}
+                    >
+                      <strong>Standalone Probe</strong>
+                    </Button> */}
+                </Tile>
+              )}
             </Column>
           </Grid>
-        </>
+        </div>
       )}
     </>
   );
