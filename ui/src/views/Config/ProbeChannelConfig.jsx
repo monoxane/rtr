@@ -140,7 +140,8 @@ function ProbeChannelConfig({ channel, refresh }) {
             type="text"
             labelText="HTTP Path"
             value={config.http_path}
-            disabled
+            readOnly
+            helperText={<em>Automatically Set</em>}
           />
           )}
           {config.ingest_type === 'ts-tcp' && (

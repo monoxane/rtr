@@ -49,17 +49,17 @@ function ProbeWrapper() {
               <TabList contained aria-label="channels" activation="manual" fullWidth>
                 { config && config.probe.channels.map((probeChannel, index) => (
                   <Tab
-                    key={`probe-${probeChannel.id}`}
+                    key={`probe-${probeChannel.slug}`}
                   >
                     {probeChannel.label}
                     {' '}
                     {config.probe.channels[index].router_destination !== 0
                     && (
-                      <>
+                      <em>
                         (
-                        {matrix.destinations?.[probeChannel.router_destination - 1]?.label}
+                          {matrix.destinations?.[probeChannel.router_destination - 1]?.source.label}
                         )
-                      </>
+                      </em>
                     )}
                   </Tab>
                 ))}
