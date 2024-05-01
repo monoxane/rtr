@@ -29,6 +29,7 @@ function useMatrix() {
       shouldReconnect: () => true,
       reconnectAttempts: 10,
       reconnectInterval: 1000,
+      share: true,
     },
   );
 
