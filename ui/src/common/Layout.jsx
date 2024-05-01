@@ -29,7 +29,6 @@ import SidebarNav from './SidebarNav.jsx';
 
 function Layout() {
   const { config } = useContext(configContext);
-
   return (
     <HeaderContainer
       render={({ isSideNavExpanded, onClickSideNavExpand }) => (
@@ -37,7 +36,7 @@ function Layout() {
           <Header aria-label="rtr //">
             <SkipToContent />
             <HeaderMenuButton
-              aria-label="Open menu"
+              aria-label="Open Menu"
               onClick={onClickSideNavExpand}
               isActive={isSideNavExpanded}
             />
@@ -45,7 +44,7 @@ function Layout() {
               {config?.router?.label || 'Router Controller'}
             </HeaderName>
             <HeaderGlobalBar />
-            <SidebarNav onClick={onClickSideNavExpand} isActive={isSideNavExpanded} />
+            <SidebarNav onClickSideNavExpand={onClickSideNavExpand} isActive={isSideNavExpanded} />
           </Header>
           <Content className="main-content" style={{ background: gray[80] }}>
             <Suspense fallback={<Loading />}>

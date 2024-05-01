@@ -46,7 +46,7 @@ const Salvos = function Salvos() {
       {configError && 'Error'}
       {!configLoading && !configError
         && (
-        <Column sm={4} lg={16}>
+        <Column sm={4} md={8} lg={16}>
           <TableContainer title="Salvos">
             <TableToolbar>
               <TableToolbarContent>

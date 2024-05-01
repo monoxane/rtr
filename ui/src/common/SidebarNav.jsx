@@ -18,28 +18,27 @@ import configContext from '../context/configContext';
 
 import SideNavLink from './SideNavLink.jsx';
 
-import useWindowDimensions from '../hooks/useWindowDimensions';
-
-function SidebarNav({ isActive }) {
+function SidebarNav({ onClickSideNavExpand, isActive, isRail }) {
   const { config } = useContext(configContext);
 
-  const { width } = useWindowDimensions();
   return (
-    <SideNav aria-label="Side navigation" isRail expanded={isActive || width > 2000}>
+    <SideNav aria-label="Side navigation" isRail={isRail} expanded={isActive} onOverlayClick={onClickSideNavExpand}>
       <SideNavItems>
-        <SideNavLink to="/router" label="Router" renderIcon={Router} />
-        {config.probe?.enabled && <SideNavLink to="/probe" label="Probe" renderIcon={View} />}
-        <SideNavLink to="/salvos" label="Salvos" renderIcon={DocumentExport} />
+        <SideNavLink to="/router" label="Router" renderIcon={Router} onClick={onClickSideNavExpand} />
+        {config.probe?.enabled && <SideNavLink to="/probe" label="Probe" renderIcon={View} onClick={onClickSideNavExpand} />}
+        <SideNavLink to="/salvos" label="Salvos" renderIcon={DocumentExport} onClick={onClickSideNavExpand} />
         <SideNavDivider />
-        <SideNavLink to="/config/router" label="Router Config" renderIcon={SettingsServices} />
-        <SideNavLink to="/config/probe" label="Probe Config" renderIcon={SettingsView} />
+        <SideNavLink to="/config/router" label="Router Config" renderIcon={SettingsServices} onClick={onClickSideNavExpand} />
+        <SideNavLink to="/config/probe" label="Probe Config" renderIcon={SettingsView} onClick={onClickSideNavExpand} />
       </SideNavItems>
     </SideNav>
   );
 }
 
 SidebarNav.propTypes = {
+  onClickSideNavExpand: PropTypes.func.isRequired,
   isActive: PropTypes.bool.isRequired,
+  isRail: PropTypes.bool.isRequired,
 };
 
 export default SidebarNav;

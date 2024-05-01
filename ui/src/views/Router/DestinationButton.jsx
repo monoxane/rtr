@@ -35,11 +35,12 @@ function Destination({
           background: selected ? blue[60] : gray[70],
         }}
         size="xl"
+        className="destinationButton"
       >
         <>
           <strong>{destination.label}</strong>
           <br />
-          {destination.source?.label}
+          <em className="source" title={destination.source?.label}>{destination.source?.label}</em>
         </>
       </Button>
       {/* eslint-disable-next-line react/jsx-props-no-spreading */}
