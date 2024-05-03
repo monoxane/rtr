@@ -35,7 +35,7 @@ function Destination({
           background: selected ? blue[60] : gray[70],
         }}
         size="xl"
-        className="destinationButton"
+        className="ioButton"
       >
         <>
           <strong title={destination.label}>{destination.label}</strong>

@@ -25,14 +25,10 @@ function Source({
         ref={el}
         onClick={onClick}
         style={{
-          minWidth: '10px',
-          padding: '10px',
-          width: '100%',
-          display: 'table',
-          marginBottom: '1px',
           background: selected ? purple[60] : gray[70],
         }}
         size="xl"
+        className="ioButton"
       >
         <strong title={source.label}>{source.label}</strong>
       </Button>

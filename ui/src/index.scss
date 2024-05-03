@@ -12,10 +12,15 @@ body {
   background-color: #393939;
 }
 
+#root {
+  height:100%;
+}
+
 .main-content {
   margin-left: 0px;
   transition: margin-left 0.1s;
   overflow: auto;
+  height: 100%;
 }
 
 @media only screen and (min-width: 1056px)  {
@@ -46,6 +51,7 @@ body {
   .router > .cds--css-grid > .cds--css-grid-column {
     height: 100%;
     max-height: calc(100vh - 48px - 64px);
+    height: auto;
   }
 }
 
@@ -60,20 +66,19 @@ body {
 }
 
 .iolist {
-  height: calc(100% - 60px);
+  height: calc(100% - 59px);
   overflow-y: auto
 }
 
-.destinationButton {
+.ioButton {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.sourceButton{
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 10px;
+  padding: 10px;
+  width: 100%;
+  display: table;
+  margin-bottom: 1px;
 }
 
 .probePlayer,.probeSlate{
