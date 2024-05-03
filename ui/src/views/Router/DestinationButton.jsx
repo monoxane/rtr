@@ -38,7 +38,7 @@ function Destination({
         className="destinationButton"
       >
         <>
-          <strong>{destination.label}</strong>
+          <strong title={destination.label}>{destination.label}</strong>
           <br />
           <em className="source" title={destination.source?.label}>{destination.source?.label}</em>
         </>

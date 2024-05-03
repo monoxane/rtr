@@ -34,11 +34,7 @@ function Source({
         }}
         size="xl"
       >
-        <>
-          <strong>{source.label}</strong>
-          <br />
-          {source.source?.label}
-        </>
+        <strong title={source.label}>{source.label}</strong>
       </Button>
       {/* eslint-disable-next-line react/jsx-props-no-spreading */}
       <Menu {...menuProps}>

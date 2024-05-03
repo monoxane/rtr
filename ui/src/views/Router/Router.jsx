@@ -320,21 +320,6 @@ function Router() {
                       Destination
                     </strong>
                   </Button>
-                    {/* <Button
-                      onClick={() => {
-                        setSelectedDestination(config.probe.channels[selectedProbe].router_destination);
-                      }}
-                      renderIcon={PortInput}
-                      style={{
-                        minWidth: '10px',
-                        maxWidth: '100em',
-                        width: '50%',
-                        // marginBottom: '1px',
-                        background: selectedDestination !== 0 && selectedDestination === config.probe.channels[selectedProbe].router_destination ? blue[60] : gray[60],
-                      }}
-                    >
-                      <strong>Standalone Probe</strong>
-                    </Button> */}
                 </Tile>
               )}
             </Column>
