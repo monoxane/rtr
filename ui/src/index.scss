@@ -23,12 +23,34 @@ body {
     margin-left: 256px;
     transition: margin-left 0.1s;
   }
+
+  .routerMeta.hasTake {
+    .routerStatus {
+      height: 20em
+    }
+  
+    .routerProbe {
+      height: calc(100% - 20em - 1px);
+    }
+  }
+  
+  .routerStatus {
+    height: 16em;
+  }
+  
+  .routerProbe {
+    height: calc(100% - 16em - 1px);
+    overflow: auto;
+  }
+
+  .router > .cds--css-grid > .cds--css-grid-column {
+    height: 100%;
+    max-height: calc(100vh - 48px - 64px);
+  }
 }
 
-
-.router > .cds--css-grid > .cds--css-grid-column {
-  height: 100%;
-  max-height: calc(100vh - 48px - 64px);
+.cds--tile {
+  margin-bottom: 1px;
 }
 
 .destinations, .sources {
@@ -42,31 +64,13 @@ body {
   overflow-y: auto
 }
 
-.routerMeta.hasTake {
-  .routerStatus {
-    height: 20em
-  }
-
-  .routerProbe {
-    height: calc(100% - 20em - 1px);
-  }
-}
-
-.routerStatus {
-  margin-bottom: 1px;
-  height: 16em;
-  // position: sticky;
-  // top: 0;
-}
-
-.routerProbe {
-  // position: sticky;
-  // top: 0;
-  height: calc(100% - 16em - 1px);
-  overflow: auto;
-}
-
 .destinationButton {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sourceButton{
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -118,7 +122,9 @@ body {
 
 .probeInfo {
   margin-top: -48px;
+  z-index: 1;
   height: 0;
+  position: relative;
 }
 
 .openProbeOverlay {
