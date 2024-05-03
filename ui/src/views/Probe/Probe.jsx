@@ -113,6 +113,14 @@ function Probe({ index, slug, active }) {
                 <strong>
                   Probe
                   {' '}
+                  Destination:
+                </strong>
+                {' '}
+                {matrix.destinations?.[config.probe.channels[index].router_destination - 1]?.label}
+                <br />
+                <strong>
+                  Probe
+                  {' '}
                   Source:
                 </strong>
                 {' '}
