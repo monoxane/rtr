@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"fmt"
@@ -7,20 +7,23 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/monoxane/rtr/internal/config"
+	"github.com/monoxane/rtr/internal/model"
 )
 
 func HandleNewProbe(c *gin.Context) {
-	channel := ProbeChannel{
-		Label:            fmt.Sprintf("Probe Channel %d", len(Config.Probe.Channels)+1),
-		Slug:             fmt.Sprintf("probe-channel-%d", len(Config.Probe.Channels)+1),
+	channel := model.ProbeChannel{
+		Label:            fmt.Sprintf("Probe Channel %d", len(config.Global.Probe.Channels)+1),
+		Slug:             fmt.Sprintf("probe-channel-%d", len(config.Global.Probe.Channels)+1),
 		IngestTypeString: "ts-http",
 	}
 
-	Config.Probe.Channels = append(Config.Probe.Channels, &channel)
+	config.Global.Probe.Channels = append(config.Global.Probe.Channels, &channel)
 
 	log.Printf("Created new probe channel")
-	Config.Probe.Enabled = true
-	Config.Save()
+	config.Global.Probe.Enabled = true
+	config.Save()
 
 	c.Status(http.StatusOK)
 }
@@ -37,13 +40,13 @@ func HandleUpdateProbe(c *gin.Context) {
 		return
 	}
 
-	for i, channel := range Config.Probe.Channels {
+	for i, channel := range config.Global.Probe.Channels {
 		if channel.Slug == slug {
-			Config.Probe.Channels[i].Stop()
-			Config.Probe.Channels[i] = &update
-			Config.Probe.Channels[i].Start()
+			config.Global.Probe.Channels[i].Stop()
+			config.Global.Probe.Channels[i] = &update
+			config.Global.Probe.Channels[i].Start()
 
-			Config.Save()
+			config.Save()
 
 			c.JSON(http.StatusOK, channel)
 			return
@@ -54,9 +57,9 @@ func HandleUpdateProbe(c *gin.Context) {
 func HandleDeleteProbe(c *gin.Context) {
 	slug := c.Param("slug")
 
-	for i, channel := range Config.Probe.Channels {
+	for i, channel := range config.Global.Probe.Channels {
 		if channel.Slug == slug {
-			Config.Probe.Channels = append(Config.Probe.Channels[:i], Config.Probe.Channels[i+1:]...)
+			config.Global.Probe.Channels = append(config.Global.Probe.Channels[:i], config.Global.Probe.Channels[i+1:]...)
 
 			c.Status(http.StatusOK)
 			return
@@ -67,7 +70,7 @@ func HandleDeleteProbe(c *gin.Context) {
 func HandleProbeClient(c *gin.Context) {
 	slug := c.Param("slug")
 
-	for _, channel := range Config.Probe.Channels {
+	for _, channel := range config.Global.Probe.Channels {
 		if channel.Slug == slug {
 			channel.Handler.ServeWS(c)
 
@@ -83,7 +86,7 @@ func HandleHTTPProbeStream(c *gin.Context) {
 
 	log.Printf("stream for probe %s connected from %s", slug, c.RemoteIP())
 
-	for _, channel := range Config.Probe.Channels {
+	for _, channel := range config.Global.Probe.Channels {
 		if channel.Slug == slug {
 			channel.Handler.Status.ActiveSource = true
 			SendProbeStats()
@@ -105,5 +108,4 @@ func HandleHTTPProbeStream(c *gin.Context) {
 			return
 		}
 	}
-
 }

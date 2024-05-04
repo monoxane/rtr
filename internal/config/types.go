@@ -1,11 +1,9 @@
-package main
+package config
 
 import (
 	"encoding/json"
-	"log"
-	"os"
 
-	"github.com/monoxane/nk/pkg/matrix"
+	nkmatrix "github.com/monoxane/nk/pkg/matrix"
 )
 
 type Configuration struct {
@@ -33,13 +31,12 @@ type ProbeConfig struct {
 }
 
 type ProbeChannel struct {
-	Label             string              `json:"label"`
-	Slug              string              `json:"slug"`
-	RouterDestination int                 `json:"router_destination"`
-	IngestTypeString  string              `json:"ingest_type"` // ts-http, ts-tcp
-	HTTPPath          string              `json:"http_path"`
-	TCPPort           int                 `json:"tcp_port"`
-	Handler           *ProbeClientHandler `json:"-"`
+	Label             string `json:"label"`
+	Slug              string `json:"slug"`
+	RouterDestination int    `json:"router_destination"`
+	IngestTypeString  string `json:"ingest_type"` // ts-http, ts-tcp
+	HTTPPath          string `json:"http_path"`
+	TCPPort           int    `json:"tcp_port"`
 }
 
 func (c *ProbeChannel) MarshalJSON() ([]byte, error) {
@@ -61,50 +58,6 @@ func (c *ProbeChannel) MarshalJSON() ([]byte, error) {
 }
 
 type Salvo struct {
-	Label        string               `json:"label"`
-	Destinations []matrix.Destination `json:"destinations"`
-}
-
-func (c *Configuration) Save() {
-	file, err := json.MarshalIndent(c, "", "	  ")
-	if err != nil {
-		log.Printf("unable to marshal config: %s", err)
-		return
-	}
-
-	err = os.WriteFile("config.json", file, 0777)
-	if err != nil {
-		log.Printf("unable to save config: %s", err)
-		return
-	}
-
-	log.Print("saved config")
-}
-
-var Config Configuration
-
-func init() {
-	data, err := os.ReadFile("config.json")
-
-	if err != nil && os.IsNotExist(err) {
-		config := Configuration{
-			ConfigurationRequired: true,
-			Server: ServerConfig{
-				HTTPPort:             8080,
-				FirstProbeStreamPort: 9000,
-			},
-			Salvos: []Salvo{},
-		}
-
-		config.Save()
-
-		Config = config
-	}
-
-	if err == nil {
-		err = json.Unmarshal(data, &Config)
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}
+	Label        string                 `json:"label"`
+	Destinations []nkmatrix.Destination `json:"destinations"`
 }

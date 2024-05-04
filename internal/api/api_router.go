@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"log"
@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/monoxane/rtr/internal/config"
+	"github.com/monoxane/rtr/internal/router"
 )
 
 func HandleUpdateRouter(c *gin.Context) {
-	var newRouterConfig RouterConfig
+	var newRouterConfig config.RouterConfig
 	err := c.BindJSON(&newRouterConfig)
 	if err != nil {
 		log.Printf("unable to bind config to object: %s", err)
@@ -19,18 +21,16 @@ func HandleUpdateRouter(c *gin.Context) {
 		return
 	}
 
-	Config.Router = newRouterConfig
-	Config.ConfigurationRequired = false
-	Config.Save()
+	config.Global.Router = newRouterConfig
+	config.Global.ConfigurationRequired = false
+	config.Save()
 	log.Printf("saved new router config")
 
 	log.Printf("closing existing router connection")
-	router.Disconnect()
-
-	router = nil
+	router.Router.Disconnect()
 
 	log.Printf("connecting new router connection")
-	ConnectRouter()
+	router.ConnectRouter()
 
 	time.Sleep(1 * time.Second)
 
@@ -46,7 +46,7 @@ func HandleUpdateSource(c *gin.Context) {
 		return
 	}
 
-	var update SourceUpdate
+	var update router.SourceUpdate
 	err = c.BindJSON(&update)
 	if err != nil {
 		log.Printf("unable to bind update to object: %s", err)
@@ -55,7 +55,7 @@ func HandleUpdateSource(c *gin.Context) {
 		return
 	}
 
-	router.UpdateSourceLabel(id, update.Label)
+	router.Router.UpdateSourceLabel(id, update.Label)
 }
 
 func HandleUpdateDestination(c *gin.Context) {
@@ -67,7 +67,7 @@ func HandleUpdateDestination(c *gin.Context) {
 		return
 	}
 
-	var update DestinationUpdate
+	var update router.DestinationUpdate
 	err = c.BindJSON(&update)
 	if err != nil {
 		log.Printf("unable to bind update to object: %s", err)
@@ -76,5 +76,5 @@ func HandleUpdateDestination(c *gin.Context) {
 		return
 	}
 
-	router.UpdateDestinationLabel(id, update.Label)
+	router.Router.UpdateDestinationLabel(id, update.Label)
 }
