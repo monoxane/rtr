@@ -52,6 +52,8 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/monoxane/nk v0.2.0 h1:tW9R3N0BtX/NVhLF4ZebBXnOFGViG0kvH17at3iKeL4=
 github.com/monoxane/nk v0.2.0/go.mod h1:vjsdujNSBMnyX6SYY9GICejJ8nh5FmqKD+hfKLYfJrE=
+github.com/monoxane/nk v1.0.0 h1:cEYySJOJoGJqK85I6k6HWWBHLvD3qBJDmXYyKxXwaDo=
+github.com/monoxane/nk v1.0.0/go.mod h1:vjsdujNSBMnyX6SYY9GICejJ8nh5FmqKD+hfKLYfJrE=
 github.com/pelletier/go-toml/v2 v2.0.6 h1:nrzqCb7j9cDFj2coyLNLaZuJTLjWjlaz6nvTvIwycIU=
 github.com/pelletier/go-toml/v2 v2.0.6/go.mod h1:eumQOmlWiOPt5WriQQqoM5y18pDHwha2N+QD+EUNTek=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=

@@ -25,7 +25,7 @@ func HandleUpdateRouter(c *gin.Context) {
 	log.Printf("saved new router config")
 
 	log.Printf("closing existing router connection")
-	router.Conn.Close()
+	router.Disconnect()
 
 	router = nil
 

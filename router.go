@@ -3,51 +3,50 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"net"
 	"os"
 
-	"github.com/monoxane/nk"
+	nkrouter "github.com/monoxane/nk/pkg/router"
 )
 
 var (
-	router *nk.Router
+	router *nkrouter.Router
 )
 
 func ConnectRouter() {
-	router = nk.New(Config.Router.IP, uint8(Config.Router.Address), Config.Router.Model)
+	router = nkrouter.New(net.ParseIP(Config.Router.IP), uint8(Config.Router.Address), Config.Router.Model)
 
-	router.SetOnUpdate(func(u *nk.Update) {
-		log.Printf("Received %s update: %v", u.Type, u.Data)
+	router.SetOnUpdate(func(update *nkrouter.RouteUpdate) {
+		log.Printf("Received %s update: %v%v", update.Type, update.Source, update.Destination)
 
 		var payload []byte
 
-		switch u.Type {
+		switch update.Type {
 		case "destination":
-			update := u.Data.(*nk.Destination)
 			payload, _ = json.Marshal(DestinationUpdate{
-				Id:    update.GetIDInt(),
-				Label: update.GetLabel(),
+				Id:    update.Destination.GetIDInt(),
+				Label: update.Destination.GetLabel(),
 				Source: SourceUpdate{
-					Id:    update.Source.GetIDInt(),
-					Label: update.Source.GetLabel(),
+					Id:    update.Destination.Source.GetIDInt(),
+					Label: update.Destination.Source.GetLabel(),
 				},
 			})
 
 		case "source":
-			update := u.Data.(*nk.Source)
 			payload, _ = json.Marshal(SourceUpdate{
-				Id:    update.GetIDInt(),
-				Label: update.GetLabel(),
+				Id:    update.Source.GetIDInt(),
+				Label: update.Source.GetLabel(),
 			})
 		}
 
-		update := MatrixWSMessage{
-			Type: u.Type + "_update",
+		message := MatrixWSMessage{
+			Type: update.Type + "_update",
 			Data: payload,
 		}
 
 		MatrixWSConnectionsMutex.Lock()
 		for conn := range MatrixWSConnections {
-			conn.Socket.WriteJSON(update)
+			conn.Socket.WriteJSON(message)
 		}
 		MatrixWSConnectionsMutex.Unlock()
 	})

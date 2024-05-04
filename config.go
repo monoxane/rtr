@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/monoxane/nk"
+	"github.com/monoxane/nk/pkg/matrix"
 )
 
 type Configuration struct {
@@ -61,8 +61,8 @@ func (c *ProbeChannel) MarshalJSON() ([]byte, error) {
 }
 
 type Salvo struct {
-	Label        string           `json:"label"`
-	Destinations []nk.Destination `json:"destinations"`
+	Label        string               `json:"label"`
+	Destinations []matrix.Destination `json:"destinations"`
 }
 
 func (c *Configuration) Save() {
