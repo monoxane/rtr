@@ -1,4 +1,4 @@
-package main
+package router
 
 import (
 	"encoding/json"
@@ -7,39 +7,42 @@ import (
 	"os"
 
 	nkrouter "github.com/monoxane/nk/pkg/router"
+
+	"github.com/monoxane/rtr/internal/config"
+	"github.com/monoxane/rtr/internal/model"
 )
 
 var (
-	router *nkrouter.Router
+	Router *nkrouter.Router
 )
 
 func ConnectRouter() {
-	router = nkrouter.New(net.ParseIP(Config.Router.IP), uint8(Config.Router.Address), Config.Router.Model)
+	Router = nkrouter.New(net.ParseIP(config.Global.Router.IP), uint8(config.Global.Router.Address), config.Global.Router.Model)
 
-	router.SetOnUpdate(func(update *nkrouter.RouteUpdate) {
+	Router.SetOnUpdate(func(update *nkrouter.RouteUpdate) {
 		log.Printf("Received %s update: %v%v", update.Type, update.Source, update.Destination)
 
 		var payload []byte
 
 		switch update.Type {
 		case "destination":
-			payload, _ = json.Marshal(DestinationUpdate{
+			payload, _ = json.Marshal(model.DestinationUpdate{
 				Id:    update.Destination.GetIDInt(),
 				Label: update.Destination.GetLabel(),
-				Source: SourceUpdate{
+				Source: model.SourceUpdate{
 					Id:    update.Destination.Source.GetIDInt(),
 					Label: update.Destination.Source.GetLabel(),
 				},
 			})
 
 		case "source":
-			payload, _ = json.Marshal(SourceUpdate{
+			payload, _ = json.Marshal(model.SourceUpdate{
 				Id:    update.Source.GetIDInt(),
 				Label: update.Source.GetLabel(),
 			})
 		}
 
-		message := MatrixWSMessage{
+		message := model.MatrixWSMessage{
 			Type: update.Type + "_update",
 			Data: payload,
 		}
@@ -53,10 +56,10 @@ func ConnectRouter() {
 
 	data, err := os.ReadFile("labels.lbl")
 	if err == nil {
-		router.LoadLabels(string(data))
+		Router.LoadLabels(string(data))
 	} else {
 		log.Printf("unable to load DashBoard labels.lbl")
 	}
 
-	go router.Connect()
+	go Router.Connect()
 }

@@ -28,8 +28,8 @@ function SidebarNav({ onClickSideNavExpand, isActive, isRail }) {
         {config.probe?.enabled && <SideNavLink to="/probe" label="Probe" renderIcon={View} onClick={onClickSideNavExpand} />}
         <SideNavLink to="/salvos" label="Salvos" renderIcon={DocumentExport} onClick={onClickSideNavExpand} />
         <SideNavDivider />
-        <SideNavLink to="/config/router" label="Router Config" renderIcon={SettingsServices} onClick={onClickSideNavExpand} />
-        <SideNavLink to="/config/probe" label="Probe Config" renderIcon={SettingsView} onClick={onClickSideNavExpand} />
+        <SideNavLink to="/config/router" label="Router config.Global" renderIcon={SettingsServices} onClick={onClickSideNavExpand} />
+        <SideNavLink to="/config/probe" label="Probe config.Global" renderIcon={SettingsView} onClick={onClickSideNavExpand} />
       </SideNavItems>
     </SideNav>
   );

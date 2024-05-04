@@ -1,11 +1,26 @@
-package main
+package api
 
 import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
+	"github.com/monoxane/rtr/internal/config"
+	"github.com/monoxane/rtr/internal/router"
+)
+
+var (
+	MatrixWSConnections      = make(map[WebsocketConnection]uuid.UUID)
+	MatrixWSConnectionsMutex sync.Mutex
+	Upgrader                 = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin:     func(r *http.Request) bool { return true },
+	}
 )
 
 func serveHTTP() {
@@ -37,18 +52,18 @@ func serveHTTP() {
 	svc.GET("/v1/ws/probe/:slug", HandleProbeClient)
 	svc.POST("/v1/probe/stream/:slug", HandleHTTPProbeStream)
 
-	err := svc.Run(fmt.Sprintf(":%d", Config.Server.HTTPPort))
+	err := svc.Run(fmt.Sprintf(":%d", config.Global.Server.HTTPPort))
 	if err != nil {
 		log.Fatalln("unable to start http server", err)
 	}
 }
 
 func HandleMatrix(c *gin.Context) {
-	c.JSON(http.StatusOK, &router.Matrix)
+	c.JSON(http.StatusOK, &router.Router.Matrix)
 }
 
 func HandleGetConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, Config)
+	c.JSON(http.StatusOK, config.Global)
 }
 
 func CORSMiddleware() gin.HandlerFunc {

@@ -1,14 +1,15 @@
-package main
+package api
 
 import (
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/monoxane/rtr/internal/config"
 )
 
 func HandleSalvoPost(c *gin.Context) {
-	var salvo Salvo
+	var salvo config.Salvo
 	err := c.BindJSON(&salvo)
 	if err != nil {
 		log.Printf("unable to bind salvo to object: %s", err)
@@ -19,20 +20,20 @@ func HandleSalvoPost(c *gin.Context) {
 
 	log.Printf("saving salvo: %+v", salvo)
 
-	for i, existingSalvo := range Config.Salvos {
+	for i, existingSalvo := range config.Global.Salvos {
 		if existingSalvo.Label == salvo.Label {
 			log.Printf("updating existing salvo")
-			Config.Salvos[i] = salvo
+			config.Global.Salvos[i] = salvo
 			c.Status(http.StatusOK)
-			Config.Save()
+			config.Save()
 
 			return
 		}
 	}
 
-	Config.Salvos = append(Config.Salvos, salvo)
+	config.Global.Salvos = append(config.Global.Salvos, salvo)
 	log.Printf("added new salvo")
-	Config.Save()
+	config.Save()
 
 	c.Status(http.StatusOK)
 }
