@@ -1,8 +1,6 @@
 package probe
 
 import (
-	"log"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -24,7 +22,7 @@ func NewProbeClient(ws *websocket.Conn, unregisterChan chan *ProbeClient) *Probe
 }
 
 func (c *ProbeClient) Close() {
-	log.Println("Closing client's send channel")
+	log.Info().Msg("closing client channel")
 	close(c.sendChan)
 }
 
@@ -39,11 +37,11 @@ func (c *ProbeClient) ReadHandler() {
 			break
 		}
 
+		log.Debug().Str("message", string(msg)).Int("type", msgType).Msg("received message from probe client")
+
 		if msgType == websocket.CloseMessage {
 			break
 		}
-
-		log.Println("Received from client: " + string(msg))
 	}
 }
 

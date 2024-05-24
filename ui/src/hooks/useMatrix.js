@@ -2,23 +2,36 @@ import { useState, useEffect } from 'react';
 import useAxios from 'axios-hooks';
 import useWebSocket from 'react-use-websocket';
 
-function useMatrix() {
+function useMatrix(disableInitialRequest) {
   const [matrix, setMatrix] = useState([]);
   const [probeStats, setProbeStats] = useState([]);
-  const [haveRecievedData, setHaveRecievedData] = useState(false);
+  const [haveReceivedData, setHaveReceivedData] = useState(false);
+  const [haveReceivedProbeData, setHaveReceivedProbeData] = useState(false);
   const wsuri = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/v1/ws/rtr`;
 
   const [{ data, loading, error }, refreshAxios] = useAxios(
     '/v1/matrix',
   );
 
-  if (data && matrix.length === 0 && !haveRecievedData) setMatrix(data);
+  if (data && matrix.length === 0 && !haveReceivedData) setMatrix(data);
+
+  const [{ data: probeData }, refreshProbeData] = useAxios(
+    '/v1/probe/statuses',
+  );
+
+  if (probeData && matrix.length === 0 && !haveReceivedProbeData) setMatrix(data);
 
   useEffect(() => {
-    if (!haveRecievedData) {
+    if (!haveReceivedData && !disableInitialRequest) {
       refreshAxios();
     }
-  }, [haveRecievedData]);
+  }, [haveReceivedData]);
+
+  useEffect(() => {
+    if (!haveReceivedProbeData && !disableInitialRequest) {
+      refreshProbeData();
+    }
+  }, [haveReceivedProbeData]);
 
   const {
     sendJsonMessage,
@@ -35,7 +48,7 @@ function useMatrix() {
 
   useEffect(() => {
     if (lastMessage !== null) {
-      setHaveRecievedData(true);
+      setHaveReceivedData(true);
       const tempMatrix = { ...matrix };
       const update = JSON.parse(lastMessage.data);
       let found = false;
@@ -64,6 +77,7 @@ function useMatrix() {
           break;
         case 'probe_stats':
           setProbeStats(update.data);
+          setHaveReceivedProbeData(true);
           break;
         default:
       }

@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 )
 
 type ProbeClientHandler struct {
@@ -27,6 +28,8 @@ type ProbeClientHandler struct {
 	cancel  context.CancelFunc
 	mux     sync.Mutex
 
+	log zerolog.Logger
+
 	upgrader *websocket.Upgrader
 }
 
@@ -35,7 +38,7 @@ func (h *ProbeClientHandler) Run() {
 		select {
 		case client := <-h.register:
 			h.clients[client] = true
-			log.Printf("[probe %s] client connected. active clients: %d\n", h.slug, len(h.clients))
+			h.log.Info().Int("clients", len(h.clients)).Msg("client connected")
 			h.Status.Clients = len(h.clients)
 			SendProbeStats()
 
@@ -44,7 +47,7 @@ func (h *ProbeClientHandler) Run() {
 			if ok {
 				delete(h.clients, client)
 			}
-			log.Printf("[probe %s] client disconnected. active clients: %d\n", h.slug, len(h.clients))
+			h.log.Info().Int("clients", len(h.clients)).Msg("client disconnected")
 			h.Status.Clients = len(h.clients)
 			SendProbeStats()
 
@@ -54,19 +57,22 @@ func (h *ProbeClientHandler) Run() {
 	}
 }
 
-func (h *ProbeClientHandler) ServeTCPIngest() {
-	listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", h.tcpPort))
+func (h *ProbeClientHandler) ServeTCPIngest() error {
+	address := fmt.Sprintf("0.0.0.0:%d", h.tcpPort)
+	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatalf("unable to listen for transport stream on %s: %s", listener.Addr(), err)
+		h.log.Error().Err(err).Str("address", address).Msg("unable to listen for transport stream")
+		return errors.Wrap(err, "unable to listen on port")
 	}
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Printf("error handling tcp transport stream connection: %s", err)
+			h.log.Error().Err(err).Str("address", address).Msg("unable to handle incoming stream")
+			return errors.Wrap(err, "unable to handle incoming stream")
 		}
 
-		log.Printf("stream for probe %s connected from %s", h.slug, conn.RemoteAddr())
+		h.log.Info().Str("address", conn.RemoteAddr().String()).Msg("stream connected")
 
 		h.Status.ActiveSource = true
 		SendProbeStats()
@@ -81,7 +87,7 @@ func (h *ProbeClientHandler) ServeTCPIngest() {
 				h.Status.ActiveSource = false
 				SendProbeStats()
 
-				log.Printf("stream for probe %s disconnected from %s", h.slug, conn.RemoteAddr())
+				h.log.Warn().Err(err).Str("address", conn.RemoteAddr().String()).Msg("stream disconnected")
 
 				break
 			}
@@ -94,7 +100,7 @@ func (h *ProbeClientHandler) ServeTCPIngest() {
 		h.Status.ActiveSource = false
 		SendProbeStats()
 
-		log.Printf("stream for probe %s disconnected from %s", h.slug, conn.RemoteAddr())
+		h.log.Warn().Str("address", conn.RemoteAddr().String()).Msg("stream disconnected connected")
 	}
 }
 
@@ -109,7 +115,7 @@ func (h *ProbeClientHandler) ServeWS(c *gin.Context) {
 
 	ws, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		h.log.Error().Err(err).Str("address", c.ClientIP()).Msg("failed to upgrade client to ws")
 		return
 	}
 

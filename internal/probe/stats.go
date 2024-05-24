@@ -1,34 +1,40 @@
 package probe
 
-import (
-	"encoding/json"
+import "time"
 
-	"github.com/monoxane/rtr/internal/config"
-	"github.com/monoxane/rtr/internal/model"
+var (
+	statsHandler func(map[string]ProbeChannelStatus)
 )
 
 type ProbeChannelStatus struct {
-	Id           int  `json:"id"`
-	ActiveSource bool `json:"active_source"`
-	Clients      int  `json:"clients"`
+	Slug         string `json:"slug"`
+	ActiveSource bool   `json:"active_source"`
+	Clients      int    `json:"clients"`
+}
+
+func StatsHandler(handler func(map[string]ProbeChannelStatus)) {
+	statsHandler = handler
+	go WritePumpStats()
+}
+
+func WritePumpStats() {
+	log.Info().Msg("sending probe stats every 1 second")
+	ticker := time.NewTicker(1 * time.Second)
+	for range ticker.C {
+		SendProbeStats()
+	}
+}
+
+func GetProbeStatuses() map[string]ProbeChannelStatus {
+	statuses := map[string]ProbeChannelStatus{}
+
+	for _, channel := range channels {
+		statuses[channel.Slug] = channel.Handler.Status
+	}
+
+	return statuses
 }
 
 func SendProbeStats() {
-	statuses := []ProbeChannelStatus{}
-
-	for _, channel := range config.Global.Probe.Channels {
-		statuses = append(statuses, channel.Handler.Status)
-	}
-
-	payload, _ := json.Marshal(statuses)
-	update := model.MatrixWSMessage{
-		Type: "probe_stats",
-		Data: payload,
-	}
-
-	MatrixWSConnectionsMutex.Lock()
-	for conn := range MatrixWSConnections {
-		conn.Socket.WriteJSON(update)
-	}
-	MatrixWSConnectionsMutex.Unlock()
+	statsHandler(GetProbeStatuses())
 }

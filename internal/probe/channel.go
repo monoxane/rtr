@@ -9,16 +9,18 @@ import (
 )
 
 type ProbeChannel struct {
-	config.ProbeChannel
+	*config.ProbeChannel
 	Handler *ProbeClientHandler `json:"-"`
 }
 
 func (c *ProbeChannel) Start() {
 	ctx, cancel := context.WithCancel(context.Background())
+	log.Debug().Str("channel", c.Slug).Msg("starting probe channel")
 
 	c.Handler = &ProbeClientHandler{
 		slug: c.Slug,
 		Status: ProbeChannelStatus{
+			Slug:         c.Slug,
 			ActiveSource: false,
 		},
 		clients:    make(map[*ProbeClient]bool),
@@ -32,6 +34,7 @@ func (c *ProbeChannel) Start() {
 				return true
 			},
 		},
+		log:     log.With().Str("object", "probeChannelHandler").Str("channel", c.Slug).Logger(),
 		context: ctx,
 		cancel:  cancel,
 		tcpPort: c.TCPPort,
