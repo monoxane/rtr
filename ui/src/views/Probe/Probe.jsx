@@ -98,7 +98,7 @@ function Probe({ index, slug, active }) {
     <>
       {(matrixLoading || configLoading) && <Loading withOverlay />}
       {(matrixError || configError) && JSON.stringify({ matrixError, configError })}
-      <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${slug}`} active={probeStats[index]?.active_source && active} />
+      <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${slug}`} active={probeStats[slug]?.active_source && active} />
       <div className="probeInfo">
         <Button
           hasIconOnly

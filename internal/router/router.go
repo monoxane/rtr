@@ -1,64 +1,56 @@
 package router
 
 import (
-	"encoding/json"
-	"log"
 	"net"
 	"os"
 
-	nkrouter "github.com/monoxane/nk/pkg/router"
+	nkRouter "github.com/monoxane/nk/pkg/router"
 
 	"github.com/monoxane/rtr/internal/config"
-	"github.com/monoxane/rtr/internal/model"
+
+	"github.com/rs/zerolog"
 )
 
 var (
-	Router *nkrouter.Router
+	Router *nkRouter.Router
+	log    zerolog.Logger
 )
 
-func ConnectRouter() {
-	Router = nkrouter.New(net.ParseIP(config.Global.Router.IP), uint8(config.Global.Router.Address), config.Global.Router.Model)
+func Logger(logger zerolog.Logger) {
+	log = logger
+}
 
-	Router.SetOnUpdate(func(update *nkrouter.RouteUpdate) {
-		log.Printf("Received %s update: %v%v", update.Type, update.Source, update.Destination)
+func Connect(updateFunc func(*nkRouter.RouteUpdate)) {
+	routerConfig := config.GetRouter()
+	log.Info().Str("ip", net.ParseIP(routerConfig.IP).String()).Int("tbus_address", routerConfig.Address).Str("model", routerConfig.Model).Msg("connecting to router")
+	Router = nkRouter.New(net.ParseIP(routerConfig.IP), uint8(routerConfig.Address), routerConfig.Model)
 
-		var payload []byte
-
-		switch update.Type {
+	Router.SetOnUpdate(func(ru *nkRouter.RouteUpdate) {
+		switch ru.Type {
 		case "destination":
-			payload, _ = json.Marshal(model.DestinationUpdate{
-				Id:    update.Destination.GetIDInt(),
-				Label: update.Destination.GetLabel(),
-				Source: model.SourceUpdate{
-					Id:    update.Destination.Source.GetIDInt(),
-					Label: update.Destination.Source.GetLabel(),
-				},
-			})
-
+			log.Info().
+				Str("type", ru.Type).
+				Int("dst_id", ru.Destination.GetIDInt()).
+				Str("dst", ru.Destination.Label).
+				Int("src_id", ru.Destination.Source.GetIDInt()).
+				Str("src", ru.Destination.Source.Label).
+				Msg("processing update")
 		case "source":
-			payload, _ = json.Marshal(model.SourceUpdate{
-				Id:    update.Source.GetIDInt(),
-				Label: update.Source.GetLabel(),
-			})
+			log.Info().
+				Str("type", ru.Type).
+				Int("src_id", ru.Destination.Source.GetIDInt()).
+				Str("src", ru.Destination.Source.Label).
+				Msg("processing update")
+		default:
 		}
-
-		message := model.MatrixWSMessage{
-			Type: update.Type + "_update",
-			Data: payload,
-		}
-
-		MatrixWSConnectionsMutex.Lock()
-		for conn := range MatrixWSConnections {
-			conn.Socket.WriteJSON(message)
-		}
-		MatrixWSConnectionsMutex.Unlock()
+		updateFunc(ru)
 	})
 
 	data, err := os.ReadFile("labels.lbl")
 	if err == nil {
 		Router.LoadLabels(string(data))
 	} else {
-		log.Printf("unable to load DashBoard labels.lbl")
+		log.Warn().Err(err).Msg("unable to load dashboard .lbl file")
 	}
 
 	go Router.Connect()

@@ -2,32 +2,44 @@ package config
 
 import (
 	"encoding/json"
-	"log"
 	"os"
+
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 )
 
-var Global Configuration
+var (
+	log           zerolog.Logger
+	configuration Configuration
+)
 
-func Save() {
-	file, err := json.MarshalIndent(Global, "", "	  ")
+func Logger(logger zerolog.Logger) {
+	log = logger
+}
+
+func Save() error {
+	log.Info().Msg("saving configuration")
+	file, err := json.MarshalIndent(configuration, "", "	  ")
 	if err != nil {
-		log.Printf("unable to marshal config: %s", err)
-		return
+		return errors.Wrap(err, "unable to marshal configuration")
 	}
 
 	err = os.WriteFile("config.json", file, 0777)
 	if err != nil {
-		log.Printf("unable to save config: %s", err)
-		return
+		return errors.Wrap(err, "unable to save configuration to disk")
 	}
 
-	log.Print("saved config")
+	log.Info().Msg("saved configuration")
+	return nil
 }
 
-func Load() {
+func Load() error {
+	log.Info().Msg("loading configuration")
 	data, err := os.ReadFile("config.json")
 
 	if err != nil && os.IsNotExist(err) {
+		log.Info().Msg("no configuration found, creating new configuration")
+
 		config := Configuration{
 			ConfigurationRequired: true,
 			Server: ServerConfig{
@@ -37,15 +49,53 @@ func Load() {
 			Salvos: []Salvo{},
 		}
 
-		Global = config
+		configuration = config
 
 		Save()
 	}
 
 	if err == nil {
-		err = json.Unmarshal(data, &Global)
+		err = json.Unmarshal(data, &configuration)
 		if err != nil {
-			log.Fatalln(err)
+			return errors.Wrap(err, "unable to unmarshal configuration")
 		}
 	}
+
+	return nil
+}
+
+func Get() Configuration {
+	return configuration
+}
+
+func GetServer() ServerConfig {
+	return configuration.Server
+}
+
+func GetRouter() RouterConfig {
+	return configuration.Router
+}
+
+func SetRouter(router RouterConfig) error {
+	configuration.ConfigurationRequired = false
+	configuration.Router = router
+	return Save()
+}
+
+func GetProbe() ProbeConfig {
+	return configuration.Probe
+}
+
+func SetProbe(probe ProbeConfig) error {
+	configuration.Probe = probe
+	return Save()
+}
+
+func GetSalvos() []Salvo {
+	return configuration.Salvos
+}
+
+func SetSalvos(salvos []Salvo) error {
+	configuration.Salvos = salvos
+	return Save()
 }

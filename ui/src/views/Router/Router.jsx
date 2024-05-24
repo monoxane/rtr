@@ -236,7 +236,7 @@ function Router() {
                       }}
                     />
                   </div>
-                  <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${config.probe.channels[selectedProbe].slug}`} active={probeStats[selectedProbe]?.active_source} />
+                  <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${config.probe.channels[selectedProbe].slug}`} active={probeStats[config.probe.channels[selectedProbe].slug]?.active_source} />
                   <br />
                   <strong>
                     Status:

@@ -14,8 +14,8 @@ const RouterSingle = lazy(() => import('../views/Router/RouterSingle.jsx'));
 const Probe = lazy(() => import('../views/Probe/Probe.jsx'));
 const Salvos = lazy(() => import('../views/Salvos/Salvos.jsx'));
 const Salvo = lazy(() => import('../views/Salvos/Salvo.jsx'));
-const RouterConfig = lazy(() => import('../views/config.Global/RouterConfig.jsx'));
-const ProbeConfig = lazy(() => import('../views/config.Global/ProbeConfig.jsx'));
+const RouterConfig = lazy(() => import('../views/Config/RouterConfig.jsx'));
+const ProbeConfig = lazy(() => import('../views/Config/ProbeConfig.jsx'));
 
 export default createBrowserRouter(
   createRoutesFromElements(

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,22 +14,27 @@ func HandleUpdateRouter(c *gin.Context) {
 	var newRouterConfig config.RouterConfig
 	err := c.BindJSON(&newRouterConfig)
 	if err != nil {
-		log.Printf("unable to bind config to object: %s", err)
+		log.Error().Err(err).Msg("unable to bind config to object")
 		c.Status(http.StatusBadRequest)
 
 		return
 	}
 
-	config.Global.Router = newRouterConfig
-	config.Global.ConfigurationRequired = false
-	config.Save()
-	log.Printf("saved new router config")
+	err = config.SetRouter(newRouterConfig)
+	if err != nil {
+		log.Error().Err(err).Msg("unable to save router config")
+		c.Status(http.StatusBadRequest)
 
-	log.Printf("closing existing router connection")
+		return
+	}
+
+	log.Info().Msg("saved router config")
+
+	log.Info().Msg("closing existing router connection")
 	router.Router.Disconnect()
 
-	log.Printf("connecting new router connection")
-	router.ConnectRouter()
+	log.Info().Msg("connecting to router with new config")
+	router.Connect(RouteUpdateHandler)
 
 	time.Sleep(1 * time.Second)
 
@@ -40,7 +44,7 @@ func HandleUpdateRouter(c *gin.Context) {
 func HandleUpdateSource(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		log.Printf("unable to read source ID: %s", err)
+		log.Error().Err(err).Msg("unable to read source id")
 		c.Status(http.StatusBadRequest)
 
 		return
@@ -49,7 +53,7 @@ func HandleUpdateSource(c *gin.Context) {
 	var update router.SourceUpdate
 	err = c.BindJSON(&update)
 	if err != nil {
-		log.Printf("unable to bind update to object: %s", err)
+		log.Error().Err(err).Msg("unable to bind source update to object")
 		c.Status(http.StatusBadRequest)
 
 		return
@@ -61,7 +65,7 @@ func HandleUpdateSource(c *gin.Context) {
 func HandleUpdateDestination(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		log.Printf("unable to read destination ID: %s", err)
+		log.Error().Err(err).Msg("unable to read destination id")
 		c.Status(http.StatusBadRequest)
 
 		return
@@ -70,7 +74,7 @@ func HandleUpdateDestination(c *gin.Context) {
 	var update router.DestinationUpdate
 	err = c.BindJSON(&update)
 	if err != nil {
-		log.Printf("unable to bind update to object: %s", err)
+		log.Error().Err(err).Msg("unable to bind destination update to object")
 		c.Status(http.StatusBadRequest)
 
 		return
