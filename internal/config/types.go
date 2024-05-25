@@ -18,11 +18,23 @@ type ServerConfig struct {
 	FirstProbeStreamPort int `json:"first_probe_stream_port"`
 }
 type RouterConfig struct {
-	Provider string `json:"provider"`
-	IP       string `json:"ip"`
-	Address  int    `json:"address"`
-	Model    string `json:"model"`
-	Label    string `json:"label"`
+	Provider string                `json:"provider"`
+	IP       string                `json:"ip"`
+	Address  int                   `json:"address"`
+	Model    string                `json:"model"`
+	Label    string                `json:"label"`
+	IO       RouterIOConfiguration `json:"io"`
+}
+
+type RouterIOConfiguration struct {
+	Sources      []RouterSpigotConfiguration `json:"sources"`
+	Destinations []RouterSpigotConfiguration `json:"destinations"`
+}
+
+type RouterSpigotConfiguration struct {
+	ID          int    `json:"id"`
+	Label       string `json:"label"`
+	Description string `json:"description"`
 }
 
 type ProbeConfig struct {

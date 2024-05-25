@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 	"sync"
+
+	"github.com/monoxane/rtr/internal/config"
 )
 
 type Destination struct {
-	Id          uint16  `json:"id"`
+	Id          int     `json:"id"`
 	Label       string  `json:"label"`
 	UMD         string  `json:"umd"`
 	Description string  `json:"description"`
@@ -16,40 +19,83 @@ type Destination struct {
 }
 
 type Source struct {
-	Id          uint16 `json:"id"`
+	Id          int    `json:"id"`
 	Label       string `json:"label"`
 	UMD         string `json:"umd"`
 	Description string `json:"description"`
 }
 
-type Matrix struct {
-	destinations map[uint16]*Destination
-	sources      map[uint16]*Source
+type RouterMatrix struct {
+	destinations map[int]*Destination
+	sources      map[int]*Source
 	mux          sync.Mutex
 }
 
-func (matrix *Matrix) Init(numDestinations, numSources uint16) {
-	matrix.destinations = make(map[uint16]*Destination)
-	matrix.sources = make(map[uint16]*Source)
+func (matrix *RouterMatrix) Init(numDestinations, numSources int) {
+	matrix.destinations = make(map[int]*Destination)
+	matrix.sources = make(map[int]*Source)
+
+	routerConfig := config.GetRouter()
 
 	for i := 0; i < int(numSources)+1; i++ {
-		matrix.sources[uint16(i)] = &Source{
-			Id:    uint16(i),
-			Label: fmt.Sprintf("IN %d", i),
+		if i < len(routerConfig.IO.Sources) {
+			matrix.sources[i] = &Source{
+				Id:          i,
+				Label:       routerConfig.IO.Sources[i].Label,
+				Description: routerConfig.IO.Sources[i].Description,
+			}
+		} else {
+			matrix.sources[i] = &Source{
+				Id:          i,
+				Label:       fmt.Sprintf("IN %d", i),
+				Description: fmt.Sprintf("INPUT %d", i),
+			}
 		}
 	}
 
 	matrix.sources[0].SetLabel("DISCONNECTED")
+	matrix.sources[0].SetDescription("This Destination has no Source")
 
 	for i := 0; i < int(numDestinations)+1; i++ {
-		matrix.destinations[uint16(i)] = &Destination{
-			Id:    uint16(i),
-			Label: fmt.Sprintf("OUT %d", i),
+		if i < len(routerConfig.IO.Destinations) {
+			matrix.destinations[i] = &Destination{
+				Id:          i,
+				Label:       routerConfig.IO.Destinations[i].Label,
+				Description: routerConfig.IO.Destinations[i].Description,
+			}
+		} else {
+			matrix.destinations[i] = &Destination{
+				Id:          i,
+				Label:       fmt.Sprintf("OUT %d", i),
+				Description: fmt.Sprintf("OUTPUT %d", i),
+			}
 		}
 	}
+
+	go func() {
+		sources := make([]config.RouterSpigotConfiguration, numSources+1)
+		for i, source := range matrix.sources {
+			sources[i] = config.RouterSpigotConfiguration{
+				ID:          i,
+				Label:       source.Label,
+				Description: source.Description,
+			}
+		}
+		config.SetRouterSourcesConfig(sources)
+
+		destinations := make([]config.RouterSpigotConfiguration, numDestinations+1)
+		for i, destination := range matrix.destinations {
+			destinations[i] = config.RouterSpigotConfiguration{
+				ID:          i,
+				Label:       destination.Label,
+				Description: destination.Description,
+			}
+		}
+		config.SetRouterDestinationsConfig(destinations)
+	}()
 }
 
-func (matrix *Matrix) MarshalJSON() ([]byte, error) {
+func (matrix *RouterMatrix) MarshalJSON() ([]byte, error) {
 	type res struct {
 		Destinations []*Destination `json:"destinations,omitempty"`
 		Sources      []*Source      `json:"sources,omitempty"`
@@ -80,30 +126,32 @@ func (matrix *Matrix) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&result)
 }
 
-func (matrix *Matrix) SetCrosspoint(dst uint16, src uint16) {
+func (matrix *RouterMatrix) UpdateCrosspoint(dst int, src int) {
 	matrix.mux.Lock()
 	defer matrix.mux.Unlock()
 	matrix.destinations[dst].Source = matrix.sources[src]
+	log.Info().
+		Int("dst_id", matrix.destinations[dst].GetID()).
+		Str("dst", matrix.destinations[dst].GetLabel()).
+		Int("src_id", matrix.destinations[dst].Source.GetID()).
+		Str("src", matrix.destinations[dst].Source.GetLabel()).
+		Msg("route update")
 }
 
-func (matrix *Matrix) GetDestination(dst uint16) *Destination {
+func (matrix *RouterMatrix) GetDestination(dst int) *Destination {
 	matrix.mux.Lock()
 	defer matrix.mux.Unlock()
 	return matrix.destinations[dst]
 }
 
-func (matrix *Matrix) GetSource(src uint16) *Source {
+func (matrix *RouterMatrix) GetSource(src int) *Source {
 	matrix.mux.Lock()
 	defer matrix.mux.Unlock()
 	return matrix.sources[src]
 }
 
-func (dst *Destination) GetID() uint16 {
+func (dst *Destination) GetID() int {
 	return dst.Id
-}
-
-func (dst *Destination) GetIDInt() int {
-	return int(dst.Id)
 }
 
 func (dst *Destination) GetLabel() string {
@@ -112,18 +160,24 @@ func (dst *Destination) GetLabel() string {
 
 func (dst *Destination) SetLabel(lbl string) {
 	dst.Label = lbl
+	cfg := config.GetRouter().IO.Destinations
+	cfg[dst.Id].Label = lbl
+	config.SetRouterDestinationsConfig(cfg)
+}
+
+func (dst *Destination) SetDescription(desc string) {
+	dst.Description = desc
+	cfg := config.GetRouter().IO.Destinations
+	cfg[dst.Id].Description = desc
+	config.SetRouterDestinationsConfig(cfg)
 }
 
 func (dst *Destination) GetSource() *Source {
 	return dst.Source
 }
 
-func (src *Source) GetID() uint16 {
+func (src *Source) GetID() int {
 	return src.Id
-}
-
-func (src *Source) GetIDInt() int {
-	return int(src.Id)
 }
 
 func (src *Source) GetLabel() string {
@@ -132,10 +186,38 @@ func (src *Source) GetLabel() string {
 
 func (src *Source) SetLabel(lbl string) {
 	src.Label = lbl
+	cfg := config.GetRouter().IO.Sources
+	cfg[src.Id].Label = lbl
+	config.SetRouterSourcesConfig(cfg)
 }
 
-func (matrix *Matrix) ForEachDestination(callback func(uint16, *Destination)) {
+func (src *Source) SetDescription(desc string) {
+	src.Description = desc
+	cfg := config.GetRouter().IO.Sources
+	cfg[src.Id].Description = desc
+	config.SetRouterSourcesConfig(cfg)
+}
+
+func (matrix *RouterMatrix) ForEachDestination(callback func(int, *Destination)) {
 	for i, d := range matrix.destinations {
 		callback(i, d)
+	}
+}
+
+func (matrix *RouterMatrix) LoadLabels(labels string) {
+	lines := strings.Split(labels, "\n")
+	for i, line := range lines {
+		columns := strings.Split(line, ",")
+		if len(columns) < 4 {
+			continue
+		}
+
+		if i < int(len(matrix.destinations)) {
+			matrix.GetDestination(i + 1).SetLabel(columns[1])
+		}
+
+		if i < int(len(matrix.sources)) {
+			matrix.GetSource(i + 1).SetLabel(columns[3])
+		}
 	}
 }

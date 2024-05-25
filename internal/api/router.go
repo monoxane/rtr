@@ -59,7 +59,8 @@ func HandleUpdateSource(c *gin.Context) {
 		return
 	}
 
-	router.Router.UpdateSourceLabel(id, update.Label)
+	router.Matrix.GetSource(id).SetLabel(update.Label)
+	router.Matrix.GetSource(id).SetDescription(update.Description)
 }
 
 func HandleUpdateDestination(c *gin.Context) {
@@ -80,5 +81,6 @@ func HandleUpdateDestination(c *gin.Context) {
 		return
 	}
 
-	router.Router.UpdateDestinationLabel(id, update.Label)
+	router.Matrix.GetDestination(id).SetLabel(update.Label)
+	router.Matrix.GetDestination(id).SetDescription(update.Description)
 }

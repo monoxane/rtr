@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
-	nkrouter "github.com/monoxane/nk/pkg/router"
 	"github.com/monoxane/rtr/internal/probe"
 	"github.com/monoxane/rtr/internal/router"
 )
@@ -112,12 +111,12 @@ func HandleRtrWS(c *gin.Context) {
 
 			log.Info().Int("source", request.Source).Int("destination", request.Destination).Msg("handling route request")
 
-			router.Router.Route(uint16(request.Destination), uint16(request.Source))
+			router.Router.Route(request.Destination, request.Source)
 		}
 	}
 }
 
-func RouteUpdateHandler(update *nkrouter.RouteUpdate) {
+func RouteUpdateHandler(update *router.RouteUpdate) {
 	var payload []byte
 	var mt messageType
 
@@ -125,10 +124,10 @@ func RouteUpdateHandler(update *nkrouter.RouteUpdate) {
 	case "destination":
 		mt = DestinationUpdate
 		payload, _ = json.Marshal(router.DestinationUpdate{
-			Id:    update.Destination.GetIDInt(),
+			Id:    update.Destination.GetID(),
 			Label: update.Destination.GetLabel(),
 			Source: router.SourceUpdate{
-				Id:    update.Destination.Source.GetIDInt(),
+				Id:    update.Destination.Source.GetID(),
 				Label: update.Destination.Source.GetLabel(),
 			},
 		})
@@ -136,7 +135,7 @@ func RouteUpdateHandler(update *nkrouter.RouteUpdate) {
 	case "source":
 		mt = SourceUpdate
 		payload, _ = json.Marshal(router.SourceUpdate{
-			Id:    update.Source.GetIDInt(),
+			Id:    update.Source.GetID(),
 			Label: update.Source.GetLabel(),
 		})
 	}

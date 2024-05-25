@@ -99,3 +99,13 @@ func SetSalvos(salvos []Salvo) error {
 	configuration.Salvos = salvos
 	return Save()
 }
+
+func SetRouterDestinationsConfig(destinations []RouterSpigotConfiguration) {
+	configuration.Router.IO.Destinations = destinations
+	Save()
+}
+
+func SetRouterSourcesConfig(sources []RouterSpigotConfiguration) {
+	configuration.Router.IO.Sources = sources
+	Save()
+}

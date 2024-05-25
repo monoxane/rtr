@@ -56,7 +56,7 @@ func Serve() {
 }
 
 func HandleMatrix(c *gin.Context) {
-	c.JSON(http.StatusOK, &router.Router.Matrix)
+	c.JSON(http.StatusOK, &router.Matrix)
 }
 
 func HandleGetConfig(c *gin.Context) {
