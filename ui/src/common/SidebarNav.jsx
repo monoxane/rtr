@@ -13,6 +13,7 @@ import {
   SettingsServices,
   SettingsView,
   View,
+  TagEdit,
 } from '@carbon/icons-react';
 import configContext from '../context/configContext';
 
@@ -29,6 +30,7 @@ function SidebarNav({ onClickSideNavExpand, isActive, isRail }) {
         <SideNavLink to="/salvos" label="Salvos" renderIcon={DocumentExport} onClick={onClickSideNavExpand} />
         <SideNavDivider />
         <SideNavLink to="/config/router" label="Router Config" renderIcon={SettingsServices} onClick={onClickSideNavExpand} />
+        <SideNavLink to="/config/matrix" label="Matrix Config" renderIcon={TagEdit} onClick={onClickSideNavExpand} />
         <SideNavLink to="/config/probe" label="Probe Config" renderIcon={SettingsView} onClick={onClickSideNavExpand} />
       </SideNavItems>
     </SideNav>

@@ -15,6 +15,7 @@ const Probe = lazy(() => import('../views/Probe/Probe.jsx'));
 const Salvos = lazy(() => import('../views/Salvos/Salvos.jsx'));
 const Salvo = lazy(() => import('../views/Salvos/Salvo.jsx'));
 const RouterConfig = lazy(() => import('../views/Config/RouterConfig.jsx'));
+const MatrixConfig = lazy(() => import('../views/Config/MatrixConfig/MatrixConfig.jsx'));
 const ProbeConfig = lazy(() => import('../views/Config/ProbeConfig.jsx'));
 
 export default createBrowserRouter(
@@ -27,6 +28,7 @@ export default createBrowserRouter(
       <Route path="/salvos" element={<Salvos />} />
       <Route path="/salvos/:id" element={<Salvo />} />
       <Route path="/config/router" element={<RouterConfig />} />
+      <Route path="/config/matrix" element={<MatrixConfig />} />
       <Route path="/config/probe" element={<ProbeConfig />} />
     </Route>,
   ),
