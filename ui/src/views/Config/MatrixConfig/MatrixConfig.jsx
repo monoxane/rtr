@@ -9,7 +9,8 @@ import {
   TableRow,
   TableHeader,
   TableBody,
-  TableToolbar, TableToolbarContent, TableToolbarSearch,
+  TableToolbar, TableToolbarContent,
+  // TableToolbarSearch,
   DataTableSkeleton,
   Tabs, TabList, Tab, TabPanels, TabPanel,
   Button,
@@ -51,7 +52,7 @@ const MatrixConfig = function MatrixConfig() {
           <TableContainer title="Matrix Configuration" description="Spigot Labels and Descriptions">
             <TableToolbar>
               <TableToolbarContent>
-                <TableToolbarSearch onChange={() => {}} placeholder="Search for a Salvo" />
+                {/* <TableToolbarSearch onChange={() => {}} placeholder="Search for a Source or Destination" /> */}
                 <Button hasIconOnly kind="ghost" renderIcon={TagImport} iconDescription="Import Dashboard Labels" onClick={() => { setImportDashboardOpen((c) => !c); }}>Primary Button</Button>
               </TableToolbarContent>
             </TableToolbar>
