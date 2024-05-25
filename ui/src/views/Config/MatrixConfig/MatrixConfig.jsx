@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   Column,
@@ -22,6 +22,7 @@ import {
 import useMatrix from '../../../hooks/useMatrix.js';
 
 import SpigotConfig from './SpigotConfig.jsx';
+import DashboardLabelsUploadModal from './DashboardLabelsUpload.jsx';
 
 import './matrixConfig.scss';
 
@@ -30,10 +31,13 @@ const MatrixConfig = function MatrixConfig() {
     matrix, loading: matrixLoading, error: matrixError,
   } = useMatrix();
 
+  const [importDashboardOpen, setImportDashboardOpen] = useState(false);
+
   const headers = ['Spigot', 'Label', 'Description'];
 
   return (
     <Grid>
+      {importDashboardOpen && <DashboardLabelsUploadModal open={importDashboardOpen} setOpen={setImportDashboardOpen} />}
       {matrixLoading
         && (
           <Column sm={4} lg={16}>
@@ -48,7 +52,7 @@ const MatrixConfig = function MatrixConfig() {
             <TableToolbar>
               <TableToolbarContent>
                 <TableToolbarSearch onChange={() => {}} placeholder="Search for a Salvo" />
-                <Button hasIconOnly kind="ghost" renderIcon={TagImport} iconDescription="Import Dashboard Labels" onClick={() => {}}>Primary Button</Button>
+                <Button hasIconOnly kind="ghost" renderIcon={TagImport} iconDescription="Import Dashboard Labels" onClick={() => { setImportDashboardOpen((c) => !c); }}>Primary Button</Button>
               </TableToolbarContent>
             </TableToolbar>
             <Tabs>

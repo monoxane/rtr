@@ -39,6 +39,7 @@ func Serve() {
 
 	svc.GET("/v1/config", HandleGetConfig)
 	svc.PUT("/v1/config/router", HandleUpdateRouter)
+	svc.POST("/v1/config/labels/dashboard", HandleDashboardLabels)
 	svc.PUT("/v1/config/source/:id", HandleUpdateSource)
 	svc.PUT("/v1/config/destination/:id", HandleUpdateDestination)
 	svc.POST("/v1/config/probe", HandleNewProbe)

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 
@@ -18,6 +18,10 @@ function SpigotConfig({ spigot, type }) {
   const updateDescription = (newDescription) => {
     setSpigotData({ ...spigotData, description: newDescription });
   };
+
+  useEffect(() => {
+    setSpigotData(spigot);
+  }, [spigot]);
 
   const submit = () => {
     if (spigotData.label !== spigot.label || spigotData.description !== spigot.description) {

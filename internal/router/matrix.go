@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strings"
 	"sync"
 
 	"github.com/monoxane/rtr/internal/config"
@@ -197,7 +196,17 @@ func (src *Source) SetLabel(lbl string) {
 	src.Label = lbl
 
 	cfg := config.GetRouter().IO.Sources
-	cfg[src.Id].Label = lbl
+
+	if src.Id >= len(cfg) {
+		cfg = append(cfg, config.RouterSpigotConfiguration{
+			ID:          src.Id,
+			Label:       src.Label,
+			Description: src.Description,
+		})
+	} else {
+		cfg[src.Id].Label = lbl
+	}
+
 	config.SetRouterSourcesConfig(cfg)
 }
 
@@ -205,13 +214,25 @@ func (src *Source) SetDescription(desc string) {
 	src.Description = desc
 
 	cfg := config.GetRouter().IO.Sources
-	cfg[src.Id].Description = desc
+
+	if src.Id >= len(cfg) {
+		cfg = append(cfg, config.RouterSpigotConfiguration{
+			ID:          src.Id,
+			Label:       src.Label,
+			Description: src.Description,
+		})
+	} else {
+		cfg[src.Id].Description = desc
+	}
+
 	config.SetRouterSourcesConfig(cfg)
 }
 
 func (matrix *RouterMatrix) SetSourceLabel(src int, label string) {
 	if src <= int(len(matrix.sources)) {
+		log.Debug().Int("source", src).Str("label", label).Msg("setting label for source")
 		matrix.GetSource(src).SetLabel(label)
+
 		if matrix.notify != nil {
 			go matrix.notify(&RouteUpdate{
 				Type:   "source",
@@ -234,6 +255,8 @@ func (matrix *RouterMatrix) SetSourceLabel(src int, label string) {
 
 func (matrix *RouterMatrix) SetSourceDescription(src int, desc string) {
 	if src <= int(len(matrix.sources)) {
+		log.Debug().Int("source", src).Str("description", desc).Msg("setting description for destination")
+
 		matrix.GetSource(src).SetDescription(desc)
 		if matrix.notify != nil {
 			go matrix.notify(&RouteUpdate{
@@ -257,6 +280,7 @@ func (matrix *RouterMatrix) SetSourceDescription(src int, desc string) {
 
 func (matrix *RouterMatrix) SetDestinationLabel(dst int, label string) {
 	if dst <= int(len(matrix.destinations)) {
+		log.Debug().Int("dst", dst).Str("label", label).Msg("setting label for destination")
 		matrix.GetDestination(dst).SetLabel(label)
 
 		if matrix.notify != nil {
@@ -278,8 +302,6 @@ func (matrix *RouterMatrix) SetDestinationDescription(dst int, desc string) {
 				Type:        "destination",
 				Destination: matrix.GetDestination(dst),
 			}
-
-			log.Debug().Interface("ru", ru).Msg("sending ru for dst desc update")
 			go matrix.notify(ru)
 
 		}
@@ -289,23 +311,5 @@ func (matrix *RouterMatrix) SetDestinationDescription(dst int, desc string) {
 func (matrix *RouterMatrix) ForEachDestination(callback func(int, *Destination)) {
 	for i, d := range matrix.destinations {
 		callback(i, d)
-	}
-}
-
-func (matrix *RouterMatrix) LoadLabels(labels string) {
-	lines := strings.Split(labels, "\n")
-	for i, line := range lines {
-		columns := strings.Split(line, ",")
-		if len(columns) < 4 {
-			continue
-		}
-
-		if i < int(len(matrix.destinations)) {
-			matrix.GetDestination(i + 1).SetLabel(columns[1])
-		}
-
-		if i < int(len(matrix.sources)) {
-			matrix.GetSource(i + 1).SetLabel(columns[3])
-		}
 	}
 }

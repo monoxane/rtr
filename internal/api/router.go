@@ -1,8 +1,11 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -85,4 +88,43 @@ func HandleUpdateDestination(c *gin.Context) {
 
 	router.Matrix.SetDestinationLabel(id, update.Label)
 	router.Matrix.SetDestinationDescription(id, update.Description)
+}
+
+func HandleDashboardLabels(c *gin.Context) {
+	// single file
+	file, err := c.FormFile("rtr-dashboard-labels.lbl")
+	if err != nil {
+		log.Error().Err(err).Msg("unable to read uploaded file from request")
+		c.Status(http.StatusBadRequest)
+
+		return
+	}
+
+	// Upload the file to specific dst.
+	c.SaveUploadedFile(file, "/tmp/rtr-dashboard-labels.lbl")
+
+	log.Info().Msg("setting matrix labels from ross dashboard labels file")
+
+	labels, err := os.ReadFile("labels.lbl")
+	if err == nil {
+		lines := strings.Split(string(labels), "\n")
+		for i, line := range lines {
+			columns := strings.Split(line, ",")
+			if len(columns) < 4 {
+				continue
+			}
+
+			router.Matrix.SetDestinationLabel(i+1, columns[1])
+			router.Matrix.SetDestinationDescription(i+1, columns[2])
+
+			router.Matrix.SetSourceLabel(i+1, columns[3])
+			router.Matrix.SetSourceDescription(i+1, columns[4])
+
+			time.Sleep(10 * time.Millisecond)
+		}
+	} else {
+		log.Printf("unable to load DashBoard labels.lbl")
+	}
+
+	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
 }
