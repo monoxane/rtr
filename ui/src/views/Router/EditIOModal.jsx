@@ -17,7 +17,7 @@ function EditIOModal({
   }, [IO]);
 
   const submit = () => {
-    axios.put(`/v1/config/${type}/${IO.id}`, { label: data.label })
+    axios.put(`/v1/config/${type}/${IO.id}`, { label: data.label, description: data.description })
       .then(() => {
         setOpen(false);
       });
@@ -44,7 +44,7 @@ function EditIOModal({
         value={data?.label}
         onChange={(e) => setData({ ...data, label: e.target.value })}
       />
-      {/* <TextInput
+      <TextInput
         data-modal-primary-focus
         id="description"
         labelText="Description"
@@ -53,8 +53,8 @@ function EditIOModal({
           marginBottom: '1rem',
         }}
         value={data?.description}
-        onChange={(e) => setData({...data, description: e.target.value})}
-      /> */}
+        onChange={(e) => setData({ ...data, description: e.target.value })}
+      />
     </Modal>
   );
 }

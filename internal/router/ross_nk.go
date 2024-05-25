@@ -21,11 +21,16 @@ type RossNKRouter struct {
 	Level        tbus.Level
 
 	// client facing update messages
-	onRouteUpdate  func(*RouteUpdate)
+	// onRouteUpdate  func(*RouteUpdate)
 	onStatusUpdate func(tbus.StatusUpdate)
 }
 
-func NewRossNKRouterUsingGlobalMatrix(ip net.IP, routerAddress tbus.TBusAddress, model models.Model) *RossNKRouter {
+func NewRossNKRouterUsingGlobalMatrix(
+	ip net.IP,
+	routerAddress tbus.TBusAddress,
+	model models.Model,
+	updateFunc func(*RouteUpdate),
+) *RossNKRouter {
 	rtr := &RossNKRouter{}
 
 	switch model {
@@ -51,7 +56,9 @@ func NewRossNKRouterUsingGlobalMatrix(ip net.IP, routerAddress tbus.TBusAddress,
 		rtr.Level = levels.MD_Vid
 	}
 
-	Matrix = &RouterMatrix{}
+	Matrix = &RouterMatrix{
+		notify: updateFunc,
+	}
 	Matrix.Init(int(rtr.Destinations), int(rtr.Sources))
 
 	gw := tbus.NewGateway(ip, rtr.handleRouteUpdate, rtr.handleStatusUpdate)
@@ -67,10 +74,6 @@ func (rtr *RossNKRouter) Connect() error {
 
 func (rtr *RossNKRouter) Disconnect() {
 	rtr.gateway.Disconnect()
-}
-
-func (rtr *RossNKRouter) SetOnUpdate(notify func(*RouteUpdate)) {
-	rtr.onRouteUpdate = notify
 }
 
 func (rtr *RossNKRouter) Route(dst int, src int) error {
@@ -97,11 +100,4 @@ func (rtr *RossNKRouter) handleStatusUpdate(update tbus.StatusUpdate) {
 
 func (rtr *RossNKRouter) updateMatrix(dst uint16, src uint16) {
 	Matrix.UpdateCrosspoint(int(dst), int(src))
-
-	if rtr.onRouteUpdate != nil {
-		go rtr.onRouteUpdate(&RouteUpdate{
-			Type:        "destination",
-			Destination: Matrix.GetDestination(int(dst)),
-		})
-	}
 }

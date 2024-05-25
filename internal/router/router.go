@@ -9,15 +9,14 @@ import (
 )
 
 type RouteUpdate struct {
-	Type        string
-	Destination *Destination
-	Source      *Source
+	Type        string       `json:"type"`
+	Destination *Destination `json:"destination"`
+	Source      *Source      `json:"source"`
 }
 
 type RouterAware interface {
 	Connect() error
 	Disconnect()
-	SetOnUpdate(func(*RouteUpdate))
 	Route(dst int, src int) error
 }
 
@@ -37,7 +36,7 @@ func Connect(updateFunc func(*RouteUpdate)) {
 
 	switch routerConfig.Provider {
 	case "Ross NK-IPS":
-		Router = NewRossNKRouterUsingGlobalMatrix(net.ParseIP(routerConfig.IP), uint8(routerConfig.Address), routerConfig.Model)
+		Router = NewRossNKRouterUsingGlobalMatrix(net.ParseIP(routerConfig.IP), uint8(routerConfig.Address), routerConfig.Model, updateFunc)
 	}
 
 	go Router.Connect()

@@ -124,19 +124,22 @@ func RouteUpdateHandler(update *router.RouteUpdate) {
 	case "destination":
 		mt = DestinationUpdate
 		payload, _ = json.Marshal(router.DestinationUpdate{
-			Id:    update.Destination.GetID(),
-			Label: update.Destination.GetLabel(),
+			Id:          update.Destination.GetID(),
+			Label:       update.Destination.GetLabel(),
+			Description: update.Destination.Description,
 			Source: router.SourceUpdate{
-				Id:    update.Destination.Source.GetID(),
-				Label: update.Destination.Source.GetLabel(),
+				Id:          update.Destination.Source.GetID(),
+				Label:       update.Destination.Source.GetLabel(),
+				Description: update.Destination.Source.Description,
 			},
 		})
 
 	case "source":
 		mt = SourceUpdate
 		payload, _ = json.Marshal(router.SourceUpdate{
-			Id:    update.Source.GetID(),
-			Label: update.Source.GetLabel(),
+			Id:          update.Source.GetID(),
+			Label:       update.Source.GetLabel(),
+			Description: update.Source.Description,
 		})
 	}
 

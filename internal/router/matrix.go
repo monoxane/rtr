@@ -28,6 +28,7 @@ type Source struct {
 type RouterMatrix struct {
 	destinations map[int]*Destination
 	sources      map[int]*Source
+	notify       func(*RouteUpdate)
 	mux          sync.Mutex
 }
 
@@ -128,14 +129,20 @@ func (matrix *RouterMatrix) MarshalJSON() ([]byte, error) {
 
 func (matrix *RouterMatrix) UpdateCrosspoint(dst int, src int) {
 	matrix.mux.Lock()
-	defer matrix.mux.Unlock()
 	matrix.destinations[dst].Source = matrix.sources[src]
+	matrix.mux.Unlock()
+
 	log.Info().
 		Int("dst_id", matrix.destinations[dst].GetID()).
 		Str("dst", matrix.destinations[dst].GetLabel()).
 		Int("src_id", matrix.destinations[dst].Source.GetID()).
 		Str("src", matrix.destinations[dst].Source.GetLabel()).
 		Msg("route update")
+
+	go matrix.notify(&RouteUpdate{
+		Type:        "destination",
+		Destination: Matrix.GetDestination(dst),
+	})
 }
 
 func (matrix *RouterMatrix) GetDestination(dst int) *Destination {
@@ -160,6 +167,7 @@ func (dst *Destination) GetLabel() string {
 
 func (dst *Destination) SetLabel(lbl string) {
 	dst.Label = lbl
+
 	cfg := config.GetRouter().IO.Destinations
 	cfg[dst.Id].Label = lbl
 	config.SetRouterDestinationsConfig(cfg)
@@ -167,6 +175,7 @@ func (dst *Destination) SetLabel(lbl string) {
 
 func (dst *Destination) SetDescription(desc string) {
 	dst.Description = desc
+
 	cfg := config.GetRouter().IO.Destinations
 	cfg[dst.Id].Description = desc
 	config.SetRouterDestinationsConfig(cfg)
@@ -186,6 +195,7 @@ func (src *Source) GetLabel() string {
 
 func (src *Source) SetLabel(lbl string) {
 	src.Label = lbl
+
 	cfg := config.GetRouter().IO.Sources
 	cfg[src.Id].Label = lbl
 	config.SetRouterSourcesConfig(cfg)
@@ -193,9 +203,87 @@ func (src *Source) SetLabel(lbl string) {
 
 func (src *Source) SetDescription(desc string) {
 	src.Description = desc
+
 	cfg := config.GetRouter().IO.Sources
 	cfg[src.Id].Description = desc
 	config.SetRouterSourcesConfig(cfg)
+}
+
+func (matrix *RouterMatrix) SetSourceLabel(src int, label string) {
+	if src <= int(len(matrix.sources)) {
+		matrix.GetSource(src).SetLabel(label)
+		if matrix.notify != nil {
+			go matrix.notify(&RouteUpdate{
+				Type:   "source",
+				Source: Matrix.GetSource(src),
+			})
+		}
+
+		matrix.ForEachDestination(func(i int, dst *Destination) {
+			if dst.Source != nil && dst.Source.GetID() == src {
+				if matrix.notify != nil {
+					go matrix.notify(&RouteUpdate{
+						Type:        "destination",
+						Destination: dst,
+					})
+				}
+			}
+		})
+	}
+}
+
+func (matrix *RouterMatrix) SetSourceDescription(src int, desc string) {
+	if src <= int(len(matrix.sources)) {
+		matrix.GetSource(src).SetDescription(desc)
+		if matrix.notify != nil {
+			go matrix.notify(&RouteUpdate{
+				Type:   "source",
+				Source: Matrix.GetSource(src),
+			})
+		}
+
+		matrix.ForEachDestination(func(i int, dst *Destination) {
+			if dst.Source != nil && dst.Source.GetID() == src {
+				if matrix.notify != nil {
+					go matrix.notify(&RouteUpdate{
+						Type:        "destination",
+						Destination: dst,
+					})
+				}
+			}
+		})
+	}
+}
+
+func (matrix *RouterMatrix) SetDestinationLabel(dst int, label string) {
+	if dst <= int(len(matrix.destinations)) {
+		matrix.GetDestination(dst).SetLabel(label)
+
+		if matrix.notify != nil {
+			go matrix.notify(&RouteUpdate{
+				Type:        "destination",
+				Destination: matrix.GetDestination(dst),
+			})
+		}
+	}
+}
+
+func (matrix *RouterMatrix) SetDestinationDescription(dst int, desc string) {
+	if dst <= int(len(matrix.destinations)) {
+		log.Debug().Int("dst", dst).Str("description", desc).Msg("setting description for destination")
+		matrix.GetDestination(dst).SetDescription(desc)
+
+		if matrix.notify != nil {
+			ru := &RouteUpdate{
+				Type:        "destination",
+				Destination: matrix.GetDestination(dst),
+			}
+
+			log.Debug().Interface("ru", ru).Msg("sending ru for dst desc update")
+			go matrix.notify(ru)
+
+		}
+	}
 }
 
 func (matrix *RouterMatrix) ForEachDestination(callback func(int, *Destination)) {
