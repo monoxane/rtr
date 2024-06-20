@@ -6,12 +6,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/rs/zerolog"
-
 	"github.com/monoxane/rtr/internal/api"
-	"github.com/monoxane/rtr/internal/config"
-	"github.com/monoxane/rtr/internal/probe"
-	"github.com/monoxane/rtr/internal/router"
+	"github.com/monoxane/rtr/internal/db"
+	"github.com/rs/zerolog"
+	// "github.com/monoxane/rtr/internal/config"
+	// "github.com/monoxane/rtr/internal/probe"
+	// "github.com/monoxane/rtr/internal/router"
 )
 
 func main() {
@@ -21,23 +21,31 @@ func main() {
 	log := zerolog.New(output).With().Timestamp().Caller().Logger()
 	log.Info().Msg("rtr starting")
 
-	router.Logger(log.With().Str("package", "router").Logger())
-	probe.Logger(log.With().Str("package", "probe").Logger())
-	api.Logger(log.With().Str("package", "api").Logger())
-	config.Logger(log.With().Str("package", "config").Logger())
+	db.SetLogger(log)
 
-	err := config.Load()
+	err := db.Open()
 	if err != nil {
-		log.Error().Err(err).Msg("unable to load configuration")
+		log.Fatal().Err(err).Msg("failed to open database")
 	}
 
-	router.Connect(api.RouteUpdateHandler)
-	probe.StatsHandler(api.ProbeStatsHandler)
-	api.SetProbeStatusGetter(probe.GetProbeStatuses)
+	err = db.Migrate()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to migrate database schema")
+	}
 
-	probe.LoadChannels(config.GetProbe().Channels)
-
+	api.SetLogger(log)
 	go api.Serve()
+
+	// err := config.Load()
+	// if err != nil {
+	// 	log.Error().Err(err).Msg("unable to load configuration")
+	// }
+
+	// router.Connect(api.RouteUpdateHandler)
+	// probe.StatsHandler(api.ProbeStatsHandler)
+	// api.SetProbeStatusGetter(probe.GetProbeStatuses)
+
+	// probe.LoadChannels(config.GetProbe().Channels)
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)

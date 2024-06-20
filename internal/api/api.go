@@ -1,12 +1,9 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/monoxane/rtr/internal/config"
-	"github.com/monoxane/rtr/internal/router"
 	"github.com/rs/zerolog"
 )
 
@@ -14,8 +11,8 @@ var (
 	log zerolog.Logger
 )
 
-func Logger(logger zerolog.Logger) {
-	log = logger
+func SetLogger(logger zerolog.Logger) {
+	log = logger.With().Str("package", "api").Logger()
 }
 
 func Serve() {
@@ -31,35 +28,56 @@ func Serve() {
 	})
 	svc.Static("/dist", "/dist")
 
-	svc.GET("/v1/ws/rtr", HandleRtrWS)
+	//
+	// REST ENDPOINTS
+	//
+	api := svc.Group("/v1/api")
 
-	svc.GET("/v1/matrix", HandleMatrix)
+	// Auth
+	api.POST("/login", NotImplemented) // Handle Login
 
-	svc.POST("/v1/salvos", HandleSalvoPost)
+	// Users
+	api.GET("/users", NotImplemented)     // Get all Users
+	api.GET("/users/:id", NotImplemented) // Get User by ID
 
-	svc.GET("/v1/config", HandleGetConfig)
-	svc.PUT("/v1/config/router", HandleUpdateRouter)
-	svc.POST("/v1/config/labels/dashboard", HandleDashboardLabels)
-	svc.PUT("/v1/config/source/:id", HandleUpdateSource)
-	svc.PUT("/v1/config/destination/:id", HandleUpdateDestination)
-	svc.POST("/v1/config/probe", HandleNewProbe)
-	svc.PUT("/v1/config/probe/:slug", HandleUpdateProbe)
-	svc.DELETE("/v1/config/probe/:slug", HandleDeleteProbe)
+	//
+	// WEBSOCKET ENDPOINTS FOR STREAMS AND REALTIME UPDATES
+	//
 
-	svc.GET("/v1/ws/probe/:slug", HandleProbeClient)
-	svc.GET("/v1/probe/statuses", HandleGetProbeStatuses)
-	svc.POST("/v1/probe/stream/:slug", HandleHTTPProbeStream)
+	ws := svc.Group("/v1/ws")
 
-	err := svc.Run(fmt.Sprintf(":%d", config.GetServer().HTTPPort))
+	ws.GET("/realtime/:type", NotImplemented) // Provide realtime updates for a resource type
+
+	// Streams
+	ws.GET("/streams/source/:id", NotImplemented) // Receive Stream Source
+	ws.GET("/streams/client/:id", NotImplemented) // Get Stream Media
+
+	// svc.GET("/v1/ws/rtr", HandleRtrWS)
+
+	// svc.GET("/v1/matrix", HandleMatrix)
+
+	// svc.POST("/v1/salvos", HandleSalvoPost)
+
+	// svc.GET("/v1/config", HandleGetConfig)
+	// svc.PUT("/v1/config/router", HandleUpdateRouter)
+	// svc.POST("/v1/config/labels/dashboard", HandleDashboardLabels)
+	// svc.PUT("/v1/config/source/:id", HandleUpdateSource)
+	// svc.PUT("/v1/config/destination/:id", HandleUpdateDestination)
+	// svc.POST("/v1/config/probe", HandleNewProbe)
+	// svc.PUT("/v1/config/probe/:slug", HandleUpdateProbe)
+	// svc.DELETE("/v1/config/probe/:slug", HandleDeleteProbe)
+
+	// svc.GET("/v1/ws/probe/:slug", HandleProbeClient)
+	// svc.GET("/v1/probe/statuses", HandleGetProbeStatuses)
+	// svc.POST("/v1/probe/stream/:slug", HandleHTTPProbeStream)
+
+	log.Info().Msg("starting api service")
+	err := svc.Run(":8080")
 	if err != nil {
 		log.Error().Err(err).Msg("unable to start http server")
 	}
 }
 
-func HandleMatrix(c *gin.Context) {
-	c.JSON(http.StatusOK, &router.Matrix)
-}
-
-func HandleGetConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, config.Get())
+func NotImplemented(c *gin.Context) {
+	c.Status(http.StatusNotImplemented)
 }
