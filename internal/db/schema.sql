@@ -173,12 +173,13 @@ CREATE TABLE IF NOT EXISTS "users"
 (
   "id"            INTEGER NOT NULL UNIQUE,
   "username"      TEXT    NOT NULL UNIQUE,
+  "real_name"     TEXT    NULL    ,
   "password_hash" TEXT    NOT NULL,
-  -- boolean
-  "is_admin"      INTEGER NOT NULL DEFAULT 0,
-  "created_at"    TEXT    NULL    ,
-  "updated_at"    TEXT    NULL    ,
-  "updated_by"    TEXT    NULL    ,
-  "deleted_at"    TEXT    NULL    ,
+  "role"          TEXT    NOT NULL DEFAULT OPERATOR,
+  "last_login"    INTEGER    NULL    ,
+  "created_at"    INTEGER    NULL    ,
+  "updated_at"    INTEGER    NULL    ,
+  "updated_by"    INTEGER    NULL    ,
+  "deleted_at"    INTEGER    NULL    ,
   PRIMARY KEY ("id" AUTOINCREMENT)
 );

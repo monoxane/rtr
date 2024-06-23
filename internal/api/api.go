@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/monoxane/rtr/internal/api/auth"
+	"github.com/monoxane/rtr/internal/api/middleware"
+	"github.com/monoxane/rtr/internal/api/users"
 	"github.com/rs/zerolog"
 )
 
@@ -19,8 +22,8 @@ func Serve() {
 	gin.SetMode(gin.ReleaseMode)
 
 	svc := gin.New()
-	svc.Use(ZerologMiddleware())
-	svc.Use(CORSMiddleware())
+	svc.Use(middleware.Zerolog(log))
+	svc.Use(middleware.CORS())
 
 	svc.StaticFile("/", "/dist/index.html")
 	svc.NoRoute(func(c *gin.Context) {
@@ -32,13 +35,23 @@ func Serve() {
 	// REST ENDPOINTS
 	//
 	api := svc.Group("/v1/api")
+	api.Use(middleware.Authorization(auth.ANY_ROLE))
 
 	// Auth
-	api.POST("/login", NotImplemented) // Handle Login
+	svc.POST("/v1/api/login", auth.Authenticate) // Handle Login, NOT BEHIND THE MIDDLEWARE!
 
 	// Users
-	api.GET("/users", NotImplemented)     // Get all Users
-	api.GET("/users/:id", NotImplemented) // Get User by ID
+	api.Group("/user_roles").Use(middleware.Authorization(auth.ROLE_ADMIN)).GET("", users.GetUserRoles) // Get all User Roles
+
+	v1_users := api.Group("/users")
+	v1_users.Use(middleware.Authorization(auth.ROLE_ADMIN))
+
+	v1_users.GET("/", users.GetUsers)                      // Get all Users
+	v1_users.POST("/", users.CreateUser)                   // Create a new User
+	v1_users.DELETE("/:id", users.DeleteUser)              // Delete a User
+	v1_users.PATCH("/:id", users.UpdateUser)               // Edit a user
+	v1_users.POST("/:id/password", users.ResetPassword)    // Forcefully set a users password
+	v1_users.POST("/:id/reactivate", users.ReactivateUser) // Reactivate a User
 
 	//
 	// WEBSOCKET ENDPOINTS FOR STREAMS AND REALTIME UPDATES

@@ -24,7 +24,7 @@ body {
 }
 
 @media only screen and (min-width: 1056px)  {
-  .main-content {
+  .main-content:not(.unauthenticated){
     margin-left: 256px;
     transition: margin-left 0.1s;
   }

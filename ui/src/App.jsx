@@ -16,6 +16,7 @@ import ReactError from './common/ReactError.jsx';
 import Routes from './common/Routes.jsx';
 
 import configContext from './context/configContext';
+import { AuthProvider } from './context/AuthProvider';
 
 function ConfigContext({ children }) {
   const [config, setConfig] = useState({ loading: true, error: false });
@@ -47,10 +48,12 @@ ConfigContext.propTypes = {
 function App() {
   return (
     <ErrorBoundary fallback={<ReactError />}>
-      <ConfigContext>
-        <Favicon url={imgs.favicon} />
-        <RouterProvider router={Routes} />
-      </ConfigContext>
+      <AuthProvider>
+        <ConfigContext>
+          <Favicon url={imgs.favicon} />
+          <RouterProvider router={Routes} />
+        </ConfigContext>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }

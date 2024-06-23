@@ -1,37 +1,62 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/monoxane/rtr/internal/api"
+	"github.com/monoxane/rtr/internal/api/auth"
 	"github.com/monoxane/rtr/internal/db"
+	"github.com/monoxane/rtr/internal/env"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	// "github.com/monoxane/rtr/internal/config"
 	// "github.com/monoxane/rtr/internal/probe"
 	// "github.com/monoxane/rtr/internal/router"
 )
 
+var (
+	log zerolog.Logger
+)
+
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
 
-	log := zerolog.New(output).With().Timestamp().Caller().Logger()
+	log = zerolog.New(output).With().Timestamp().Caller().Logger()
 	log.Info().Msg("rtr starting")
 
 	db.SetLogger(log)
 
-	err := db.Open()
+	err := env.LoadFromEnvironment()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to load environment variables")
+	}
+
+	err = setLogLevel(env.LogLevel)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to set log level")
+	}
+
+	err = db.Open("rtr.db")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open database")
 	}
 
-	err = db.Migrate()
+	err = db.MigrateSchema("internal/db/schema.sql")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to migrate database schema")
 	}
+
+	err = createAdminUser(env.AdminUsername, env.AdminPassword)
+	// if err != nil {
+	// 	log.Fatal().Err(err).Msg("failed to add admin user")
+	// }
+
+	log.Info().Msg("admin user created")
 
 	api.SetLogger(log)
 	go api.Serve()
@@ -60,4 +85,43 @@ func main() {
 	log.Info().Msg("rtr started")
 	<-done
 	log.Info().Msg("rtr exiting")
+}
+
+func createAdminUser(username, password string) error {
+	_, err := db.GetUserByUsername(username)
+	if err == nil {
+		return nil
+	}
+
+	hash, err := auth.HashPassword(password)
+	if err != nil {
+		return errors.Wrap(err, "unable to hash password for admin user")
+	}
+
+	err = db.CreateUser(db.User{
+		Username: env.AdminUsername,
+		Hash:     string(hash),
+		Role:     auth.ROLE_ADMIN,
+	})
+
+	return err
+}
+
+func setLogLevel(level string) error {
+	switch level {
+	case "TRACE":
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	case "DEBUG":
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	case "INFO":
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	case "ERROR":
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	case "FATAL":
+		zerolog.SetGlobalLevel(zerolog.FatalLevel)
+	default:
+		return fmt.Errorf("invalid or unsupported log level: %s", level)
+	}
+
+	return nil
 }

@@ -110,7 +110,7 @@ module.exports = (_, argv) => {
       },
       magicHtml: true,
       proxy: {
-        '/v1': {
+        '/v1/api': {
           target: 'http://localhost:8080',
         },
         '/v1/ws': {

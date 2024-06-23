@@ -1,6 +1,5 @@
 import React, {
   Suspense,
-  useContext,
 } from 'react';
 
 import {
@@ -21,14 +20,24 @@ import {
   HeaderName,
   Loading,
   SkipToContent,
+  OverflowMenu,
+  OverflowMenuItem,
 } from '@carbon/react';
-import configContext from '../context/configContext';
+
+import {
+  User,
+} from '@carbon/icons-react';
+
+import useAuth from '../hooks/useAuth';
+import useLogout from '../hooks/useLogout';
 
 import ReactError from './ReactError.jsx';
 import SidebarNav from './SidebarNav.jsx';
 
 function Layout() {
-  const { config } = useContext(configContext);
+  const { auth } = useAuth();
+  const logout = useLogout();
+
   return (
     <HeaderContainer
       render={({ isSideNavExpanded, onClickSideNavExpand }) => (
@@ -41,12 +50,22 @@ function Layout() {
               isActive={isSideNavExpanded}
             />
             <HeaderName prefix="rtr //">
-              {config?.router?.label || 'Router Controller'}
+              Route Broker
             </HeaderName>
-            <HeaderGlobalBar />
-            <SidebarNav onClickSideNavExpand={onClickSideNavExpand} isActive={isSideNavExpanded} />
+            {auth.user
+            && (
+            <>
+              <HeaderGlobalBar>
+                <OverflowMenu flipped renderIcon={User} className="cds--header__action" sx={{ zIndex: 8001 }}>
+                  <OverflowMenuItem className="header-user-menu" itemText={auth.user} disabled sx={{ color: 'white' }} />
+                  <OverflowMenuItem className="header-user-menu" itemText="Log out" onClick={logout} />
+                </OverflowMenu>
+              </HeaderGlobalBar>
+              <SidebarNav onClickSideNavExpand={onClickSideNavExpand} isActive={isSideNavExpanded} />
+            </>
+            )}
           </Header>
-          <Content className="main-content" style={{ background: gray[80] }}>
+          <Content className={`main-content ${!auth?.user && 'unauthenticated'}`} style={{ background: gray[80] }}>
             <Suspense fallback={<Loading />}>
               <ErrorBoundary fallback={<ReactError />}>
                 <Outlet />

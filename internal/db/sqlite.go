@@ -16,8 +16,8 @@ func SetLogger(logger zerolog.Logger) {
 	log = logger.With().Str("package", "db").Logger()
 }
 
-func Open() error {
-	database, err := sql.Open("sqlite3", "./rtr.db")
+func Open(uri string) error {
+	database, err := sql.Open("sqlite3", uri)
 	if err != nil {
 		return err
 	}
@@ -29,8 +29,8 @@ func Open() error {
 	return nil
 }
 
-func Migrate() error {
-	schema, err := os.ReadFile("internal/db/schema.sql")
+func MigrateSchema(schemaFile string) error {
+	schema, err := os.ReadFile(schemaFile)
 	if err != nil {
 		return errors.Wrap(err, "unable to open schema file")
 	}
