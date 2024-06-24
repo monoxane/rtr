@@ -35,7 +35,7 @@ func Serve() {
 	// REST ENDPOINTS
 	//
 	api := svc.Group("/v1/api")
-	api.Use(middleware.Authorization(auth.ANY_ROLE))
+	api.Use(middleware.Authorization(auth.ROLE_ADMIN))
 
 	// Auth
 	svc.POST("/v1/api/login", auth.Authenticate) // Handle Login, NOT BEHIND THE MIDDLEWARE!

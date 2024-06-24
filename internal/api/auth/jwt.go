@@ -13,11 +13,17 @@ import (
 var (
 	issuer string = "rtr"
 
-	ANY_ROLE      string = "ANY"
+	PUBLIC        string = "ANY"
 	ROLE_ADMIN    string = "ADMIN"
 	ROLE_OPERATOR string = "OPERATOR"
 
 	ROLES []string = []string{ROLE_ADMIN, ROLE_OPERATOR}
+
+	ROLE_MAP map[string]int = map[string]int{
+		PUBLIC:        0,
+		ROLE_OPERATOR: 1,
+		ROLE_ADMIN:    2,
+	}
 )
 
 func createToken(username, role string) (string, error) {
@@ -41,7 +47,7 @@ func createToken(username, role string) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(token string) (string, error) {
+func VerifyToken(token string) (username string, role string, err error) {
 	parsed, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -50,12 +56,20 @@ func VerifyToken(token string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	sub, err := parsed.Claims.GetSubject()
+	if err != nil {
+		return "", "", err
+	}
 
-	return sub, err
+	aud, err := parsed.Claims.GetSubject()
+	if err != nil {
+		return "", "", err
+	}
+
+	return sub, aud, nil
 }
 
 // Extract the JWT Token from the Gin Context
