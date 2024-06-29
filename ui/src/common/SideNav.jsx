@@ -1,42 +1,39 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import {
   SideNav,
   SideNavItems,
-  SideNavDivider,
 } from '@carbon/react';
 
 import {
-  Router,
-  DocumentExport,
-  SettingsServices,
-  SettingsView,
-  View,
-  TagEdit,
   Home,
+  View,
   User,
 } from '@carbon/icons-react';
-// import configContext from '../context/configContext';
 
+import SideNavStreamsList from '../views/Streams/Menus/SideNavStreamsList.jsx';
+import useAuth from '../hooks/useAuth.js';
 import SideNavLink from './SideNavLink.jsx';
+import SideNavGroup from './SideNavGroup.jsx';
 
-import useAuth from '../hooks/useAuth';
-
-function SidebarNav({ onClickSideNavExpand, isActive, isRail }) {
-  // const { config } = useContext(configContext);
+function ComposedSideNav({ onClickSideNavExpand, isActive, isRail }) {
   const { auth } = useAuth();
 
   return (
     <SideNav aria-label="Side navigation" isRail={isRail} expanded={isActive} onOverlayClick={onClickSideNavExpand}>
       <SideNavItems>
-        <SideNavLink to="/dashboard" label="Home" renderIcon={Home} onClick={onClickSideNavExpand} />
+        <SideNavLink renderIcon={Home} to="/dashboard" label="Home" onClick={onClickSideNavExpand} />
 
-        {auth.role === 'ADMIN' && (
-        <>
-          <SideNavDivider />
-          <SideNavLink to="/users" label="Users" renderIcon={User} onClick={onClickSideNavExpand} />
-        </>
+        <SideNavGroup group="/streams" renderIcon={View} large title="Streams">
+          {auth?.role === 'ADMIN' && (
+            <SideNavLink to="/streams" label="Setup" onClick={onClickSideNavExpand} />
+          )}
+          <SideNavStreamsList onClick={onClickSideNavExpand} />
+        </SideNavGroup>
+
+        {auth?.role === 'ADMIN' && (
+          <SideNavLink renderIcon={User} to="/users" label="Users" onClick={onClickSideNavExpand} />
         )}
 
         {/* <SideNavLink to="/router" label="Router" renderIcon={Router} onClick={onClickSideNavExpand} />
@@ -51,10 +48,10 @@ function SidebarNav({ onClickSideNavExpand, isActive, isRail }) {
   );
 }
 
-SidebarNav.propTypes = {
+ComposedSideNav.propTypes = {
   onClickSideNavExpand: PropTypes.func.isRequired,
   isActive: PropTypes.bool.isRequired,
   isRail: PropTypes.bool.isRequired,
 };
 
-export default SidebarNav;
+export default ComposedSideNav;

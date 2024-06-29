@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import * as ReactDOM from 'react-dom';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 function ModalStateManager({

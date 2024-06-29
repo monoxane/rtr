@@ -1,8 +1,8 @@
-import React from 'react';
 import {
   useMatch,
   useNavigate,
 } from 'react-router-dom';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { SideNavLink } from '@carbon/react';
 

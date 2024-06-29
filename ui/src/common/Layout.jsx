@@ -1,14 +1,9 @@
-import React, {
-  Suspense,
-} from 'react';
-
 import {
   Outlet,
 } from 'react-router-dom';
-
-import {
-  gray,
-} from '@carbon/colors';
+import React, {
+  Suspense,
+} from 'react';
 
 import {
   Content,
@@ -27,12 +22,15 @@ import {
 import {
   User,
 } from '@carbon/icons-react';
+import {
+  gray,
+} from '@carbon/colors';
 
-import useAuth from '../hooks/useAuth';
 import useLogout from '../hooks/useLogout';
+import useAuth from '../hooks/useAuth';
 
+import ComposedSideNav from './SideNav.jsx';
 import ReactError from './ReactError.jsx';
-import SidebarNav from './SidebarNav.jsx';
 
 function Layout() {
   const { auth } = useAuth();
@@ -52,19 +50,19 @@ function Layout() {
             <HeaderName prefix="rtr //">
               Route Broker
             </HeaderName>
-            {auth.user
+            {auth && auth.user
             && (
-            <>
               <HeaderGlobalBar>
+                  {/* <ExpandableSearch size="lg" labelText="Search" closeButtonLabelText="Clear search input" id="search-expandable-1" onChange={() => {}} onKeyDown={() => {}} /> */}
                 <OverflowMenu flipped renderIcon={User} className="cds--header__action" sx={{ zIndex: 8001 }}>
                   <OverflowMenuItem className="header-user-menu" itemText={auth.user} disabled sx={{ color: 'white' }} />
                   <OverflowMenuItem className="header-user-menu" itemText="Log out" onClick={logout} />
                 </OverflowMenu>
               </HeaderGlobalBar>
-              <SidebarNav onClickSideNavExpand={onClickSideNavExpand} isActive={isSideNavExpanded} />
-            </>
             )}
           </Header>
+          {auth && auth.user
+            && <ComposedSideNav onClickSideNavExpand={onClickSideNavExpand} isActive={isSideNavExpanded} />}
           <Content className={`main-content ${!auth?.user && 'unauthenticated'}`} style={{ background: gray[80] }}>
             <Suspense fallback={<Loading />}>
               <ErrorBoundary fallback={<ReactError />}>
