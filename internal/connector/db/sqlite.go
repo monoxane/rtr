@@ -10,7 +10,7 @@ import (
 )
 
 var log zerolog.Logger
-var db *sql.DB
+var Database *sql.DB
 
 func SetLogger(logger zerolog.Logger) {
 	log = logger.With().Str("package", "db").Logger()
@@ -24,7 +24,7 @@ func Open(uri string) error {
 
 	log.Info().Msg("opened sqlite database")
 
-	db = database
+	Database = database
 
 	return nil
 }
@@ -35,7 +35,7 @@ func MigrateSchema(schemaFile string) error {
 		return errors.Wrap(err, "unable to open schema file")
 	}
 
-	_, err = db.Exec(string(schema))
+	_, err = Database.Exec(string(schema))
 	if err != nil {
 		return errors.Wrap(err, "unable to migrate database schema")
 	}

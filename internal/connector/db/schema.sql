@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS "streams"
   "slug"           TEXT    NOT NULL UNIQUE,
   "destination_id" INTEGER NULL    ,
   -- boolean
-  "is_rouTABLE IF NOT EXISTS"    INTEGER NOT NULL DEFAULT 0,
+  "is_routable"    INTEGER NOT NULL DEFAULT 0,
   "created_at"     TEXT    NULL    ,
   "updated_at"     TEXT    NULL    ,
   "updated_by"     TEXT    NULL    ,
