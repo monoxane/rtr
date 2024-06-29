@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useEffect } from 'react';
 import { makeUseAxios } from 'axios-hooks';
+import axios from 'axios';
 import useAuth from './useAuth';
 
 const axiosPrivate = axios.create({
@@ -10,7 +10,7 @@ const axiosPrivate = axios.create({
 });
 
 const getAxiosPrivate = () => {
-  const { auth } = useAuth();
+  const { auth, setAuth } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,8 +27,12 @@ const getAxiosPrivate = () => {
       async (error) => {
         const prevRequest = error?.config;
         if (error?.response?.status === 401 && !prevRequest?.sent) {
+          setAuth({});
           localStorage.removeItem('auth');
           navigate('/login');
+        }
+        if (error?.response?.status === 403 && !prevRequest?.sent) {
+          navigate('/unauthorized');
         }
         return Promise.reject(error);
       },
