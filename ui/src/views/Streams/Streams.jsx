@@ -59,7 +59,7 @@ const Streams = function Streams() {
                 {row.label}
               </TableCell>
               <TableCell>
-                {row.active ? <CheckmarkOutline /> : <MisuseOutline />}
+                {row.is_active ? <CheckmarkOutline /> : <MisuseOutline />}
               </TableCell>
               <TableCell>{row.slug}</TableCell>
               <TableCell>{row.destination_id || <em>None</em>}</TableCell>
