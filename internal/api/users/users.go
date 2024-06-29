@@ -1,4 +1,4 @@
-package users
+package usersapi
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/monoxane/rtr/internal/api/auth"
-	"github.com/monoxane/rtr/internal/db"
+	usersRepository "github.com/monoxane/rtr/internal/repository/users"
 )
 
 func GetUserRoles(c *gin.Context) {
@@ -15,7 +15,7 @@ func GetUserRoles(c *gin.Context) {
 
 func GetUsers(c *gin.Context) {
 	deleted := c.Query("show_deleted")
-	users, err := db.GetUsers(deleted == "true")
+	users, err := usersRepository.List(deleted == "true")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err, "msg": "unable to get users"})
 		return
@@ -25,7 +25,7 @@ func GetUsers(c *gin.Context) {
 }
 
 type userPayload struct {
-	db.User
+	usersRepository.User
 	Password string `json:"password"`
 }
 
@@ -47,13 +47,13 @@ func CreateUser(c *gin.Context) {
 
 	request.User.Hash = hash
 
-	db.CreateUser(request.User)
+	usersRepository.Create(request.User)
 
 	c.JSON(http.StatusOK, request.User)
 }
 
 func UpdateUser(c *gin.Context) {
-	var request db.User
+	var request usersRepository.User
 
 	idString := c.Param("id")
 	id, err := strconv.Atoi(idString)
@@ -69,7 +69,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	db.UpdateUser(id, request)
+	usersRepository.Update(id, request)
 
 	c.JSON(http.StatusOK, request)
 }
@@ -83,7 +83,7 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 
-	err = db.DeleteUser(id)
+	err = usersRepository.Delete(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error(), "msg": "Unable to delete User"})
 
@@ -102,7 +102,7 @@ func ReactivateUser(c *gin.Context) {
 		return
 	}
 
-	err = db.ReactivateUser(id)
+	err = usersRepository.Reactivate(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error(), "msg": "Unable to reactivate User"})
 
@@ -139,7 +139,7 @@ func ResetPassword(c *gin.Context) {
 		return
 	}
 
-	err = db.UpdateUserPassword(id, hash)
+	err = usersRepository.UpdateUserPassword(id, hash)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error(), "msg": "Unable to update user password"})
 

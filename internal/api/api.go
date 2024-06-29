@@ -6,7 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/monoxane/rtr/internal/api/auth"
 	"github.com/monoxane/rtr/internal/api/middleware"
-	"github.com/monoxane/rtr/internal/api/users"
+	streamsapi "github.com/monoxane/rtr/internal/api/streams"
+	usersapi "github.com/monoxane/rtr/internal/api/users"
 	"github.com/rs/zerolog"
 )
 
@@ -41,17 +42,24 @@ func Serve() {
 	svc.POST("/v1/api/login", auth.Authenticate) // Handle Login, NOT BEHIND THE MIDDLEWARE!
 
 	// Users
-	api.Group("/user_roles").Use(middleware.Authorization(auth.ROLE_ADMIN)).GET("", users.GetUserRoles) // Get all User Roles
+	api.Group("/user_roles").Use(middleware.Authorization(auth.ROLE_ADMIN)).GET("", usersapi.GetUserRoles) // Get all User Roles
 
 	v1_users := api.Group("/users")
 	v1_users.Use(middleware.Authorization(auth.ROLE_ADMIN))
 
-	v1_users.GET("/", users.GetUsers)                      // Get all Users
-	v1_users.POST("/", users.CreateUser)                   // Create a new User
-	v1_users.DELETE("/:id", users.DeleteUser)              // Delete a User
-	v1_users.PATCH("/:id", users.UpdateUser)               // Edit a user
-	v1_users.POST("/:id/password", users.ResetPassword)    // Forcefully set a users password
-	v1_users.POST("/:id/reactivate", users.ReactivateUser) // Reactivate a User
+	v1_users.GET("/", usersapi.GetUsers)                      // Get all Users
+	v1_users.POST("/", usersapi.CreateUser)                   // Create a new User
+	v1_users.DELETE("/:id", usersapi.DeleteUser)              // Delete a User
+	v1_users.PATCH("/:id", usersapi.UpdateUser)               // Edit a user
+	v1_users.POST("/:id/password", usersapi.ResetPassword)    // Forcefully set a users password
+	v1_users.POST("/:id/reactivate", usersapi.ReactivateUser) // Reactivate a User
+
+	// Streams
+	v1_streams := api.Group("/streams")
+	v1_streams.Use(middleware.Authorization(auth.ROLE_ADMIN))
+
+	v1_streams.GET("/", streamsapi.GetStreams)    // Get all streams
+	v1_streams.POST("/", streamsapi.CreateStream) // Create a new Stream
 
 	//
 	// WEBSOCKET ENDPOINTS FOR STREAMS AND REALTIME UPDATES

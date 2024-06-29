@@ -64,12 +64,12 @@ func VerifyToken(token string) (username string, role string, err error) {
 		return "", "", err
 	}
 
-	aud, err := parsed.Claims.GetSubject()
+	aud, err := parsed.Claims.GetAudience()
 	if err != nil {
 		return "", "", err
 	}
 
-	return sub, aud, nil
+	return sub, aud[0], nil
 }
 
 // Extract the JWT Token from the Gin Context

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/monoxane/rtr/internal/db"
+	usersRepository "github.com/monoxane/rtr/internal/repository/users"
 )
 
 type LoginPayload struct {
@@ -13,7 +13,7 @@ type LoginPayload struct {
 }
 
 type LoginResponse struct {
-	db.User
+	usersRepository.User
 	Token string `json:"token"`
 }
 
@@ -25,7 +25,7 @@ func Authenticate(c *gin.Context) {
 		return
 	}
 
-	user, err := db.GetUserByUsername(request.Username)
+	user, err := usersRepository.GetByUsername(request.Username)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"sta": http.StatusNotFound, "err": err.Error(), "msg": "User Not Found"})
 		return
@@ -47,7 +47,7 @@ func Authenticate(c *gin.Context) {
 		return
 	}
 
-	err = db.RecordLogin(user.ID)
+	err = usersRepository.RecordLogin(user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"sta": http.StatusInternalServerError, "err": err.Error(), "msg": "Unable to record Login event"})
 		return

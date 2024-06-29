@@ -9,13 +9,11 @@ import (
 
 	"github.com/monoxane/rtr/internal/api"
 	"github.com/monoxane/rtr/internal/api/auth"
-	"github.com/monoxane/rtr/internal/db"
+	"github.com/monoxane/rtr/internal/connector/db"
 	"github.com/monoxane/rtr/internal/env"
+	"github.com/monoxane/rtr/internal/repository/users"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
-	// "github.com/monoxane/rtr/internal/config"
-	// "github.com/monoxane/rtr/internal/probe"
-	// "github.com/monoxane/rtr/internal/router"
 )
 
 var (
@@ -29,8 +27,6 @@ func main() {
 	log = zerolog.New(output).With().Timestamp().Caller().Logger()
 	log.Info().Msg("rtr starting")
 
-	db.SetLogger(log)
-
 	err := env.LoadFromEnvironment()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load environment variables")
@@ -41,24 +37,26 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to set log level")
 	}
 
+	db.SetLogger(log)
+	api.SetLogger(log)
+
 	err = db.Open("rtr.db")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open database")
 	}
 
-	err = db.MigrateSchema("internal/db/schema.sql")
+	err = db.MigrateSchema("internal/connector/db/schema.sql")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to migrate database schema")
 	}
 
-	err = createAdminUser(env.AdminUsername, env.AdminPassword)
+	createAdminUser(env.AdminUsername, env.AdminPassword)
 	// if err != nil {
 	// 	log.Fatal().Err(err).Msg("failed to add admin user")
 	// }
 
 	log.Info().Msg("admin user created")
 
-	api.SetLogger(log)
 	go api.Serve()
 
 	// err := config.Load()
@@ -88,7 +86,7 @@ func main() {
 }
 
 func createAdminUser(username, password string) error {
-	_, err := db.GetUserByUsername(username)
+	_, err := users.GetByUsername(username)
 	if err == nil {
 		return nil
 	}
@@ -98,7 +96,7 @@ func createAdminUser(username, password string) error {
 		return errors.Wrap(err, "unable to hash password for admin user")
 	}
 
-	err = db.CreateUser(db.User{
+	err = users.Create(users.User{
 		Username: env.AdminUsername,
 		Hash:     string(hash),
 		Role:     auth.ROLE_ADMIN,
