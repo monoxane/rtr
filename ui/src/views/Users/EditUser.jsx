@@ -26,7 +26,7 @@ function EditUserModal({
   return (
     <Modal
       launcherButtonRef={launcherButtonRef}
-      modalHeading={`Edit ${user.username}`}
+      modalHeading={user.real_name ? `Edit ${user.real_name}'s Account` : `Edit ${user.username}`}
       modalLabel="Users"
       primaryButtonText="Save"
       secondaryButtonText="Cancel"

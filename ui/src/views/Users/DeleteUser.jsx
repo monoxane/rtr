@@ -5,9 +5,8 @@ import {
   Modal,
 } from '@carbon/react';
 
-import userPropType from './propTypes';
-
 import { getAxiosPrivate } from '../../hooks/useAxiosPrivate';
+import userPropType from './propTypes';
 
 function DeleteUserModal({
   open, setOpen, refresh, user,
@@ -49,7 +48,6 @@ DeleteUserModal.propTypes = {
   open: PropTypes.bool.isRequired,
   setOpen: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,
-  // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.shape(userPropType).isRequired,
 };
 
