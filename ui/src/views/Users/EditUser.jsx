@@ -4,24 +4,31 @@ import PropTypes from 'prop-types';
 import {
   Modal,
   TextInput,
-  Dropdown, DropdownSkeleton,
+  Dropdown,
   Stack,
 } from '@carbon/react';
 
-import { getAxiosPrivate } from '../../hooks/useAxiosPrivate';
+import { useMutation, gql } from '@apollo/client';
+
+import GraphQLError from '../../components/Errors/GraphQLError.jsx';
+
+const UPDATE_USER = gql`mutation updateUser($id:Int!, $user: UserUpdate!) {
+  updateUser(id:$id, user: $user) {id}
+}`;
 
 function EditUserModal({
   open, setOpen, launcherButtonRef, refresh, user, roles,
 }) {
   const [userData, setUserData] = useState(user);
+  const [error, setErr] = useState();
+
+  const [updateUser] = useMutation(UPDATE_USER);
 
   useEffect(() => {
     if (!open) {
       setUserData(user);
     }
   }, [user, open]);
-
-  const axios = getAxiosPrivate();
 
   return (
     <Modal
@@ -32,11 +39,13 @@ function EditUserModal({
       secondaryButtonText="Cancel"
       open={open}
       onRequestSubmit={() => {
-        axios.patch(`/v1/api/users/${user.id}`, userData)
-          .then(() => {
-            refresh();
-            setOpen(false);
-          });
+        setErr();
+        updateUser({ variables: { id: user.id, user: { username: userData.username, realname: userData.realname, role: userData.role } } }).then(() => {
+          refresh();
+          setOpen(false);
+        }).catch((err) => {
+          setErr(err);
+        });
       }}
       onRequestClose={() => {
         setOpen(false);
@@ -49,8 +58,8 @@ function EditUserModal({
           placeholder="eg. Grant Petty"
           labelText="Real Name"
           required
-          value={userData.real_name}
-          onChange={(e) => setUserData({ ...userData, real_name: e.target.value })}
+          value={userData.realname}
+          onChange={(e) => setUserData({ ...userData, realname: e.target.value })}
         />
         <TextInput
           id="username"
@@ -61,20 +70,16 @@ function EditUserModal({
           value={userData.username}
           onChange={(e) => setUserData({ ...userData, username: e.target.value })}
         />
-        {roles.loading && <DropdownSkeleton />}
-        {roles.error && 'Unable to load Roles'}
-        {roles.data
-        && (
-          <Dropdown
-            id="role"
-            titleText="User Role"
-            label="Select a Role"
-            items={roles.data}
-            direction="top"
-            selectedItem={userData.role}
-            onChange={(e) => setUserData({ ...userData, role: e.selectedItem })}
-          />
-        )}
+        <Dropdown
+          id="role"
+          titleText="User Role"
+          label="Select a Role"
+          items={roles}
+          direction="top"
+          selectedItem={userData.role}
+          onChange={(e) => setUserData({ ...userData, role: e.selectedItem })}
+        />
+        <GraphQLError error={error} />
       </Stack>
     </Modal>
   );

@@ -1,17 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import {
   Modal,
 } from '@carbon/react';
+import { useMutation, gql } from '@apollo/client';
 
-import { getAxiosPrivate } from '../../hooks/useAxiosPrivate';
+import GraphQLError from '../../components/Errors/GraphQLError.jsx';
 import userPropType from './propTypes';
 
-function DeleteUserModal({
+const DEACTIVATE_USER = gql`mutation deactivateUser($id:Int!) {
+  deactivateUser(id:$id)
+}`;
+
+function DeactivateUserModal({
   open, setOpen, refresh, user,
 }) {
-  const axios = getAxiosPrivate();
+  const [error, setErr] = useState();
+  const [deactivateUser] = useMutation(DEACTIVATE_USER);
 
   return (
     <Modal
@@ -20,11 +26,11 @@ function DeleteUserModal({
         setOpen(false);
       }}
       onRequestSubmit={() => {
-        axios.delete(`/v1/api/users/${user.id}`)
-          .then(() => {
-            refresh();
-          });
-        setOpen(false);
+        setErr();
+        deactivateUser({ variables: { id: user.id } }).then(() => {
+          setOpen(false);
+          refresh();
+        }).catch((err) => setErr(err));
       }}
       danger
       modalHeading={(
@@ -40,15 +46,16 @@ function DeleteUserModal({
       secondaryButtonText="Cancel"
     >
       They will no longer be able to log in or access rtr.
+      <GraphQLError error={error} />
     </Modal>
   );
 }
 
-DeleteUserModal.propTypes = {
+DeactivateUserModal.propTypes = {
   open: PropTypes.bool.isRequired,
   setOpen: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired,
   user: PropTypes.shape(userPropType).isRequired,
 };
 
-export default DeleteUserModal;
+export default DeactivateUserModal;

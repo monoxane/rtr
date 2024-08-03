@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/monoxane/rtr/internal/graph/model"
 	usersRepository "github.com/monoxane/rtr/internal/repository/users"
 )
 
@@ -13,7 +14,7 @@ type LoginPayload struct {
 }
 
 type LoginResponse struct {
-	usersRepository.User
+	model.User
 	Token string `json:"token"`
 }
 

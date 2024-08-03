@@ -13,9 +13,9 @@ export const AuthProvider = function AuthProvider({ children }) {
   const [persist, setPersist] = useState(true);
 
   useEffect(() => {
-    if (auth?.accessToken) {
-      localStorage.setItem('auth', JSON.stringify(auth));
-    }
+    // if (auth?.accessToken) {
+    localStorage.setItem('auth', JSON.stringify(auth));
+    // }
   }, [auth]);
 
   return (

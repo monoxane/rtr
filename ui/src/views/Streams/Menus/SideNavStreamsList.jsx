@@ -20,7 +20,7 @@ function SideNavStreamsList({ onClickSideNavExpand }) {
       </CarbonSideNavLink>
       ) }
       {data && data.map((stream) => (
-        <SideNavLink to={`/streams/${stream.slug}`} label={stream.label} onClick={onClickSideNavExpand} />
+        <SideNavLink key={stream.slug} to={`/streams/${stream.slug}`} label={stream.label} onClick={onClickSideNavExpand} />
       ))}
     </>
   );

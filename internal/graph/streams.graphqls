@@ -1,0 +1,11 @@
+type Stream {
+  id: ID!
+  label: String!
+  slug: String!
+  # boolean
+  isRoutable: Int!
+  createdAt: String
+  updatedAt: String
+  updatedBy: String
+  destination: Destination
+}

@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/monoxane/rtr/internal/db"
+	"github.com/monoxane/rtr/internal/connector/db"
 )
 
 const testDBPath = "rtr_test.db"

@@ -10,16 +10,16 @@ import {
   TableBody,
   TableToolbar,
   TableToolbarContent,
+  TableToolbarSearch,
   Pagination,
   DataTableSkeleton,
 } from '@carbon/react';
 
 import DataTableError from './DataTableError.jsx';
 import DataTableEmpty from './DataTableEmpty.jsx';
-// import NewUser from './NewUser.jsx';
 
 const DataTable = function DataTable({
-  title, description, renderToolbar, headers, renderRow, data, loading, error, refresh, emptyTitle, emptyDescription, emptyAction,
+  title, description, toolbarItems, headers, renderRow, data, loading, error, refresh, emptyTitle, emptyDescription, emptyAction,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -41,12 +41,17 @@ const DataTable = function DataTable({
   }
 
   return (
-    <TableContainer title="Streams" description={description}>
+    <TableContainer title={title} description={description}>
       {!error && (
       <>
         {(rows && rows.length !== 0) && (
         <>
-          {renderToolbar({ searchQuery, setSearchQuery, disabled: error })}
+          <TableToolbar>
+            <TableToolbarContent>
+              <TableToolbarSearch onChange={(e) => { setSearchQuery(e.target.value); }} value={searchQuery} placeholder="Filter" />
+              {toolbarItems}
+            </TableToolbarContent>
+          </TableToolbar>
           <Table size="md" useZebraStyles={false}>
             <TableHead>
               <TableRow>
@@ -102,7 +107,7 @@ DataTable.propTypes = {
   emptyDescription: PropTypes.string.isRequired,
   emptyAction: PropTypes.node.isRequired,
   headers: PropTypes.arrayOf(PropTypes.string).isRequired,
-  renderToolbar: PropTypes.node.isRequired,
+  toolbarItems: PropTypes.node,
   renderRow: PropTypes.func.isRequired,
   // eslint-disable-next-line react/forbid-prop-types
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
@@ -113,6 +118,10 @@ DataTable.propTypes = {
     message: PropTypes.string.isRequired,
   }).isRequired,
   refresh: PropTypes.func.isRequired,
+};
+
+DataTable.defaultProps = {
+  toolbarItems: null,
 };
 
 export default DataTable;

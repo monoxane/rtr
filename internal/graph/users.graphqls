@@ -1,0 +1,40 @@
+scalar Role
+
+type UserRouterBinding {
+  id: ID!
+  createdAt: Int
+  updatedAt: Int
+  updatedBy: Int
+  user: User
+  router: Router
+}
+
+input UserUpdate {
+  username: String
+  realname: String
+  role: Role
+  password: String
+}
+
+type User {
+  id: ID!
+  username: String!
+  realname: String
+  role: Role!
+  createdAt: Int
+  updatedAt: Int
+  updatedBy: Int
+  deletedAt: Int
+  lastLogin: Int
+  routers: [Router]!
+}
+
+type Login {
+  username: String!
+  password: String!
+}
+
+type LoginResponse {
+  user: User!
+  token: String!
+}

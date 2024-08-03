@@ -5,14 +5,12 @@ import {
   Grid,
   TableRow,
   TableCell,
-  TableToolbar,
-  TableToolbarContent,
-  TableToolbarSearch,
   TableToolbarMenu,
   TableToolbarAction,
 } from '@carbon/react';
 
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import { gql, useQuery } from '@apollo/client';
+
 import useAuth from '../../hooks/useAuth';
 
 import DataTable from '../../components/DataTable/DataTable.jsx';
@@ -20,15 +18,25 @@ import Time from '../../common/Time.jsx';
 import UserMenu from './UserMenu.jsx';
 import NewUser from './NewUser.jsx';
 
+const USERS = gql`query users($showDeleted:Boolean) {
+  users(showDeleted:$showDeleted) {
+    id
+    realname
+    username
+    role
+    lastLogin
+    deletedAt
+  }
+  roles
+}`;
+
 const Users = function Users() {
   const [showDeleted, setShowDeleted] = useState(false);
-  const [{ data, loading, error }, refresh] = useAxiosPrivate()(
-    `/v1/api/users${showDeleted ? '?show_deleted=true' : ''}`,
-  );
-
-  const [roles] = useAxiosPrivate()(
-    '/v1/api/user_roles',
-  );
+  const {
+    loading, error, data, refetch,
+  } = useQuery(USERS, {
+    variables: { showDeleted },
+  });
 
   const { auth } = useAuth();
 
@@ -42,45 +50,42 @@ const Users = function Users() {
           description="User accounts allow you to restrict and manage access to rtr"
           emptyTitle="There are no Users yet."
           emptyDescription="To get started, click New User."
-          emptyAction={<NewUser refresh={refresh} roles={roles} />}
+          emptyAction={<NewUser refresh={refetch} roles={data?.roles} />}
           headers={headers}
-          data={data}
-          renderToolbar={({ searchQuery, setSearchQuery }) => (
-            <TableToolbar>
-              <TableToolbarContent>
-                <TableToolbarSearch onChange={(e) => { setSearchQuery(e.target.value); }} value={searchQuery} placeholder="Filter" />
-                <TableToolbarMenu>
-                  <TableToolbarAction onClick={() => setShowDeleted(!showDeleted)}>
-                    {showDeleted ? 'Hide' : 'Show'}
-                    {' '}
-                    Deactivated
-                  </TableToolbarAction>
-                  <TableToolbarAction onClick={() => refresh()}>
-                    Refresh
-                  </TableToolbarAction>
-                </TableToolbarMenu>
-                <NewUser refresh={refresh} roles={roles} />
-              </TableToolbarContent>
-            </TableToolbar>
+          data={data?.users}
+          toolbarItems={(
+            <>
+              <TableToolbarMenu>
+                <TableToolbarAction onClick={() => setShowDeleted(!showDeleted)}>
+                  {showDeleted ? 'Hide' : 'Show'}
+                  {' '}
+                  Deactivated
+                </TableToolbarAction>
+                <TableToolbarAction onClick={() => refetch()}>
+                  Refresh
+                </TableToolbarAction>
+              </TableToolbarMenu>
+              <NewUser refresh={refetch} roles={data?.roles} />
+            </>
           )}
           renderRow={(row) => (
             <TableRow key={row.username}>
-              <TableCell>{row.real_name}</TableCell>
+              <TableCell>{row.realname}</TableCell>
               <TableCell>
                 {row.username}
                 {' '}
                 {row.username === auth.user && '(You)'}
               </TableCell>
               <TableCell>{row.role}</TableCell>
-              <TableCell>{row.deleted_at ? <em>Deactivated</em> : <Time time={row.last_login} since />}</TableCell>
+              <TableCell>{row.deletedAt !== 0 ? <em>Deactivated</em> : <Time time={row.lastLogin} since />}</TableCell>
               <TableCell>
-                <UserMenu refresh={refresh} user={row} roles={roles} />
+                <UserMenu refresh={refetch} user={row} roles={data?.roles} />
               </TableCell>
             </TableRow>
           )}
           loading={loading}
           error={error}
-          refresh={refresh}
+          refresh={refetch}
         />
       </Column>
     </Grid>

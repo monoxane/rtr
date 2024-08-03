@@ -19,17 +19,19 @@ type Stream struct {
 	DestinationID *int   `json:"destination_id"`
 	IsRoutable    bool   `json:"is_routable"`
 	IsActive      bool   `json:"is_active"`
+	Clients       int    `json:"clients"`
 	UpdatedBy     int    `json:"-"`
 	repository.CommonMetadata
 }
 
 const (
 	queryStreams       = "SELECT * FROM streams;"
-	queryStreamsInsert = "INSERT INTO streams(label, slug, destination_id, is_routable, is_active created_at, updated_at, updated_by) values(?,?,?,?,?,?,?,?)"
+	queryStreamsInsert = "INSERT INTO streams(label, slug, destination_id, is_routable, created_at, updated_at, updated_by) values(?,?,?,?,?,?,?)"
+	queryStreamsDelete = "DELETE FROM streams WHERE id = ?"
 )
 
 func Create(stream Stream) error {
-	_, err := db.Database.Exec(queryStreamsInsert, stream.Label, stream.Slug, stream.DestinationID, stream.IsRoutable, false, time.Now().Unix(), time.Now().Unix(), stream.UpdatedBy)
+	_, err := db.Database.Exec(queryStreamsInsert, stream.Label, stream.Slug, stream.DestinationID, stream.IsRoutable, time.Now().Unix(), time.Now().Unix(), stream.UpdatedBy)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) {
@@ -56,7 +58,7 @@ func List() ([]Stream, error) {
 		var cat int64
 		var uat int64
 
-		if err := rows.Scan(&stream.ID, &stream.Label, &stream.Slug, &stream.DestinationID, &stream.IsRoutable, &stream.IsActive, &cat, &uat, &stream.UpdatedBy); err != nil {
+		if err := rows.Scan(&stream.ID, &stream.Label, &stream.Slug, &stream.DestinationID, &stream.IsRoutable, &stream.IsActive, &stream.Clients, &cat, &uat, &stream.UpdatedBy); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				log.Print("no more rows")
 				continue
@@ -72,4 +74,13 @@ func List() ([]Stream, error) {
 	}
 
 	return streams, nil
+}
+
+func Delete(stream int) error {
+	_, err := db.Database.Exec(queryStreamsDelete, time.Now().Unix(), stream)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

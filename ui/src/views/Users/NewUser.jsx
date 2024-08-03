@@ -5,7 +5,7 @@ import {
   Button,
   Modal,
   TextInput,
-  Dropdown, DropdownSkeleton,
+  Dropdown,
   Stack,
 } from '@carbon/react';
 
@@ -13,9 +13,15 @@ import {
   Add,
 } from '@carbon/icons-react';
 
-import { getAxiosPrivate } from '../../hooks/useAxiosPrivate';
+import { useMutation, gql } from '@apollo/client';
+
+import GraphQLError from '../../components/Errors/GraphQLError.jsx';
 
 import ModalStateManager from '../../common/ModalStateManager.jsx';
+
+const CREATE_USER = gql`mutation createUser($user: UserUpdate!) {
+  createUser(user: $user) {id}
+}`;
 
 function NewUser({ refresh, roles }) {
   const button = useRef();
@@ -53,10 +59,12 @@ function NewUserModal({
   open, setOpen, launcherButtonRef, refresh, roles,
 }) {
   const [newUser, setNewUser] = useState({
-    username: '', password: '', confirm: '', real_name: '', role: '',
+    username: '', password: '', confirm: '', realname: '', role: '',
   });
 
-  const axios = getAxiosPrivate();
+  const [error, setErr] = useState();
+
+  const [createUser] = useMutation(CREATE_USER);
 
   return (
     <Modal
@@ -67,30 +75,39 @@ function NewUserModal({
       secondaryButtonText="Cancel"
       open={open}
       onRequestSubmit={() => {
-        axios.post('/v1/api/users', newUser)
-          .then(() => {
-            refresh();
-            setOpen(false);
-          });
+        setErr();
+        const payload = {
+          variables: {
+            user: {
+              username: newUser.username, realname: newUser.realname, role: newUser.role, password: newUser.password,
+            },
+          },
+        };
+        createUser(payload).then(() => {
+          refresh();
+          setOpen(false);
+        }).catch((err) => {
+          setErr(err);
+        });
       }}
       onRequestClose={() => {
         setOpen(false);
         setTimeout(() => {
           setNewUser({
-            username: '', password: '', real_name: '', role: '',
+            username: '', password: '', realname: '', role: '',
           });
         }, 250);
       }}
     >
       <Stack gap={4}>
         <TextInput
-          id="real_name"
+          id="realname"
           type="text"
           placeholder="Grant Petty"
           labelText="Real Name"
           required
-          value={newUser.real_name}
-          onChange={(e) => setNewUser({ ...newUser, real_name: e.target.value })}
+          value={newUser.realname}
+          onChange={(e) => setNewUser({ ...newUser, realname: e.target.value })}
         />
         <TextInput
           id="username"
@@ -121,19 +138,16 @@ function NewUserModal({
           invalidText="Password does not match"
           onChange={(e) => setNewUser({ ...newUser, confirm: e.target.value })}
         />
-        {roles.loading && <DropdownSkeleton />}
-        {roles.error && 'Unable to load Roles'}
-        {roles.data
-        && (
-          <Dropdown
-            id="role"
-            titleText="User Role"
-            label="Select a Role"
-            items={roles.data}
-            direction="top"
-            onChange={(e) => setNewUser({ ...newUser, role: e.selectedItem })}
-          />
-        )}
+        <Dropdown
+          id="role"
+          titleText="User Role"
+          label="Select a Role"
+          items={roles}
+          direction="top"
+          selectedItem={newUser.role}
+          onChange={(e) => setNewUser({ ...newUser, role: e.selectedItem })}
+        />
+        <GraphQLError error={error} />
       </Stack>
     </Modal>
   );
@@ -147,12 +161,7 @@ NewUserModal.propTypes = {
     PropTypes.shape({ current: PropTypes.instanceOf(Element) }),
   ]).isRequired,
   refresh: PropTypes.func.isRequired,
-  roles: PropTypes.shape({
-    data: PropTypes.arrayOf(PropTypes.string).isRequired,
-    // eslint-disable-next-line react/forbid-prop-types
-    error: PropTypes.object.isRequired,
-    loading: PropTypes.bool.isRequired,
-  }).isRequired,
+  roles: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 export default NewUser;

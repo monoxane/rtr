@@ -1,0 +1,30 @@
+type SalvoDestination {
+  id: ID!
+  createdAt: String
+  updatedAt: String
+  updatedBy: String
+  salvoVersion: SalvoVersion
+  destination: Destination
+  source: Source
+}
+
+type SalvoVersion {
+  id: ID!
+  label: String!
+  description: String
+  createdAt: String
+  updatedAt: String
+  updatedBy: String
+  salvo: Salvo
+  salvoDestinations: [SalvoDestination!]!
+}
+
+type Salvo {
+  id: ID!
+  label: String!
+  description: String
+  createdAt: String
+  updatedAt: String
+  updatedBy: String
+  salvoVersions: [SalvoVersion!]!
+}

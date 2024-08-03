@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Tooltip } from '@carbon/react';
 
 const Time = function Time({ time, since }) {
-  const parsedTime = new Date();
+  const parsedTime = new Date(time);
   const asLocale = parsedTime.toLocaleDateString('en-AU');
 
   if (!since) {
@@ -30,7 +30,7 @@ const Time = function Time({ time, since }) {
         );
       case 1:
         return (
-          <Tooltip label="Close">
+          <Tooltip label="Yesterday">
             <span>Yesterday</span>
           </Tooltip>
         );
@@ -49,7 +49,7 @@ const Time = function Time({ time, since }) {
 };
 
 Time.propTypes = {
-  time: PropTypes.string.isRequired,
+  time: PropTypes.number.isRequired,
   since: PropTypes.bool,
 };
 

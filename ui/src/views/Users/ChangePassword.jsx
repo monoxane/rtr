@@ -6,17 +6,20 @@ import {
   TextInput,
   Stack,
 } from '@carbon/react';
+import { useMutation, gql } from '@apollo/client';
 
 import userPropType from './propTypes';
 
-import { getAxiosPrivate } from '../../hooks/useAxiosPrivate';
+const UPDATE_PASSWORD = gql`mutation updatePassword($id:Int!, $password: String!) {
+  updateUserPassword(id:$id, password: $password)
+}`;
 
 function ChangePasswordModal({
   open, setOpen, user,
 }) {
   const [userData, setUserData] = useState({ new: '', confirm: '' });
 
-  const axios = getAxiosPrivate();
+  const [updatePassword] = useMutation(UPDATE_PASSWORD);
 
   return (
     <Modal
@@ -28,21 +31,20 @@ function ChangePasswordModal({
             {user.real_name || user.username}
           </strong>
         </>
-)}
+      )}
       modalLabel="Users"
       primaryButtonText="Save"
       secondaryButtonText="Cancel"
       open={open}
       onRequestSubmit={() => {
-        axios.post(`/v1/api/users/${user.id}/password`, userData)
-          .then(() => {
-            setOpen(false);
-            setTimeout(() => {
-              setUserData({
-                new: '', confirm: '',
-              });
-            }, 250);
-          });
+        updatePassword({ variables: { id: user.id, password: userData.new } }).then(() => {
+          setOpen(false);
+          setTimeout(() => {
+            setUserData({
+              new: '', confirm: '',
+            });
+          }, 250);
+        });
       }}
       onRequestClose={() => {
         setOpen(false);

@@ -1,9 +1,9 @@
 /* eslint-disable global-require */
 const path = require('path');
-const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const WebpackPwaManifest = require('webpack-pwa-manifest');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
 const port = process.env.PORT || 3000;
 
@@ -111,6 +111,9 @@ module.exports = (_, argv) => {
       magicHtml: true,
       proxy: {
         '/v1/api': {
+          target: 'http://localhost:8080',
+        },
+        '/v3/graphql': {
           target: 'http://localhost:8080',
         },
         '/v1/ws': {

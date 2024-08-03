@@ -1,0 +1,33 @@
+type TallyConnections {
+  id: ID!
+  # boolean
+  enableInbound: Int!
+  # boolean
+  enableOutbound: String!
+  remoteIp: String
+  remotePort: Int
+  localPort: Int
+  protocol: String!
+  transport: String!
+  lastInboundMessage: String
+  lastOutboundMessage: String
+  createdAt: String
+  updatedAt: String
+  updatedBy: String
+  deletedAt: String
+  tallyStatesList: [TallyStates!]!
+}
+
+type TallyStates {
+  id: ID!
+  address: Int!
+  # boolean
+  tally1: Int!
+  # boolean
+  tally2: Int!
+  # boolean
+  tally3: Int!
+  # boolean
+  tally4: Int!
+  tallyConnections: TallyConnections
+}

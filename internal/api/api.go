@@ -3,11 +3,14 @@ package api
 import (
 	"net/http"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
 	"github.com/monoxane/rtr/internal/api/auth"
 	"github.com/monoxane/rtr/internal/api/middleware"
 	streamsapi "github.com/monoxane/rtr/internal/api/streams"
-	usersapi "github.com/monoxane/rtr/internal/api/users"
+	"github.com/monoxane/rtr/internal/graph"
+	"github.com/monoxane/rtr/internal/graph/resolvers"
 	"github.com/rs/zerolog"
 )
 
@@ -25,12 +28,16 @@ func Serve() {
 	svc := gin.New()
 	svc.Use(middleware.Zerolog(log))
 	svc.Use(middleware.CORS())
+	svc.Use(middleware.GinContextToContextMiddleware())
 
 	svc.StaticFile("/", "/dist/index.html")
 	svc.NoRoute(func(c *gin.Context) {
 		c.File("/dist/index.html")
 	})
 	svc.Static("/dist", "/dist")
+
+	svc.POST("/v3/graphql", graphqlHandler())
+	svc.GET("/v3/playground", playgroundHandler())
 
 	//
 	// REST ENDPOINTS
@@ -40,19 +47,6 @@ func Serve() {
 
 	// Auth
 	svc.POST("/v1/api/login", auth.Authenticate) // Handle Login, NOT BEHIND THE MIDDLEWARE!
-
-	// Users
-	api.Group("/user_roles").Use(middleware.Authorization(auth.ROLE_ADMIN)).GET("", usersapi.GetUserRoles) // Get all User Roles
-
-	v1_users := api.Group("/users")
-	v1_users.Use(middleware.Authorization(auth.ROLE_ADMIN))
-
-	v1_users.GET("/", usersapi.GetUsers)                      // Get all Users
-	v1_users.POST("/", usersapi.CreateUser)                   // Create a new User
-	v1_users.DELETE("/:id", usersapi.DeleteUser)              // Delete a User
-	v1_users.PATCH("/:id", usersapi.UpdateUser)               // Edit a user
-	v1_users.POST("/:id/password", usersapi.ResetPassword)    // Forcefully set a users password
-	v1_users.POST("/:id/reactivate", usersapi.ReactivateUser) // Reactivate a User
 
 	// Streams
 	v1_streams := api.Group("/streams")
@@ -66,8 +60,6 @@ func Serve() {
 	//
 
 	ws := svc.Group("/v1/ws")
-
-	ws.GET("/realtime/:type", NotImplemented) // Provide realtime updates for a resource type
 
 	// Streams
 	ws.GET("/streams/source/:id", NotImplemented) // Receive Stream Source
@@ -101,4 +93,24 @@ func Serve() {
 
 func NotImplemented(c *gin.Context) {
 	c.Status(http.StatusNotImplemented)
+}
+
+// Defining the Graphql handler
+func graphqlHandler() gin.HandlerFunc {
+	// NewExecutableSchema and Config are in the generated.go file
+	// Resolver is in the resolver.go file
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &resolvers.Resolver{}}))
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+// Defining the Playground handler
+func playgroundHandler() gin.HandlerFunc {
+	h := playground.Handler("rtr GraphQL Playground", "/v3/graphql")
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
 }

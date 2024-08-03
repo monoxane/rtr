@@ -11,6 +11,7 @@ import (
 	"github.com/monoxane/rtr/internal/api/auth"
 	"github.com/monoxane/rtr/internal/connector/db"
 	"github.com/monoxane/rtr/internal/env"
+	"github.com/monoxane/rtr/internal/graph/model"
 	"github.com/monoxane/rtr/internal/repository/users"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -96,7 +97,7 @@ func createAdminUser(username, password string) error {
 		return errors.Wrap(err, "unable to hash password for admin user")
 	}
 
-	err = users.Create(users.User{
+	_, err = users.Create(model.User{
 		Username: env.AdminUsername,
 		Hash:     string(hash),
 		Role:     auth.ROLE_ADMIN,

@@ -8,20 +8,10 @@ import (
 
 	"github.com/mattn/go-sqlite3"
 	"github.com/monoxane/rtr/internal/connector/db"
+	"github.com/monoxane/rtr/internal/graph/model"
 	"github.com/monoxane/rtr/internal/repository"
 	"github.com/pkg/errors"
 )
-
-type User struct {
-	ID        int        `json:"id"`
-	Username  string     `json:"username" binding:"required"`
-	RealName  string     `json:"real_name" binding:"required"`
-	Hash      string     `json:"-"`
-	Role      string     `json:"role" binding:"required"`
-	UpdatedBy *int       `json:"updated_by"`
-	LastLogin *time.Time `json:"last_login"`
-	repository.CommonMetadata
-}
 
 const (
 	queryUsers               = "SELECT * FROM users WHERE deleted_at IS NULL"
@@ -31,26 +21,36 @@ const (
 	queryUsersInsert         = "INSERT INTO users(username, real_name, password_hash, role, created_at, updated_at, updated_by) values(?,?,?,?,?,?,?)"
 	queryUserUpdate          = "UPDATE users SET username = ?, real_name = ?, role = ?, updated_at = ?, updated_by = ? WHERE id = ?"
 	queryUpdateLastLogin     = "UPDATE users SET last_login = ? WHERE id = ?"
-	queryUsersSoftDelete     = "UPDATE users SET deleted_at = ? WHERE id = ?"
+	queryUsersSoftDelete     = "UPDATE users SET deleted_at = ?, updated_by = ? WHERE id = ?"
 	queryUsersUpdatePassword = "UPDATE users SET password_hash = ? WHERE id = ?"
 )
 
-func Create(user User) error {
-	_, err := db.Database.Exec(queryUsersInsert, user.Username, user.RealName, user.Hash, user.Role, time.Now().Unix(), time.Now().Unix(), user.UpdatedBy)
+func Create(user model.User) (*model.User, error) {
+	res, err := db.Database.Exec(queryUsersInsert, user.Username, user.RealName, user.Hash, user.Role, time.Now().Unix(), time.Now().Unix(), user.UpdatedBy)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) {
 			if errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
-				return fmt.Errorf("record exists: %s", err)
+				return nil, errors.Wrap(err, "unable to insert user due to constraint")
 			}
 		}
-		return err
+		return nil, errors.Wrap(err, "unable to insert user")
 	}
 
-	return nil
+	id, err := res.LastInsertId()
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get id of inserted user")
+	}
+
+	newUser, err := GetByID(int(id))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get new user")
+	}
+
+	return &newUser, nil
 }
 
-func Update(id int, user User) error {
+func Update(id int, user model.User) error {
 	_, err := db.Database.Exec(queryUserUpdate, user.Username, user.RealName, user.Role, time.Now().Unix(), user.UpdatedBy, id)
 	if err != nil {
 		var sqliteErr sqlite3.Error
@@ -80,7 +80,7 @@ func RecordLogin(user int) error {
 	return nil
 }
 
-func List(deleted bool) ([]User, error) {
+func List(deleted bool) ([]*model.User, error) {
 	q := queryUsers
 	if deleted {
 		q = queryUsersWithDeleted
@@ -92,9 +92,9 @@ func List(deleted bool) ([]User, error) {
 	}
 	defer rows.Close()
 
-	var users []User
+	var users []*model.User
 	for rows.Next() {
-		var user User
+		user := &model.User{}
 		var cat int64
 		var uat int64
 		var dat *int64
@@ -124,10 +124,10 @@ func List(deleted bool) ([]User, error) {
 	return users, nil
 }
 
-func GetByUsername(username string) (User, error) {
+func GetByUsername(username string) (model.User, error) {
 	row := db.Database.QueryRow(queryUserByUsername, username)
 
-	var user User
+	var user model.User
 	var cat int64
 	var uat int64
 	var dat *int64
@@ -135,10 +135,10 @@ func GetByUsername(username string) (User, error) {
 
 	if err := row.Scan(&user.ID, &user.Username, &user.RealName, &user.Hash, &user.Role, &last, &cat, &uat, &user.UpdatedBy, &dat); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, repository.ErrNotExists
+			return model.User{}, repository.ErrNotExists
 		}
 
-		return User{}, err
+		return model.User{}, err
 	}
 
 	user.CreatedAt = time.Unix(cat, 0)
@@ -151,31 +151,35 @@ func GetByUsername(username string) (User, error) {
 	return user, nil
 }
 
-func GetByID(id int) (User, error) {
+func GetByID(id int) (model.User, error) {
 	row := db.Database.QueryRow("SELECT * FROM users WHERE id = ? AND deleted_at IS NULL", id)
 
-	var user User
-	var cat string
-	var uat string
-	var dat *string
-	if err := row.Scan(&user.ID, &user.Username, &user.Hash, &user.Role, &cat, &uat, &user.UpdatedBy, &dat); err != nil {
+	var user model.User
+	var cat int64
+	var uat int64
+	var dat *int64
+	var last *int64
+
+	if err := row.Scan(&user.ID, &user.Username, &user.RealName, &user.Hash, &user.Role, &last, &cat, &uat, &user.UpdatedBy, &dat); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, repository.ErrNotExists
+			return model.User{}, repository.ErrNotExists
 		}
 
-		return User{}, err
+		return model.User{}, err
 	}
 
-	createdAt, _ := time.Parse(time.DateTime, cat)
-	user.CreatedAt = createdAt
-	updatedAt, _ := time.Parse(time.DateTime, cat)
-	user.UpdatedAt = updatedAt
+	user.CreatedAt = time.Unix(cat, 0)
+	user.UpdatedAt = time.Unix(uat, 0)
+	if last != nil {
+		lastLog := time.Unix(*last, 0)
+		user.LastLogin = &lastLog
+	}
 
 	return user, nil
 }
 
-func Delete(user int) error {
-	_, err := db.Database.Exec(queryUsersSoftDelete, time.Now().Unix(), user)
+func Deactivate(user, requester int) error {
+	_, err := db.Database.Exec(queryUsersSoftDelete, time.Now().Unix(), requester, user)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) {
@@ -189,8 +193,8 @@ func Delete(user int) error {
 	return nil
 }
 
-func Reactivate(user int) error {
-	_, err := db.Database.Exec(queryUsersSoftDelete, nil, user)
+func Reactivate(user, requester int) error {
+	_, err := db.Database.Exec(queryUsersSoftDelete, nil, requester, user)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) {

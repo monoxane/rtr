@@ -1,0 +1,42 @@
+type Router {
+  id: ID!
+  label: String!
+  provider: Int!
+  ipAddress: String!
+  routerAddress: Int
+  level: Int!
+  model: String
+  createdAt: String
+  updatedAt: String
+  updatedBy: String
+  destinations: [Destination!]!
+  sources: [Source!]!
+}
+
+type Destination {
+  id: ID!
+  index: Int!
+  label: String!
+  description: String
+  umdLabel: String
+  tallyGreen: Boolean!
+  tallyRed: Boolean!
+  tallyYellow: Boolean!
+  tallyAddress: Int
+  createdAt: String
+  updatedAt: String
+  updatedBy: String
+  routedSource: Source
+}
+
+type Source {
+  id: ID!
+  index: Int!
+  label: String!
+  description: String
+  umdLabel: String
+  tallyGreen: Boolean!
+  tallyRed: Boolean!
+  tallyYellow: Boolean!
+  tallyAddress: Int
+}

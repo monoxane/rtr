@@ -1,0 +1,21 @@
+scalar Time
+
+type Query {
+  roles: [Role!]!
+
+  users(showDeleted: Boolean): [User!]!
+  user(id: ID, username: String): User!
+
+  streams: [Stream!]!
+}
+
+type Mutation {
+  login(username: String!, password: String!): LoginResponse
+
+  createUser(user: UserUpdate!): User
+  updateUser(id: Int!, user: UserUpdate!): User
+  updateUserPassword(id: Int!, password: String!): Int
+
+  deactivateUser(id: Int!): Int
+  reactivateUser(id: Int!): Int
+}

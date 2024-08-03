@@ -1,12 +1,11 @@
 // General Imports
+import {
+  useNavigate,
+} from 'react-router-dom';
 import React, {
   useState,
   useEffect,
 } from 'react';
-
-import {
-  useNavigate,
-} from 'react-router-dom';
 
 import {
   Stack,
@@ -23,9 +22,20 @@ import {
   ArrowRight,
 } from '@carbon/icons-react';
 
-import axios from 'axios';
+import { useMutation, gql } from '@apollo/client';
 
 import useAuth from '../../hooks/useAuth';
+
+const LOGIN = gql`mutation login($username:String!, $password:String!) {
+  login(username:$username, password:$password) {
+    token
+    user {
+      id
+      username
+      role
+    }
+  }
+}`;
 
 const Login = function Login() {
   const { setAuth, setPersist } = useAuth();
@@ -36,6 +46,8 @@ const Login = function Login() {
   const [pass, setPass] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [login] = useMutation(LOGIN);
+
   useEffect(() => {
     setErrors({});
   }, [user, pass]);
@@ -44,44 +56,27 @@ const Login = function Login() {
     setPersist(true);
     setLoading(true);
 
-    try {
-      const response = await axios.post(
-        '/v1/api/login',
-        JSON.stringify({ username: user, password: pass }),
-        {
-          headers: { 'Content-Type': 'application/json' },
-          // withCredentials: true,
-        },
-      );
-      const accessToken = response?.data?.token;
+    login({ variables: { username: user, password: pass } }).then((res) => {
+      setLoading(false);
 
       setAuth({
-        user, role: response?.data?.role, accessToken,
+        user: res.data.login.user.username, role: res.data.login.user.role, accessToken: res.data.login.token,
       });
+
       setUser('');
       setPass('');
 
       navigate('/dashboard');
-    } catch (err) {
-      if (!err?.response) {
-        setErrors({ general: 'Could not connect to rtr' });
-      } else if (err.response?.status === 400) {
-        setErrors({ general: 'Missing Username or Password' });
-      } else if (err.response?.status === 401) {
-        if (err.response.data.sta === 404) {
-          setErrors({ username: err.response.data.msg });
-        }
-
-        if (err.response.data.sta === 401) {
-          setErrors({ password: err.response.data.msg });
-        }
-      } else if (err.response?.status === 500) {
-        setErrors({ general: err.response.data.msg });
+    }).catch((err) => {
+      if (err.message === 'invalid password') {
+        setErrors({ password: 'Incorrect Password' });
+      } else if (err.message === 'user not found') {
+        setErrors({ username: 'User not found' });
       } else {
-        setErrors({ general: 'Login Failed' });
+        setErrors({ general: `Login Failed: ${err.message}` });
       }
       setLoading(false);
-    }
+    });
   };
 
   return (
@@ -129,7 +124,6 @@ const Login = function Login() {
               renderIcon={loading ? InlineLoading : ArrowRight}
               tabIndex={0}
               size="lg"
-              // type="submit"
               onClick={handleSubmit}
             >
               Continue

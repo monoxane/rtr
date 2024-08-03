@@ -29,7 +29,7 @@ const Streams = function Streams() {
     '/v1/api/streams',
   );
 
-  const headers = ['Name', 'Active', 'Slug', 'Destination', 'Is Routable', 'Actions'];
+  const headers = ['Name', 'Slug', 'Active', 'Clients', 'Destination', 'Is Routable', 'Actions'];
 
   return (
     <Grid>
@@ -42,26 +42,24 @@ const Streams = function Streams() {
           emptyAction={<NewStream refresh={refresh} />}
           headers={headers}
           data={data}
-          renderToolbar={({ searchQuery, setSearchQuery }) => (
-            <TableToolbar>
-              <TableToolbarContent>
-                <TableToolbarSearch onChange={(e) => { setSearchQuery(e.target.value); }} value={searchQuery} placeholder="Filter" />
-                <Button hasIconOnly kind="ghost" iconDescription="Refresh" renderIcon={Renew} onClick={() => refresh()}>
-                  Refresh
-                </Button>
-                <NewStream refresh={refresh} />
-              </TableToolbarContent>
-            </TableToolbar>
+          toolbarItems={(
+            <>
+              <Button hasIconOnly kind="ghost" iconDescription="Refresh" renderIcon={Renew} onClick={() => refresh()}>
+                Refresh
+              </Button>
+              <NewStream refresh={refresh} />
+            </>
           )}
           renderRow={(row) => (
             <TableRow key={row.slug}>
               <TableCell>
                 {row.label}
               </TableCell>
+              <TableCell>{row.slug}</TableCell>
               <TableCell>
                 {row.is_active ? <CheckmarkOutline /> : <MisuseOutline />}
               </TableCell>
-              <TableCell>{row.slug}</TableCell>
+              <TableCell>{row.clients}</TableCell>
               <TableCell>{row.destination_id || <em>None</em>}</TableCell>
               <TableCell>{row.is_routable ? 'Yes' : 'No'}</TableCell>
               <TableCell>
