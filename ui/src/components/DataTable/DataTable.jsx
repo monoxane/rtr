@@ -116,12 +116,13 @@ DataTable.propTypes = {
     name: PropTypes.string.isRequired,
     code: PropTypes.string.isRequired,
     message: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   refresh: PropTypes.func.isRequired,
 };
 
 DataTable.defaultProps = {
   toolbarItems: null,
+  error: null,
 };
 
 export default DataTable;

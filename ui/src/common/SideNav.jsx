@@ -25,11 +25,11 @@ function ComposedSideNav({ onClickSideNavExpand, isActive, isRail }) {
       <SideNavItems>
         <SideNavLink renderIcon={Home} to="/dashboard" label="Home" onClick={onClickSideNavExpand} />
 
-        <SideNavGroup group="/streams" renderIcon={View} large title="Streams">
+        <SideNavGroup group="/streams/*" renderIcon={View} large title="Streams">
           {auth?.role === 'ADMIN' && (
-            <SideNavLink to="/streams" label="Setup" onClick={onClickSideNavExpand} />
+            <SideNavLink to="/streams/config" label="Config" onClick={onClickSideNavExpand} />
           )}
-          <SideNavStreamsList onClick={onClickSideNavExpand} />
+          <SideNavStreamsList onClickSideNavExpand={onClickSideNavExpand} />
         </SideNavGroup>
 
         {auth?.role === 'ADMIN' && (

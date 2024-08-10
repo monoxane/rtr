@@ -57,7 +57,7 @@ const DataTableError = function DataTableError({ resource, error, retry }) {
                 <br />
                 Code:
                 {' '}
-                {error.code}
+                {error.code || error.cause?.extensions?.code}
                 <br />
                 Message:
                 {' '}
@@ -75,7 +75,12 @@ DataTableError.propTypes = {
   resource: PropTypes.string.isRequired,
   error: PropTypes.shape({
     name: PropTypes.string.isRequired,
-    code: PropTypes.string.isRequired,
+    code: PropTypes.string,
+    cause: PropTypes.shape({
+      extensions: PropTypes.shape({
+        code: PropTypes.string.isRequired,
+      }).isRequired,
+    }),
     message: PropTypes.string.isRequired,
   }).isRequired,
   retry: PropTypes.func.isRequired,

@@ -10,8 +10,10 @@ import (
 	"log"
 
 	"github.com/monoxane/rtr/internal/auth"
+	streamsController "github.com/monoxane/rtr/internal/controller/streams"
 	"github.com/monoxane/rtr/internal/graph"
 	"github.com/monoxane/rtr/internal/graph/model"
+	"github.com/monoxane/rtr/internal/repository/streams"
 	"github.com/monoxane/rtr/internal/repository/users"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -34,7 +36,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, user model.UserUpdate
 	requester, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
 	if err != nil {
 		log.Printf("error authorizing user: %s", err)
-		return nil, gqlerror.Wrap(err)
+		return nil, err
 	}
 
 	if user.Password == nil {
@@ -60,7 +62,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id int, user model.Us
 	requester, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
 	if err != nil {
 		log.Printf("error authorizing user: %s", err)
-		return nil, gqlerror.Wrap(err)
+		return nil, err
 	}
 
 	err = users.Update(id, model.User{
@@ -78,7 +80,7 @@ func (r *mutationResolver) UpdateUserPassword(ctx context.Context, id int, passw
 	_, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
 	if err != nil {
 		log.Printf("error authorizing user: %s", err)
-		return &id, gqlerror.Wrap(err)
+		return &id, err
 	}
 
 	hash, err := auth.HashPassword(password)
@@ -99,7 +101,7 @@ func (r *mutationResolver) DeactivateUser(ctx context.Context, id int) (*int, er
 	requester, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
 	if err != nil {
 		log.Printf("error authorizing user: %s", err)
-		return nil, gqlerror.Wrap(err)
+		return nil, err
 	}
 
 	return &id, users.Deactivate(id, requester.ID)
@@ -110,10 +112,46 @@ func (r *mutationResolver) ReactivateUser(ctx context.Context, id int) (*int, er
 	requester, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
 	if err != nil {
 		log.Printf("error authorizing user: %s", err)
-		return nil, gqlerror.Wrap(err)
+		return nil, err
 	}
 
 	return &id, users.Reactivate(id, requester.ID)
+}
+
+// CreateStream is the resolver for the createStream field.
+func (r *mutationResolver) CreateStream(ctx context.Context, stream model.StreamUpdate) (*model.Stream, error) {
+	requester, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
+	if err != nil {
+		log.Printf("error authorizing user: %s", err)
+		return nil, err
+	}
+
+	newStream, err := streams.Create(model.Stream{
+		Label:       stream.Label,
+		Slug:        stream.Slug,
+		IsRoutable:  stream.IsRoutable,
+		Destination: stream.Destination,
+		UpdatedBy:   &requester.ID,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	streamsController.UpdateStream(newStream)
+
+	return newStream, err
+}
+
+// DeleteStream is the resolver for the deleteStream field.
+func (r *mutationResolver) DeleteStream(ctx context.Context, id int) (*int, error) {
+	_, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
+	if err != nil {
+		log.Printf("error authorizing user: %s", err)
+		return nil, err
+	}
+
+	return &id, streams.Delete(id)
 }
 
 // Roles is the resolver for the roles field.
@@ -126,7 +164,7 @@ func (r *queryResolver) Users(ctx context.Context, showDeleted *bool) ([]*model.
 	_, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
 	if err != nil {
 		log.Printf("error authorizing user: %s", err)
-		return nil, gqlerror.Wrap(err)
+		return nil, err
 	}
 
 	includeDeleted := false
@@ -138,13 +176,52 @@ func (r *queryResolver) Users(ctx context.Context, showDeleted *bool) ([]*model.
 }
 
 // User is the resolver for the user field.
-func (r *queryResolver) User(ctx context.Context, id *string, username *string) (*model.User, error) {
+func (r *queryResolver) User(ctx context.Context, id *int, username *string) (*model.User, error) {
 	panic(fmt.Errorf("not implemented: User - user"))
 }
 
 // Streams is the resolver for the streams field.
 func (r *queryResolver) Streams(ctx context.Context) ([]*model.Stream, error) {
-	panic(fmt.Errorf("not implemented: Streams - streams"))
+	_, err := auth.FromContext(ctx, auth.ROLE_OPERATOR)
+	if err != nil {
+		log.Printf("error authorizing user: %s", err)
+		return nil, err
+	}
+
+	return streams.List()
+}
+
+// Stream is the resolver for the stream field.
+func (r *queryResolver) Stream(ctx context.Context, id *int, slug *string) (*model.Stream, error) {
+	_, err := auth.FromContext(ctx, auth.ROLE_OPERATOR)
+	if err != nil {
+		log.Printf("error authorizing user: %s", err)
+		return nil, err
+	}
+
+	if id != nil {
+		return streams.GetByID(*id)
+	}
+
+	if slug != nil {
+		return streams.GetBySlug(*slug)
+	}
+
+	return nil, gqlerror.Wrap(fmt.Errorf("id or slug required"))
+}
+
+// Stream is the resolver for the Stream field.
+func (r *subscriptionResolver) Stream(ctx context.Context, id *int, slug *string) (<-chan *model.Stream, error) {
+	if id == nil && slug != nil {
+		stream, err := streams.GetBySlug(*slug)
+		if err != nil {
+			return nil, gqlerror.Wrap(err)
+		}
+
+		id = &stream.ID
+	}
+
+	return streams.Watch(*id, ctx)
 }
 
 // Mutation returns graph.MutationResolver implementation.
@@ -153,5 +230,9 @@ func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{
 // Query returns graph.QueryResolver implementation.
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
+// Subscription returns graph.SubscriptionResolver implementation.
+func (r *Resolver) Subscription() graph.SubscriptionResolver { return &subscriptionResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }

@@ -1,14 +1,19 @@
 import { RouterProvider } from 'react-router-dom';
 import Favicon from 'react-favicon';
 import React from 'react';
+import { createClient } from 'graphql-ws';
 
 import {
   ErrorBoundary,
 } from '@carbon/react';
 
+import { getMainDefinition } from '@apollo/client/utilities';
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
+
 import {
-  ApolloClient, createHttpLink, ApolloProvider, InMemoryCache,
+  ApolloClient, createHttpLink, ApolloProvider, InMemoryCache, from, split,
 } from '@apollo/client';
 
 import { AuthProvider } from './context/AuthProvider';
@@ -20,6 +25,21 @@ import imgs from './common/imgs.js';
 const httpLink = createHttpLink({
   uri: '/v3/graphql',
 });
+
+const wsLink = new GraphQLWsLink(
+  createClient({
+    url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}:${window.location.port}/v3/graphql`,
+  }),
+);
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
+  },
+  wsLink,
+  httpLink,
+);
 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
@@ -33,8 +53,25 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+const errorLink = onError(({
+  graphQLErrors, operation, forward,
+}) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(((err) => {
+      if (err.extensions.code === 'AUTH_ERROR') {
+        localStorage.removeItem('auth');
+        window.location.replace('/login');
+        return null;
+      }
+      return forward(operation);
+    }));
+  }
+
+  return forward(operation);
+});
+
 const client = new ApolloClient({
-  link: authLink.concat(httpLink),
+  link: from([errorLink, authLink, splitLink]),
   uri: '/v3/graphql',
   cache: new InMemoryCache(),
 });

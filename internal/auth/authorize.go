@@ -2,24 +2,28 @@ package auth
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/monoxane/rtr/internal/graph/model"
 	"github.com/monoxane/rtr/internal/repository/users"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func FromContext(ctx context.Context, minimumRole string) (model.User, error) { // role, id, username, err
 	ginContext := ctx.Value("GinContextKey")
 	if ginContext == nil {
-		err := fmt.Errorf("could not retrieve gin.Context")
-		return model.User{}, fmt.Errorf("no context available: %w", err)
+		gqlerr := gqlerror.Errorf("invalid context: not found")
+		gqlerr.Extensions = make(map[string]interface{})
+		gqlerr.Extensions["code"] = "INTERNAL_SERVER_ERROR"
+		return model.User{}, gqlerr
 	}
 
 	c, ok := ginContext.(*gin.Context)
 	if !ok {
-		err := fmt.Errorf("gin.Context has wrong type")
-		return model.User{}, fmt.Errorf("invalid context: %w", err)
+		gqlerr := gqlerror.Errorf("invalid context: gin.Context has wrong type")
+		gqlerr.Extensions = make(map[string]interface{})
+		gqlerr.Extensions["code"] = "INTERNAL_SERVER_ERROR"
+		return model.User{}, gqlerr
 	}
 
 	token := GetToken(c)
@@ -27,14 +31,17 @@ func FromContext(ctx context.Context, minimumRole string) (model.User, error) { 
 
 	// If token invalid we tell them to get in the sea
 	if err != nil {
-		return model.User{}, fmt.Errorf("401 Unauthorized")
+		gqlerr := gqlerror.Errorf("Invalid Token")
+		gqlerr.Extensions = make(map[string]interface{})
+		gqlerr.Extensions["code"] = "AUTH_ERROR"
+		return model.User{}, gqlerr
 	}
 
 	if ROLE_MAP[role] < ROLE_MAP[minimumRole] {
-		// c.Errors = append(c.Errors, &gin.Error{Err: fmt.Errorf("user role (%d/%s) does not meet minimum requirement (%d/%s) for path", auth.ROLE_MAP[role], role, auth.ROLE_MAP[minimumRole], minimumRole)})
-		// c.String(http.StatusForbidden, "Forbidden")
-		// c.Abort()
-		return model.User{}, fmt.Errorf("403 Forbidden")
+		gqlerr := gqlerror.Errorf("Invalid Token")
+		gqlerr.Extensions = make(map[string]interface{})
+		gqlerr.Extensions["code"] = "PERMISSION_DENIED"
+		return model.User{}, gqlerr
 	}
 
 	u, _ := users.GetByUsername(username)

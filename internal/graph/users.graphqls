@@ -23,7 +23,7 @@ type User {
   role: Role!
   createdAt: Int
   updatedAt: Int
-  updatedBy: Int
+  updatedBy: User
   deletedAt: Int
   lastLogin: Int
   routers: [Router]!

@@ -3,7 +3,7 @@
 package model
 
 type Destination struct {
-	ID           string  `json:"id"`
+	ID           int     `json:"id"`
 	Index        int     `json:"index"`
 	Label        string  `json:"label"`
 	Description  *string `json:"description,omitempty"`
@@ -35,7 +35,7 @@ type Query struct {
 }
 
 type Router struct {
-	ID            string         `json:"id"`
+	ID            int            `json:"id"`
 	Label         string         `json:"label"`
 	Provider      int            `json:"provider"`
 	IPAddress     string         `json:"ipAddress"`
@@ -50,7 +50,7 @@ type Router struct {
 }
 
 type Salvo struct {
-	ID            string          `json:"id"`
+	ID            int             `json:"id"`
 	Label         string          `json:"label"`
 	Description   *string         `json:"description,omitempty"`
 	CreatedAt     *string         `json:"createdAt,omitempty"`
@@ -60,7 +60,7 @@ type Salvo struct {
 }
 
 type SalvoDestination struct {
-	ID           string        `json:"id"`
+	ID           int           `json:"id"`
 	CreatedAt    *string       `json:"createdAt,omitempty"`
 	UpdatedAt    *string       `json:"updatedAt,omitempty"`
 	UpdatedBy    *string       `json:"updatedBy,omitempty"`
@@ -70,7 +70,7 @@ type SalvoDestination struct {
 }
 
 type SalvoVersion struct {
-	ID                string              `json:"id"`
+	ID                int                 `json:"id"`
 	Label             string              `json:"label"`
 	Description       *string             `json:"description,omitempty"`
 	CreatedAt         *string             `json:"createdAt,omitempty"`
@@ -81,7 +81,7 @@ type SalvoVersion struct {
 }
 
 type Source struct {
-	ID           string  `json:"id"`
+	ID           int     `json:"id"`
 	Index        int     `json:"index"`
 	Label        string  `json:"label"`
 	Description  *string `json:"description,omitempty"`
@@ -92,19 +92,18 @@ type Source struct {
 	TallyAddress *int    `json:"tallyAddress,omitempty"`
 }
 
-type Stream struct {
-	ID          string       `json:"id"`
-	Label       string       `json:"label"`
-	Slug        string       `json:"slug"`
-	IsRoutable  int          `json:"isRoutable"`
-	CreatedAt   *string      `json:"createdAt,omitempty"`
-	UpdatedAt   *string      `json:"updatedAt,omitempty"`
-	UpdatedBy   *string      `json:"updatedBy,omitempty"`
-	Destination *Destination `json:"destination,omitempty"`
+type StreamUpdate struct {
+	Label       string `json:"label"`
+	Slug        string `json:"slug"`
+	IsRoutable  bool   `json:"isRoutable"`
+	Destination *int   `json:"destination,omitempty"`
+}
+
+type Subscription struct {
 }
 
 type TallyConnections struct {
-	ID                  string         `json:"id"`
+	ID                  int            `json:"id"`
 	EnableInbound       int            `json:"enableInbound"`
 	EnableOutbound      string         `json:"enableOutbound"`
 	RemoteIP            *string        `json:"remoteIp,omitempty"`
@@ -122,7 +121,7 @@ type TallyConnections struct {
 }
 
 type TallyStates struct {
-	ID               string            `json:"id"`
+	ID               int               `json:"id"`
 	Address          int               `json:"address"`
 	Tally1           int               `json:"tally1"`
 	Tally2           int               `json:"tally2"`
@@ -132,7 +131,7 @@ type TallyStates struct {
 }
 
 type UserRouterBinding struct {
-	ID        string  `json:"id"`
+	ID        int     `json:"id"`
 	CreatedAt *int    `json:"createdAt,omitempty"`
 	UpdatedAt *int    `json:"updatedAt,omitempty"`
 	UpdatedBy *int    `json:"updatedBy,omitempty"`

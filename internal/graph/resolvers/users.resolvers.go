@@ -14,20 +14,25 @@ import (
 
 // CreatedAt is the resolver for the createdAt field.
 func (r *userResolver) CreatedAt(ctx context.Context, obj *model.User) (*int, error) {
-	ret := int(obj.CreatedAt.UnixMilli())
+	ret := int(obj.CreatedAt.Unix())
 	return &ret, nil
 }
 
 // UpdatedAt is the resolver for the updatedAt field.
 func (r *userResolver) UpdatedAt(ctx context.Context, obj *model.User) (*int, error) {
-	ret := int(obj.UpdatedAt.UnixMilli())
+	ret := int(obj.UpdatedAt.Unix())
 	return &ret, nil
+}
+
+// UpdatedBy is the resolver for the updatedBy field.
+func (r *userResolver) UpdatedBy(ctx context.Context, obj *model.User) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: UpdatedBy - updatedBy"))
 }
 
 // DeletedAt is the resolver for the deletedAt field.
 func (r *userResolver) DeletedAt(ctx context.Context, obj *model.User) (*int, error) {
 	if obj.DeletedAt != nil {
-		ret := int(obj.DeletedAt.UnixMilli())
+		ret := int(obj.DeletedAt.Unix())
 		return &ret, nil
 	}
 
@@ -39,7 +44,7 @@ func (r *userResolver) DeletedAt(ctx context.Context, obj *model.User) (*int, er
 // LastLogin is the resolver for the lastLogin field.
 func (r *userResolver) LastLogin(ctx context.Context, obj *model.User) (*int, error) {
 	if obj.LastLogin != nil {
-		ret := int(obj.LastLogin.UnixMilli())
+		ret := int(obj.LastLogin.Unix())
 		return &ret, nil
 	}
 

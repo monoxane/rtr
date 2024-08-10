@@ -5,9 +5,6 @@ import {
   Grid,
   TableRow,
   TableCell,
-  TableToolbar,
-  TableToolbarContent,
-  TableToolbarSearch,
   Button,
 } from '@carbon/react';
 
@@ -17,19 +14,19 @@ import {
   MisuseOutline,
 } from '@carbon/icons-react';
 
-import useAxiosPrivate from '../../hooks/useAxiosPrivate.js';
+import { useQuery } from '@apollo/client';
 import DataTable from '../../components/DataTable/DataTable.jsx';
-// import Boolean from '../../common/Boolean.jsx';
 
+import { LIST_STREAMS } from './queries';
 import NewStream from './Modals/NewStream.jsx';
 import StreamMenu from './Menus/StreamsDataTableActionMenu.jsx';
 
 const Streams = function Streams() {
-  const [{ data, loading, error }, refresh] = useAxiosPrivate()(
-    '/v1/api/streams',
-  );
+  const {
+    loading, error, data, refetch,
+  } = useQuery(LIST_STREAMS);
 
-  const headers = ['Name', 'Slug', 'Active', 'Clients', 'Destination', 'Is Routable', 'Actions'];
+  const headers = ['Name', 'Slug', 'Active', 'Viewers', 'Destination', 'Is Routable', 'Actions'];
 
   return (
     <Grid>
@@ -39,15 +36,15 @@ const Streams = function Streams() {
           description="Streams are real-time audio and video signals visible from within rtr"
           emptyTitle="There are no Streams yet."
           emptyDescription="To get started, click New Stream."
-          emptyAction={<NewStream refresh={refresh} />}
+          emptyAction={<NewStream refresh={refetch} />}
           headers={headers}
-          data={data}
+          data={data?.streams}
           toolbarItems={(
             <>
-              <Button hasIconOnly kind="ghost" iconDescription="Refresh" renderIcon={Renew} onClick={() => refresh()}>
+              <Button hasIconOnly kind="ghost" iconDescription="Refresh" renderIcon={Renew} onClick={() => refetch()}>
                 Refresh
               </Button>
-              <NewStream refresh={refresh} />
+              <NewStream refresh={refetch} />
             </>
           )}
           renderRow={(row) => (
@@ -57,19 +54,19 @@ const Streams = function Streams() {
               </TableCell>
               <TableCell>{row.slug}</TableCell>
               <TableCell>
-                {row.is_active ? <CheckmarkOutline /> : <MisuseOutline />}
+                {row.isActive ? <CheckmarkOutline /> : <MisuseOutline />}
               </TableCell>
               <TableCell>{row.clients}</TableCell>
-              <TableCell>{row.destination_id || <em>None</em>}</TableCell>
-              <TableCell>{row.is_routable ? 'Yes' : 'No'}</TableCell>
+              <TableCell>{row.destination || <em>None</em>}</TableCell>
+              <TableCell>{row.isRoutable ? 'Yes' : 'No'}</TableCell>
               <TableCell>
-                <StreamMenu refresh={refresh} stream={row} />
+                <StreamMenu refresh={refetch} stream={row} />
               </TableCell>
             </TableRow>
           )}
           loading={loading}
           error={error}
-          refresh={refresh}
+          refresh={refetch}
         />
       </Column>
     </Grid>

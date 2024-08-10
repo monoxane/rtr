@@ -2,15 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { SideNavLink as CarbonSideNavLink, SideNavDivider } from '@carbon/react';
-import useAxiosPrivate from '../../../hooks/useAxiosPrivate.js';
 
+import { useQuery } from '@apollo/client';
+
+import { LIST_STREAMS } from '../queries';
 import SideNavLink from '../../../common/SideNavLink.jsx';
 
 function SideNavStreamsList({ onClickSideNavExpand }) {
-  const [{ data }] = useAxiosPrivate()(
-    '/v1/api/streams',
-  );
-
+  const {
+    data,
+  } = useQuery(LIST_STREAMS);
   return (
     <>
       <SideNavDivider />
@@ -19,8 +20,8 @@ function SideNavStreamsList({ onClickSideNavExpand }) {
         <em>Loading Streams...</em>
       </CarbonSideNavLink>
       ) }
-      {data && data.map((stream) => (
-        <SideNavLink key={stream.slug} to={`/streams/${stream.slug}`} label={stream.label} onClick={onClickSideNavExpand} />
+      {data && data.streams.map((stream) => (
+        <SideNavLink key={stream.slug} to={`/streams/view/${stream.slug}`} label={stream.label} onClick={() => { onClickSideNavExpand(); }} />
       ))}
     </>
   );

@@ -36,7 +36,7 @@ const GraphQLError = function GraphQLError({ error }) {
               </span>
             </>
           ))}
-          {error.networkError?.errors.map((err) => (
+          {error.networkError?.result.errors.map((err) => (
             <>
               <br />
               <span>

@@ -30,7 +30,11 @@ CustomSideNavLink.propTypes = {
   onClick: PropTypes.func.isRequired,
   label: PropTypes.string.isRequired,
   to: PropTypes.string.isRequired,
-  renderIcon: PropTypes.node.isRequired,
+  renderIcon: PropTypes.node,
+};
+
+CustomSideNavLink.defaultProps = {
+  renderIcon: null,
 };
 
 export default CustomSideNavLink;

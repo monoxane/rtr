@@ -18,6 +18,7 @@ const Login = lazy(() => import('../views/Login/Login.jsx'));
 const Dashboard = lazy(() => import('../views/Dashboard/Dashboard.jsx'));
 const Users = lazy(() => import('../views/Users/Users.jsx'));
 const Streams = lazy(() => import('../views/Streams/Streams.jsx'));
+const Stream = lazy(() => import('../views/Streams/Stream.jsx'));
 
 // const Router = lazy(() => import('../views/OldRouter/Router.jsx'));
 // const RouterSingle = lazy(() => import('../views/OldRouter/RouterSingle.jsx'));
@@ -46,8 +47,8 @@ export default createBrowserRouter(
         </Route>
 
         <Route element={<RequireAuth allowedRoles={['ADMIN', 'OPERATOR']} />}>
-          <Route path="/streams" element={<Streams />} />
-          {/* <Route path="/streams/view/:id" element={<Stream />} /> */}
+          <Route path="/streams/config" element={<Streams />} />
+          <Route path="/streams/view/:streamSlug" element={<Stream />} />
         </Route>
 
         {/* <Route element={<RequireAuth allowedRoles={['ADMIN', 'OPERATOR']} />}>

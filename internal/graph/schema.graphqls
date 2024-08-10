@@ -7,10 +7,11 @@ type Query {
   user(id: ID, username: String): User!
 
   streams: [Stream!]!
+  stream(id: ID, slug: String): Stream!
 }
 
 type Mutation {
-  login(username: String!, password: String!): LoginResponse
+  login(username: String!, password: String!): LoginResponse!
 
   createUser(user: UserUpdate!): User
   updateUser(id: Int!, user: UserUpdate!): User
@@ -18,4 +19,11 @@ type Mutation {
 
   deactivateUser(id: Int!): Int
   reactivateUser(id: Int!): Int
+
+  createStream(stream: StreamUpdate!): Stream
+  deleteStream(id: Int!): Int
+}
+
+type Subscription {
+  stream(id: ID, slug: String): Stream
 }

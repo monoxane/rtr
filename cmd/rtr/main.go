@@ -10,6 +10,7 @@ import (
 	"github.com/monoxane/rtr/internal/api"
 	"github.com/monoxane/rtr/internal/api/auth"
 	"github.com/monoxane/rtr/internal/connector/db"
+	"github.com/monoxane/rtr/internal/controller/streams"
 	"github.com/monoxane/rtr/internal/env"
 	"github.com/monoxane/rtr/internal/graph/model"
 	"github.com/monoxane/rtr/internal/repository/users"
@@ -40,6 +41,7 @@ func main() {
 
 	db.SetLogger(log)
 	api.SetLogger(log)
+	streams.SetLogger(log)
 
 	err = db.Open("rtr.db")
 	if err != nil {
@@ -59,6 +61,11 @@ func main() {
 	log.Info().Msg("admin user created")
 
 	go api.Serve()
+
+	err = streams.LoadStreams()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to load streams")
+	}
 
 	// err := config.Load()
 	// if err != nil {

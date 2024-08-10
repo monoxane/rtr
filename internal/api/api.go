@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
-	"github.com/monoxane/rtr/internal/api/auth"
 	"github.com/monoxane/rtr/internal/api/middleware"
-	streamsapi "github.com/monoxane/rtr/internal/api/streams"
 	"github.com/monoxane/rtr/internal/graph"
 	"github.com/monoxane/rtr/internal/graph/resolvers"
 	"github.com/rs/zerolog"
@@ -36,34 +35,12 @@ func Serve() {
 	})
 	svc.Static("/dist", "/dist")
 
-	svc.POST("/v3/graphql", graphqlHandler())
+	svc.Any("/v3/graphql", graphqlHandler())
 	svc.GET("/v3/playground", playgroundHandler())
 
-	//
-	// REST ENDPOINTS
-	//
-	api := svc.Group("/v1/api")
-	api.Use(middleware.Authorization(auth.ROLE_ADMIN))
-
-	// Auth
-	svc.POST("/v1/api/login", auth.Authenticate) // Handle Login, NOT BEHIND THE MIDDLEWARE!
-
 	// Streams
-	v1_streams := api.Group("/streams")
-	v1_streams.Use(middleware.Authorization(auth.ROLE_ADMIN))
-
-	v1_streams.GET("/", streamsapi.GetStreams)    // Get all streams
-	v1_streams.POST("/", streamsapi.CreateStream) // Create a new Stream
-
-	//
-	// WEBSOCKET ENDPOINTS FOR STREAMS AND REALTIME UPDATES
-	//
-
-	ws := svc.Group("/v1/ws")
-
-	// Streams
-	ws.GET("/streams/source/:id", NotImplemented) // Receive Stream Source
-	ws.GET("/streams/client/:id", NotImplemented) // Get Stream Media
+	svc.POST("/v1/streams/source/:slug", HandleStreamSource) // Receive Stream Source
+	svc.GET("/v1/streams/client/:slug", HandleStreamClient)  // Get Stream Media
 
 	// svc.GET("/v1/ws/rtr", HandleRtrWS)
 
@@ -100,6 +77,7 @@ func graphqlHandler() gin.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &resolvers.Resolver{}}))
+	h.AddTransport(&transport.Websocket{})
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)

@@ -1,0 +1,32 @@
+.umd {
+  margin-top: '1px';
+  text-align: 'center';
+  display: 'flex';
+  aspect-ratio: '20/1';
+}
+
+.umd .rightLamp {
+  aspect-ratio: '1/1';
+  height: '100%';
+}
+
+.umd .leftLamp {
+  aspect-ratio: '1/1';
+  height: '100%';
+  right: 0;
+}
+
+.umd .label {
+  flex-grow: 1;
+  color: 'white';
+  position: 'relative';
+  font-size: '1.3vw';
+}
+
+.umd .red {
+  background-color: '#ff0000';
+}
+
+.umd .green {
+  background-color: '#00ff00';
+}

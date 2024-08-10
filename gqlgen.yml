@@ -76,7 +76,6 @@ autobind:
 models:
   ID:
     model:
-      - github.com/99designs/gqlgen/graphql.ID
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
@@ -88,4 +87,8 @@ models:
   User:
     model:
       - github.com/monoxane/rtr/internal/graph/model.User
+  
+  Stream:
+    model:
+      - github.com/monoxane/rtr/internal/graph/model.Stream
   

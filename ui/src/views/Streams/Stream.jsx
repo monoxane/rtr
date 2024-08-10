@@ -1,87 +1,72 @@
-import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import React from 'react';
 import PropTypes from 'prop-types';
-import useAxios from 'axios-hooks';
 
 import {
   Loading,
-  TabList,
-  Tab,
-  Tabs,
-  TabPanels,
-  TabPanel,
-  Button,
+  // TabList,
+  // Tab,
+  // Tabs,
+  // TabPanels,
+  // TabPanel,
+  // Button,
+  Tile,
   Grid,
   Column,
 } from '@carbon/react';
 
-import {
-  Information,
-} from '@carbon/icons-react';
-import {
-  gray,
-} from '@carbon/colors';
+// import {
+//   Information,
+// } from '@carbon/icons-react';
 
-// import useMatrix from '../../hooks/useMatrix.js';
-import JSmpegPlayer from '../../common/JSmpegPlayer.jsx';
+import { useQuery } from '@apollo/client';
+
+import StreamPlayer from '../../components/StreamPlayer/StreamPlayer.jsx';
+import GraphQLError from '../../components/Errors/GraphQLError.jsx';
+
+import { GET_STREAM } from './queries';
 
 function ProbeWrapper() {
-  return (
+  const { streamSlug } = useParams();
 
-    <Probe slug={probeChannel.slug} active={activeTab === index} />
+  const {
+    loading, error, data,
+  } = useQuery(GET_STREAM, { variables: { slug: streamSlug } });
+
+  if (error) {
+    return (
+      <GraphQLError error={error} />
+    );
+  }
+
+  if (!data && loading) {
+    return (
+      <Loading withOverlay />
+    );
+  }
+
+  return (
+    <Stream stream={data.stream} />
   );
 }
 
-function Probe({ index, slug, active }) {
+function Stream({ stream }) {
   return (
-    <>
-      <JSmpegPlayer url={`ws://${document.location.hostname}:${document.location.port}/v1/ws/probe/${slug}`} active={probeStats[slug]?.active_source && active} />
-      <div className="probeInfo">
-        <Button
-          hasIconOnly
-          renderIcon={Information}
-          kind="ghost"
-          tooltipPosition="right"
-          iconDescription={(
-            <>
-              {config.probe.channels[index].router_destination !== 0
-              && (
-              <>
-                <strong>
-                  Probe
-                  {' '}
-                  Destination:
-                </strong>
-                {' '}
-                {matrix.destinations?.[config.probe.channels[index].router_destination - 1]?.label}
-                <br />
-                <strong>
-                  Probe
-                  {' '}
-                  Source:
-                </strong>
-                {' '}
-                {matrix.destinations?.[config.probe.channels[index].router_destination - 1]?.source?.label}
-                <br />
-              </>
-              )}
-              <strong>
-                Status:
-              </strong>
-              {' '}
-              {probeStats[index]?.active_source ? `Streaming, ${probeStats[index]?.clients} viewer${probeStats[index]?.clients === 1 ? '' : 's'}` : 'No Transport Stream'}
-            </>
-          )}
-        />
-      </div>
-      {/* </Tooltip> */}
-    </>
+    <Grid>
+      <Column sm={4} md={8} lg={16}>
+        <Tile>
+          <h4>{stream.label}</h4>
+          <br />
+          <StreamPlayer slug={stream.slug} showUMD />
+        </Tile>
+      </Column>
+    </Grid>
   );
 }
 
-Probe.propTypes = {
-  index: PropTypes.number.isRequired,
-  slug: PropTypes.string.isRequired,
-  active: PropTypes.bool.isRequired,
+Stream.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
+  stream: PropTypes.object.isRequired,
 };
 
 export default ProbeWrapper;

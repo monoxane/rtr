@@ -2,10 +2,18 @@ type Stream {
   id: ID!
   label: String!
   slug: String!
-  # boolean
-  isRoutable: Int!
-  createdAt: String
-  updatedAt: String
-  updatedBy: String
+  isRoutable: Boolean!
+  isActive: Boolean!
+  clients: Int!
+  createdAt: Int
+  updatedAt: Int
+  updatedBy: User
   destination: Destination
+}
+
+input StreamUpdate {
+  label: String!
+  slug: String!
+  isRoutable: Boolean!
+  destination: ID
 }

@@ -13,8 +13,11 @@ import {
   Add,
 } from '@carbon/icons-react';
 
-import { getAxiosPrivate } from '../../../hooks/useAxiosPrivate.js';
+import { useMutation } from '@apollo/client';
 
+import { CREATE_STREAM } from '../queries';
+
+import GraphQLError from '../../../components/Errors/GraphQLError.jsx';
 import ModalStateManager from '../../../common/ModalStateManager.jsx';
 
 function NewStream({ refresh }) {
@@ -50,7 +53,9 @@ function NewStreamModal({
     label: '', slug: '', destination_id: null, is_routable: false,
   });
 
-  const axios = getAxiosPrivate();
+  const [error, setErr] = useState();
+
+  const [createStream] = useMutation(CREATE_STREAM);
 
   return (
     <Modal
@@ -61,11 +66,20 @@ function NewStreamModal({
       secondaryButtonText="Cancel"
       open={open}
       onRequestSubmit={() => {
-        axios.post('/v1/api/streams', newStream)
-          .then(() => {
-            refresh();
-            setOpen(false);
-          });
+        setErr();
+        const payload = {
+          variables: {
+            stream: {
+              label: newStream.label, slug: newStream.slug, destination: newStream.destination_id, isRoutable: newStream.is_routable,
+            },
+          },
+        };
+        createStream(payload).then(() => {
+          refresh();
+          setOpen(false);
+        }).catch((err) => {
+          setErr(err);
+        });
       }}
       onRequestClose={() => {
         setOpen(false);
@@ -105,6 +119,7 @@ function NewStreamModal({
           id="is_routable"
           onToggle={(toggled) => setNewStream({ ...newStream, is_routable: toggled })}
         />
+        <GraphQLError error={error} />
       </Stack>
     </Modal>
   );
