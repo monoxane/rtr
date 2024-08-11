@@ -84,6 +84,7 @@ type ComplexityRoot struct {
 		DeleteStream       func(childComplexity int, id int) int
 		Login              func(childComplexity int, username string, password string) int
 		ReactivateUser     func(childComplexity int, id int) int
+		UpdateStream       func(childComplexity int, id int, stream model.StreamUpdate) int
 		UpdateUser         func(childComplexity int, id int, user model.UserUpdate) int
 		UpdateUserPassword func(childComplexity int, id int, password string) int
 	}
@@ -230,6 +231,7 @@ type MutationResolver interface {
 	DeactivateUser(ctx context.Context, id int) (*int, error)
 	ReactivateUser(ctx context.Context, id int) (*int, error)
 	CreateStream(ctx context.Context, stream model.StreamUpdate) (*model.Stream, error)
+	UpdateStream(ctx context.Context, id int, stream model.StreamUpdate) (*model.Stream, error)
 	DeleteStream(ctx context.Context, id int) (*int, error)
 }
 type QueryResolver interface {
@@ -466,6 +468,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ReactivateUser(childComplexity, args["id"].(int)), true
+
+	case "Mutation.updateStream":
+		if e.complexity.Mutation.UpdateStream == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateStream_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateStream(childComplexity, args["id"].(int), args["stream"].(model.StreamUpdate)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -1434,6 +1448,30 @@ func (ec *executionContext) field_Mutation_reactivateUser_args(ctx context.Conte
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateStream_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.StreamUpdate
+	if tmp, ok := rawArgs["stream"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stream"))
+		arg1, err = ec.unmarshalNStreamUpdate2githubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐStreamUpdate(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["stream"] = arg1
 	return args, nil
 }
 
@@ -2827,6 +2865,80 @@ func (ec *executionContext) fieldContext_Mutation_createStream(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createStream_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateStream(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateStream(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateStream(rctx, fc.Args["id"].(int), fc.Args["stream"].(model.StreamUpdate))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Stream)
+	fc.Result = res
+	return ec.marshalOStream2ᚖgithubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐStream(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateStream(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Stream_id(ctx, field)
+			case "label":
+				return ec.fieldContext_Stream_label(ctx, field)
+			case "slug":
+				return ec.fieldContext_Stream_slug(ctx, field)
+			case "isRoutable":
+				return ec.fieldContext_Stream_isRoutable(ctx, field)
+			case "isActive":
+				return ec.fieldContext_Stream_isActive(ctx, field)
+			case "clients":
+				return ec.fieldContext_Stream_clients(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Stream_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Stream_updatedAt(ctx, field)
+			case "updatedBy":
+				return ec.fieldContext_Stream_updatedBy(ctx, field)
+			case "destination":
+				return ec.fieldContext_Stream_destination(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Stream", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateStream_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -9753,6 +9865,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createStream":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createStream(ctx, field)
+			})
+		case "updateStream":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateStream(ctx, field)
 			})
 		case "deleteStream":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {

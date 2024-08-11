@@ -34,4 +34,12 @@ const CREATE_STREAM = gql`mutation createStream($stream: StreamUpdate!) {
   }
 }`;
 
-export { LIST_STREAMS, GET_STREAM, CREATE_STREAM };
+const UPDATE_STREAM = gql`mutation updateStream($id: ID!, $stream: StreamUpdate!) {
+  updateStream(id: $id, stream:$stream) {
+    id
+  }
+}`;
+
+export {
+  LIST_STREAMS, GET_STREAM, CREATE_STREAM, UPDATE_STREAM,
+};

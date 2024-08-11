@@ -33,7 +33,7 @@ function StreamPlayer({ slug, showUMD }) {
 
   useEffect(() => {
     if (loading) { return; }
-    if (data && (stream.isActive !== data.stream.isActive)) {
+    if (data && (stream !== data.stream)) {
       setStream(data.stream);
     }
   }, [data, loading]);

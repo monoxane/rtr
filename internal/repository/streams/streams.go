@@ -21,6 +21,7 @@ const (
 	queryStreamsInsert = "INSERT INTO streams(label, slug, destination_id, is_routable, created_at, updated_at, updated_by) values(?,?,?,?,?,?,?)"
 	queryStreamsDelete = "DELETE FROM streams WHERE id = ?;"
 
+	queryUpdateStream       = "UPDATE streams SET label = ?, destination_id = ?, is_routable = ?, updated_at = ?, updated_by = ? WHERE id = ?"
 	queryUpdateClientCount  = "UPDATE streams SET clients = ? WHERE id = ?"
 	queryUpdateActiveStatus = "UPDATE streams SET is_active = ? WHERE id = ?"
 )
@@ -177,6 +178,23 @@ func List() ([]*model.Stream, error) {
 	}
 
 	return streams, nil
+}
+
+func Update(streamId int, stream model.Stream) (*model.Stream, error) {
+	// queryUpdateStream       = "UPDATE streams SET label = ?, destination_id = ?, is_routable = ?, updated_at = ?, updated_by = ? WHERE id = ?"
+	_, err := db.Database.Exec(queryUpdateStream, stream.Label, stream.Destination, stream.IsRoutable, time.Now().Unix(), stream.UpdatedBy, streamId)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to update stream")
+	}
+
+	updatedStream, err := GetByID(streamId)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get updated stream")
+	}
+
+	notify(streamId)
+
+	return updatedStream, nil
 }
 
 func Delete(streamId int) error {

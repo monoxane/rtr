@@ -41,6 +41,9 @@ const GraphQLError = function GraphQLError({ error }) {
               <br />
               <span>
                 {err.message}
+                :
+                {' '}
+                {err.path.join('.')}
               </span>
             </>
           ))}

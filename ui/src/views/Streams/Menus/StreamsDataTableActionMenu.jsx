@@ -9,27 +9,23 @@ import {
   OverflowMenuItem,
 } from '@carbon/react';
 
-// import useAuth from '../../hooks/useAuth';
-// import userPropType from './propTypes';
-// import EditUserModal from './EditUser.jsx';
+import EditStreamModal from '../Modals/EditStream.jsx';
 import DeleteStreamModal from '../Modals/DeleteStreamModal.jsx';
-// import ChangePasswordModal from './ChangePassword.jsx';
 
 const StreamsDataTableActionMenu = function StreamsDataTableActionMenu({ refresh, stream }) {
   const navigate = useNavigate();
 
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [, setEditOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   return (
     <>
       <DeleteStreamModal refresh={refresh} stream={stream} setOpen={setDeleteOpen} open={deleteOpen} />
-      {/* <EditUserModal refresh={refresh} user={user} setOpen={setEditOpen} open={editOpen} roles={roles} />
-      <ChangePasswordModal user={user} setOpen={setPasswordOpen} open={passwordOpen} /> */}
+      <EditStreamModal refresh={refresh} stream={stream} setOpen={setEditOpen} open={editOpen} />
 
       <OverflowMenu flipped={document?.dir === 'rtl'} iconDescription="Actions" aria-label="overflow-menu">
         <OverflowMenuItem onClick={() => setEditOpen(true)} itemText="Edit Stream" />
-        <OverflowMenuItem onClick={() => navigate(`/streams/${stream.slug}`)} itemText="Open" />
+        <OverflowMenuItem onClick={() => navigate(`/streams/view/${stream.slug}`)} itemText="Open" />
         <OverflowMenuItem onClick={() => { setDeleteOpen(true); }} itemText="Delete Stream" hasDivider isDelete />
       </OverflowMenu>
     </>

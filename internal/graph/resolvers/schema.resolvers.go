@@ -143,6 +143,31 @@ func (r *mutationResolver) CreateStream(ctx context.Context, stream model.Stream
 	return newStream, err
 }
 
+// UpdateStream is the resolver for the updateStream field.
+func (r *mutationResolver) UpdateStream(ctx context.Context, id int, stream model.StreamUpdate) (*model.Stream, error) {
+	requester, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
+	if err != nil {
+		log.Printf("error authorizing user: %s", err)
+		return nil, err
+	}
+
+	updatedStream, err := streams.Update(id, model.Stream{
+		Label:       stream.Label,
+		Slug:        stream.Slug,
+		IsRoutable:  stream.IsRoutable,
+		Destination: stream.Destination,
+		UpdatedBy:   &requester.ID,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	streamsController.UpdateStream(updatedStream)
+
+	return updatedStream, err
+}
+
 // DeleteStream is the resolver for the deleteStream field.
 func (r *mutationResolver) DeleteStream(ctx context.Context, id int) (*int, error) {
 	_, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
@@ -156,6 +181,12 @@ func (r *mutationResolver) DeleteStream(ctx context.Context, id int) (*int, erro
 
 // Roles is the resolver for the roles field.
 func (r *queryResolver) Roles(ctx context.Context) ([]string, error) {
+	_, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
+	if err != nil {
+		log.Printf("error authorizing user: %s", err)
+		return nil, err
+	}
+
 	return auth.ROLES, nil
 }
 
