@@ -92,3 +92,7 @@ models:
     model:
       - github.com/monoxane/rtr/internal/graph/model.Stream
   
+  Router:
+    model:
+      - github.com/monoxane/rtr/internal/graph/model.Router
+  

@@ -6,10 +6,10 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/monoxane/rtr/internal/graph"
 	"github.com/monoxane/rtr/internal/graph/model"
+	"github.com/monoxane/rtr/internal/repository/users"
 )
 
 // CreatedAt is the resolver for the createdAt field.
@@ -26,7 +26,7 @@ func (r *streamResolver) UpdatedAt(ctx context.Context, obj *model.Stream) (*int
 
 // UpdatedBy is the resolver for the updatedBy field.
 func (r *streamResolver) UpdatedBy(ctx context.Context, obj *model.Stream) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: UpdatedBy - updatedBy"))
+	return users.GetByID(*obj.UpdatedBy)
 }
 
 // Destination is the resolver for the destination field.

@@ -13,6 +13,7 @@ import (
 	streamsController "github.com/monoxane/rtr/internal/controller/streams"
 	"github.com/monoxane/rtr/internal/graph"
 	"github.com/monoxane/rtr/internal/graph/model"
+	"github.com/monoxane/rtr/internal/repository/routers"
 	"github.com/monoxane/rtr/internal/repository/streams"
 	"github.com/monoxane/rtr/internal/repository/users"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -179,6 +180,11 @@ func (r *mutationResolver) DeleteStream(ctx context.Context, id int) (*int, erro
 	return &id, streams.Delete(id)
 }
 
+// CreateRouter is the resolver for the createRouter field.
+func (r *mutationResolver) CreateRouter(ctx context.Context, router model.RouterUpdate) (*model.Router, error) {
+	panic(fmt.Errorf("not implemented: CreateRouter - createRouter"))
+}
+
 // Roles is the resolver for the roles field.
 func (r *queryResolver) Roles(ctx context.Context) ([]string, error) {
 	_, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
@@ -204,11 +210,6 @@ func (r *queryResolver) Users(ctx context.Context, showDeleted *bool) ([]*model.
 		includeDeleted = true
 	}
 	return users.List(includeDeleted)
-}
-
-// User is the resolver for the user field.
-func (r *queryResolver) User(ctx context.Context, id *int, username *string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
 }
 
 // Streams is the resolver for the streams field.
@@ -239,6 +240,27 @@ func (r *queryResolver) Stream(ctx context.Context, id *int, slug *string) (*mod
 	}
 
 	return nil, gqlerror.Wrap(fmt.Errorf("id or slug required"))
+}
+
+// RouterProviders is the resolver for the routerProviders field.
+func (r *queryResolver) RouterProviders(ctx context.Context) ([]string, error) {
+	panic(fmt.Errorf("not implemented: RouterProviders - routerProviders"))
+}
+
+// RouterModels is the resolver for the routerModels field.
+func (r *queryResolver) RouterModels(ctx context.Context) ([]string, error) {
+	panic(fmt.Errorf("not implemented: RouterModels - routerModels"))
+}
+
+// Routers is the resolver for the routers field.
+func (r *queryResolver) Routers(ctx context.Context) ([]*model.Router, error) {
+	_, err := auth.FromContext(ctx, auth.ROLE_OPERATOR)
+	if err != nil {
+		log.Printf("error authorizing user: %s", err)
+		return nil, err
+	}
+
+	return routers.List()
 }
 
 // Stream is the resolver for the Stream field.

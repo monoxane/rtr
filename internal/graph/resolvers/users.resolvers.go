@@ -10,6 +10,7 @@ import (
 
 	"github.com/monoxane/rtr/internal/graph"
 	"github.com/monoxane/rtr/internal/graph/model"
+	"github.com/monoxane/rtr/internal/repository/users"
 )
 
 // CreatedAt is the resolver for the createdAt field.
@@ -26,7 +27,7 @@ func (r *userResolver) UpdatedAt(ctx context.Context, obj *model.User) (*int, er
 
 // UpdatedBy is the resolver for the updatedBy field.
 func (r *userResolver) UpdatedBy(ctx context.Context, obj *model.User) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: UpdatedBy - updatedBy"))
+	return users.GetByID(*obj.UpdatedBy)
 }
 
 // DeletedAt is the resolver for the deletedAt field.

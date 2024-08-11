@@ -4,10 +4,13 @@ type Query {
   roles: [Role!]!
 
   users(showDeleted: Boolean): [User!]!
-  user(id: ID, username: String): User!
 
   streams: [Stream!]!
   stream(id: ID, slug: String): Stream!
+
+  routerProviders: [String!]!
+  routerModels: [String!]!
+  routers: [Router!]!
 }
 
 type Mutation {
@@ -22,6 +25,8 @@ type Mutation {
   createStream(stream: StreamUpdate!): Stream
   updateStream(id: ID!, stream: StreamUpdate!): Stream
   deleteStream(id: Int!): Int
+
+  createRouter(router: RouterUpdate!): Router
 }
 
 type Subscription {

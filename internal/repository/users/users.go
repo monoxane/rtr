@@ -47,7 +47,7 @@ func Create(user model.User) (*model.User, error) {
 		return nil, errors.Wrap(err, "unable to get new user")
 	}
 
-	return &newUser, nil
+	return newUser, nil
 }
 
 func Update(id int, user model.User) error {
@@ -151,7 +151,7 @@ func GetByUsername(username string) (model.User, error) {
 	return user, nil
 }
 
-func GetByID(id int) (model.User, error) {
+func GetByID(id int) (*model.User, error) {
 	row := db.Database.QueryRow("SELECT * FROM users WHERE id = ? AND deleted_at IS NULL", id)
 
 	var user model.User
@@ -162,10 +162,10 @@ func GetByID(id int) (model.User, error) {
 
 	if err := row.Scan(&user.ID, &user.Username, &user.RealName, &user.Hash, &user.Role, &last, &cat, &uat, &user.UpdatedBy, &dat); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return model.User{}, repository.ErrNotExists
+			return nil, repository.ErrNotExists
 		}
 
-		return model.User{}, err
+		return nil, err
 	}
 
 	user.CreatedAt = time.Unix(cat, 0)
@@ -175,7 +175,7 @@ func GetByID(id int) (model.User, error) {
 		user.LastLogin = &lastLog
 	}
 
-	return user, nil
+	return &user, nil
 }
 
 func Deactivate(user, requester int) error {

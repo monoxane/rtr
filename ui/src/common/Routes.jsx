@@ -19,6 +19,7 @@ const Dashboard = lazy(() => import('../views/Dashboard/Dashboard.jsx'));
 const Users = lazy(() => import('../views/Users/Users.jsx'));
 const Streams = lazy(() => import('../views/Streams/Streams.jsx'));
 const Stream = lazy(() => import('../views/Streams/Stream.jsx'));
+const Routers = lazy(() => import('../views/Routers/Routers.jsx'));
 
 // const Router = lazy(() => import('../views/OldRouter/Router.jsx'));
 // const RouterSingle = lazy(() => import('../views/OldRouter/RouterSingle.jsx'));
@@ -42,35 +43,16 @@ export default createBrowserRouter(
           <Route path="/users" element={<Users />} />
         </Route>
 
-        <Route element={<RequireAuth allowedRoles={['OPERATOR']} />}>
-          <Route path="/tester" element={<Users />} />
-        </Route>
-
         <Route element={<RequireAuth allowedRoles={['ADMIN', 'OPERATOR']} />}>
           <Route path="/streams/config" element={<Streams />} />
           <Route path="/streams/view/:streamSlug" element={<Stream />} />
         </Route>
 
-        {/* <Route element={<RequireAuth allowedRoles={['ADMIN', 'OPERATOR']} />}>
-          <Route path="/routers" element={<Router />} />
-          <Route path="/routers/:id/control" element={<Router />} />
-          <Route path="/routers/:id/control/:destination" element={<RouterSingle />} />
-        </Route>
-
         <Route element={<RequireAuth allowedRoles={['ADMIN', 'OPERATOR']} />}>
-          <Route path="/probe" element={<Probe />} />
+          <Route path="/routers/config" element={<Routers />} />
+          {/* <Route path="/routers/:id/control" element={<Router />} />
+          <Route path="/routers/:id/control/:destination" element={<RouterSingle />} /> */}
         </Route>
-
-        <Route element={<RequireAuth allowedRoles={['ADMIN', 'OPERATOR']} />}>
-          <Route path="/salvos" element={<Salvos />} />
-          <Route path="/salvos/:id" element={<Salvo />} />
-        </Route>
-
-        <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
-          <Route path="/config/router" element={<RouterConfig />} />
-          <Route path="/config/matrix" element={<MatrixConfig />} />
-          <Route path="/config/probe" element={<ProbeConfig />} />
-        </Route> */}
 
         <Route path="/unauthorized" element={<NotAllowed />} />
         <Route path="/*" element={<NotFound />} />

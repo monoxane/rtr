@@ -5,12 +5,21 @@ type Router {
   ipAddress: String!
   routerAddress: Int
   level: Int!
-  model: String
-  createdAt: String
-  updatedAt: String
-  updatedBy: String
+  model: String!
+  createdAt: Int
+  updatedAt: Int
+  updatedBy: User
   destinations: [Destination!]!
   sources: [Source!]!
+}
+
+input RouterUpdate {
+  label: String!
+  provider: Int!
+  ipAddress: String!
+  routerAddress: Int
+  level: Int!
+  model: String!
 }
 
 type Destination {

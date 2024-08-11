@@ -34,19 +34,13 @@ type Mutation struct {
 type Query struct {
 }
 
-type Router struct {
-	ID            int            `json:"id"`
-	Label         string         `json:"label"`
-	Provider      int            `json:"provider"`
-	IPAddress     string         `json:"ipAddress"`
-	RouterAddress *int           `json:"routerAddress,omitempty"`
-	Level         int            `json:"level"`
-	Model         *string        `json:"model,omitempty"`
-	CreatedAt     *string        `json:"createdAt,omitempty"`
-	UpdatedAt     *string        `json:"updatedAt,omitempty"`
-	UpdatedBy     *string        `json:"updatedBy,omitempty"`
-	Destinations  []*Destination `json:"destinations"`
-	Sources       []*Source      `json:"sources"`
+type RouterUpdate struct {
+	Label         string `json:"label"`
+	Provider      int    `json:"provider"`
+	IPAddress     string `json:"ipAddress"`
+	RouterAddress *int   `json:"routerAddress,omitempty"`
+	Level         int    `json:"level"`
+	Model         string `json:"model"`
 }
 
 type Salvo struct {

@@ -10,6 +10,7 @@ import {
   Home,
   View,
   User,
+  Router,
 } from '@carbon/icons-react';
 
 import SideNavStreamsList from '../views/Streams/Menus/SideNavStreamsList.jsx';
@@ -25,6 +26,13 @@ function ComposedSideNav({ onClickSideNavExpand, isActive, isRail }) {
       <SideNavItems>
         <SideNavLink renderIcon={Home} to="/dashboard" label="Home" onClick={onClickSideNavExpand} />
 
+        <SideNavGroup group="/routers/*" renderIcon={Router} large title="Routers">
+          {auth?.role === 'ADMIN' && (
+          <SideNavLink to="/routers/config" label="Config" onClick={onClickSideNavExpand} />
+          )}
+          <SideNavStreamsList onClickSideNavExpand={onClickSideNavExpand} />
+        </SideNavGroup>
+
         <SideNavGroup group="/streams/*" renderIcon={View} large title="Streams">
           {auth?.role === 'ADMIN' && (
             <SideNavLink to="/streams/config" label="Config" onClick={onClickSideNavExpand} />
@@ -36,13 +44,7 @@ function ComposedSideNav({ onClickSideNavExpand, isActive, isRail }) {
           <SideNavLink renderIcon={User} to="/users" label="Users" onClick={onClickSideNavExpand} />
         )}
 
-        {/* <SideNavLink to="/router" label="Router" renderIcon={Router} onClick={onClickSideNavExpand} />
-        {config.probe?.enabled && <SideNavLink to="/probe" label="Probe" renderIcon={View} onClick={onClickSideNavExpand} />}
-        <SideNavLink to="/salvos" label="Salvos" renderIcon={DocumentExport} onClick={onClickSideNavExpand} />
-        <SideNavDivider />
-        <SideNavLink to="/config/router" label="Router Config" renderIcon={SettingsServices} onClick={onClickSideNavExpand} />
-        <SideNavLink to="/config/matrix" label="Matrix Config" renderIcon={TagEdit} onClick={onClickSideNavExpand} />
-        <SideNavLink to="/config/probe" label="Probe Config" renderIcon={SettingsView} onClick={onClickSideNavExpand} /> */}
+        {/* <SideNavLink to="/salvos" label="Salvos" renderIcon={DocumentExport} onClick={onClickSideNavExpand} /> */}
       </SideNavItems>
     </SideNav>
   );

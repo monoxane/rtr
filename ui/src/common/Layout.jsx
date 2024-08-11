@@ -55,14 +55,14 @@ function Layout() {
               <HeaderGlobalBar>
                   {/* <ExpandableSearch size="lg" labelText="Search" closeButtonLabelText="Clear search input" id="search-expandable-1" onChange={() => {}} onKeyDown={() => {}} /> */}
                 <OverflowMenu flipped renderIcon={User} className="cds--header__action" sx={{ zIndex: 8001 }}>
-                  <OverflowMenuItem className="header-user-menu" itemText={auth.user} disabled sx={{ color: 'white' }} />
-                  <OverflowMenuItem className="header-user-menu" itemText="Log out" onClick={logout} />
+                  <OverflowMenuItem itemText={auth.user} disabled sx={{ color: 'white' }} />
+                  <OverflowMenuItem itemText="Log out" onClick={logout} />
                 </OverflowMenu>
               </HeaderGlobalBar>
             )}
           </Header>
           {auth && auth.user
-            && <ComposedSideNav onClickSideNavExpand={onClickSideNavExpand} isActive={isSideNavExpanded} isRail={false} /> }
+            && <ComposedSideNav onClickSideNavExpand={onClickSideNavExpand} isActive={isSideNavExpanded} /> }
           <Content className={`main-content ${!auth?.user && 'unauthenticated'}`} style={{ background: gray[80] }}>
             <Suspense fallback={<Loading />}>
               <ErrorBoundary fallback={<ReactError />}>
