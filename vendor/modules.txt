@@ -166,6 +166,8 @@ github.com/modern-go/reflect2
 # github.com/monoxane/nk v1.0.0
 ## explicit; go 1.19
 github.com/monoxane/nk/pkg/matrix
+github.com/monoxane/nk/pkg/tbus
+github.com/monoxane/nk/pkg/tbus/crc
 # github.com/pelletier/go-toml/v2 v2.2.2
 ## explicit; go 1.16
 github.com/pelletier/go-toml/v2
@@ -268,6 +270,9 @@ github.com/vektah/gqlparser/v2/validator/rules
 # github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913
 ## explicit; go 1.15.0
 github.com/xrash/smetrics
+# go.openly.dev/pointy v1.3.0
+## explicit; go 1.18
+go.openly.dev/pointy
 # go.uber.org/multierr v1.11.0
 ## explicit; go 1.19
 go.uber.org/multierr
