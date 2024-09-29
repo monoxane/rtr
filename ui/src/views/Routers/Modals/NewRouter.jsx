@@ -162,7 +162,7 @@ function NewRouterModal({
             value={newRouter.ipAddress}
             onChange={(e) => setNewRouter({ ...newRouter, ipAddress: e.target.value })}
           />
-          {newRouter.provider.additionalConfiguration.map((ac) => {
+          {newRouter.provider.additionalConfiguration?.map((ac) => {
             if (ac === 'routerAddress') {
               return (
                 <TextInput

@@ -14,6 +14,7 @@ import (
 	"github.com/monoxane/rtr/internal/controller/streams"
 	"github.com/monoxane/rtr/internal/env"
 	"github.com/monoxane/rtr/internal/graph/model"
+	repository "github.com/monoxane/rtr/internal/repository"
 	"github.com/monoxane/rtr/internal/repository/users"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -44,41 +45,32 @@ func main() {
 	api.SetLogger(log)
 	streams.SetLogger(log)
 	routers.SetLogger(log)
+	repository.SetLoggers(log)
 
 	err = db.Open("rtr.db")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open database")
 	}
 
-	err = db.MigrateSchema("internal/connector/db/00_initial_schema.sql")
+	err = db.MigrateUp()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to migrate database schema")
 	}
 
+	log.Info().Msg("migrated database schema")
+
 	createAdminUser(env.AdminUsername, env.AdminPassword)
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("failed to add admin user")
-	// }
 
 	log.Info().Msg("admin user created")
 
 	go api.Serve()
+	log.Info().Msg("api serving")
 
 	err = streams.LoadStreams()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load streams")
 	}
-
-	// err := config.Load()
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("unable to load configuration")
-	// }
-
-	// router.Connect(api.RouteUpdateHandler)
-	// probe.StatsHandler(api.ProbeStatsHandler)
-	// api.SetProbeStatusGetter(probe.GetProbeStatuses)
-
-	// probe.LoadChannels(config.GetProbe().Channels)
+	log.Info().Msg("loaded streams")
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)

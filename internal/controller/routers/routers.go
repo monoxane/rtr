@@ -17,6 +17,8 @@ var (
 	routerInstancesMux sync.Mutex
 )
 
+const PROVIDER_ROSS_NK = 0
+
 func SetLogger(logger zerolog.Logger) {
 	log = logger.With().Str("controller", "routers").Logger()
 	streams.SetLogger(logger)
@@ -53,8 +55,8 @@ func UpdateRouter(router *model.Router) {
 		delete(routerInstances, router.ID)
 	}
 
-	switch router.Provider {
-	case "ross-nk":
+	switch router.ProviderID {
+	case PROVIDER_ROSS_NK:
 		routerInstances[router.ID] = &NKRouter{}
 		routerInstances[router.ID].Start()
 	}

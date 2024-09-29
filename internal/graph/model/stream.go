@@ -1,6 +1,6 @@
 package model
 
-import "github.com/monoxane/rtr/internal/repository"
+import "github.com/monoxane/rtr/internal/repository/common"
 
 type Stream struct {
 	ID          int    `json:"id"`
@@ -11,5 +11,5 @@ type Stream struct {
 	Clients     int    `json:"clients"`
 	Destination *int   `json:"destination,omitempty"`
 	UpdatedBy   *int   `json:"updated_by"`
-	repository.CommonMetadata
+	common.CommonMetadata
 }

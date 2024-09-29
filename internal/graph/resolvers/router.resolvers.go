@@ -10,8 +10,19 @@ import (
 
 	"github.com/monoxane/rtr/internal/graph"
 	"github.com/monoxane/rtr/internal/graph/model"
+	"github.com/monoxane/rtr/internal/repository/routers"
 	"github.com/monoxane/rtr/internal/repository/users"
 )
+
+// Provider is the resolver for the provider field.
+func (r *routerResolver) Provider(ctx context.Context, obj *model.Router) (string, error) {
+	panic(fmt.Errorf("not implemented: Provider - provider"))
+}
+
+// Model is the resolver for the model field.
+func (r *routerResolver) Model(ctx context.Context, obj *model.Router) (string, error) {
+	panic(fmt.Errorf("not implemented: Model - model"))
+}
 
 // CreatedAt is the resolver for the createdAt field.
 func (r *routerResolver) CreatedAt(ctx context.Context, obj *model.Router) (*int, error) {
@@ -40,17 +51,21 @@ func (r *routerResolver) Sources(ctx context.Context, obj *model.Router) ([]*mod
 	panic(fmt.Errorf("not implemented: Sources - sources"))
 }
 
+// AdditionalConfiguration is the resolver for the additionalConfiguration field.
+func (r *routerProviderResolver) AdditionalConfiguration(ctx context.Context, obj *model.RouterProvider) ([]*string, error) {
+	panic(fmt.Errorf("not implemented: AdditionalConfiguration - additionalConfiguration"))
+}
+
+// Models is the resolver for the models field.
+func (r *routerProviderResolver) Models(ctx context.Context, obj *model.RouterProvider) ([]*model.RouterModel, error) {
+	return routers.ListProviderModels(obj.ID)
+}
+
 // Router returns graph.RouterResolver implementation.
 func (r *Resolver) Router() graph.RouterResolver { return &routerResolver{r} }
 
-type routerResolver struct{ *Resolver }
+// RouterProvider returns graph.RouterProviderResolver implementation.
+func (r *Resolver) RouterProvider() graph.RouterProviderResolver { return &routerProviderResolver{r} }
 
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *routerResolver) Provider(ctx context.Context, obj *model.Router) (string, error) {
-	panic(fmt.Errorf("not implemented: Provider - provider"))
-}
+type routerResolver struct{ *Resolver }
+type routerProviderResolver struct{ *Resolver }

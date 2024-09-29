@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/monoxane/rtr/internal/repository"
+	"github.com/monoxane/rtr/internal/repository/common"
 )
 
 type User struct {
@@ -14,5 +14,5 @@ type User struct {
 	Role      string     `json:"role" binding:"required"`
 	UpdatedBy *int       `json:"updated_by"`
 	LastLogin *time.Time `json:"last_login"`
-	repository.CommonMetadata
+	common.CommonMetadata
 }

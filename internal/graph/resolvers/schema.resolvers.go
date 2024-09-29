@@ -10,7 +10,6 @@ import (
 	"log"
 
 	"github.com/monoxane/rtr/internal/auth"
-	routersController "github.com/monoxane/rtr/internal/controller/routers"
 	streamsController "github.com/monoxane/rtr/internal/controller/streams"
 	"github.com/monoxane/rtr/internal/graph"
 	"github.com/monoxane/rtr/internal/graph/model"
@@ -191,11 +190,10 @@ func (r *mutationResolver) CreateRouter(ctx context.Context, router model.Router
 
 	newRouter, err := routers.Create(model.Router{
 		Label:         router.Label,
-		Provider:      router.Provider,
+		ProviderID:    router.ProviderID,
 		IPAddress:     router.IPAddress,
 		RouterAddress: router.RouterAddress,
-		Level:         router.Level,
-		Model:         &router.Model,
+		ModelID:       router.ModelID,
 		UpdatedBy:     &requester.ID,
 	})
 
@@ -272,7 +270,7 @@ func (r *queryResolver) RouterProviders(ctx context.Context) ([]*model.RouterPro
 		return nil, err
 	}
 
-	return routersController.RouterProvidersList, nil
+	return routers.ListProviders()
 }
 
 // Routers is the resolver for the routers field.

@@ -10,7 +10,7 @@ import (
 
 	"github.com/monoxane/rtr/internal/connector/db"
 	"github.com/monoxane/rtr/internal/graph/model"
-	"github.com/monoxane/rtr/internal/repository"
+	"github.com/monoxane/rtr/internal/repository/common"
 )
 
 const (
@@ -61,7 +61,7 @@ func GetByID(id int) (*model.Router, error) {
 
 	if err := row.Scan(&router.ID, &router.Label, &router.Provider, &router.Model, &router.IPAddress, &router.RouterAddress, &router.Level, &cat, &uat, &router.UpdatedBy, nil); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repository.ErrNotExists
+			return nil, common.ErrNotExists
 		}
 
 		return nil, err

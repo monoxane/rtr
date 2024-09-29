@@ -96,3 +96,11 @@ models:
     model:
       - github.com/monoxane/rtr/internal/graph/model.Router
   
+  RouterProvider:
+    model:
+      - github.com/monoxane/rtr/internal/graph/model.RouterProvider
+  
+  RouterModel:
+    model:
+      - github.com/monoxane/rtr/internal/graph/model.RouterModel
+  

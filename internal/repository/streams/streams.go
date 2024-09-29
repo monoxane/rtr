@@ -12,7 +12,7 @@ import (
 
 	"github.com/monoxane/rtr/internal/connector/db"
 	"github.com/monoxane/rtr/internal/graph/model"
-	"github.com/monoxane/rtr/internal/repository"
+	"github.com/monoxane/rtr/internal/repository/common"
 )
 
 const (
@@ -119,7 +119,7 @@ func GetByID(id int) (*model.Stream, error) {
 
 	if err := row.Scan(&stream.ID, &stream.Label, &stream.Slug, &stream.Destination, &stream.IsRoutable, &stream.IsActive, &stream.Clients, &cat, &uat, &stream.UpdatedBy); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repository.ErrNotExists
+			return nil, common.ErrNotExists
 		}
 
 		return nil, err
@@ -139,7 +139,7 @@ func GetBySlug(slug string) (*model.Stream, error) {
 
 	if err := row.Scan(&stream.ID, &stream.Label, &stream.Slug, &stream.Destination, &stream.IsRoutable, &stream.IsActive, &stream.Clients, &cat, &uat, &stream.UpdatedBy); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repository.ErrNotExists
+			return nil, common.ErrNotExists
 		}
 
 		return nil, err

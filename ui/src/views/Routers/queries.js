@@ -16,7 +16,6 @@ const LIST_PROVIDERS = gql`query providers {
     id
     label
     helperText
-    additionalConfiguration
     models {
       id
       label
@@ -27,6 +26,8 @@ const LIST_PROVIDERS = gql`query providers {
 const CREATE_ROUTER = gql`mutation createRouter($router: RouterUpdate!) {
   createRouter(router: $router) {
     id
+    providerId
+    modelId
   }
 }`;
 

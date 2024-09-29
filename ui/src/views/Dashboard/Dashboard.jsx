@@ -51,6 +51,10 @@ function Streams() {
     );
   }
 
+  if (data.streams.length === 0) {
+    return <h4><em>There are no Streams to display</em></h4>;
+  }
+
   return (
     <Grid condensed>
       { data.streams.map((stream) => (

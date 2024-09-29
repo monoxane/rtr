@@ -3,7 +3,6 @@ package routers
 import (
 	"context"
 	"net"
-	"time"
 
 	"github.com/monoxane/rtr/internal/graph/model"
 	"github.com/rs/zerolog"
@@ -11,7 +10,7 @@ import (
 	"github.com/monoxane/nk/pkg/tbus"
 )
 
-const retryInterval time.Duration = 60 * time.Second
+// const retryInterval time.Duration = 60 * time.Second
 
 type NKRouter struct {
 	router *model.Router

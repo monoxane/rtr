@@ -2,11 +2,16 @@ package db
 
 import (
 	"database/sql"
-	"os"
 
+	"github.com/golang-migrate/migrate/v4"
+	sqliteDriver "github.com/golang-migrate/migrate/v4/database/sqlite"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
+
+	"github.com/monoxane/rtr/migrations"
 )
 
 var log zerolog.Logger
@@ -29,18 +34,25 @@ func Open(uri string) error {
 	return nil
 }
 
-func MigrateSchema(schemaFile string) error {
-	schema, err := os.ReadFile(schemaFile)
+func MigrateUp() error {
+	embeddedFS, err := iofs.New(migrations.EmbeddedFS, ".")
 	if err != nil {
-		return errors.Wrap(err, "unable to open schema file")
+		return errors.Wrap(err, "unable to open iofs")
 	}
 
-	_, err = Database.Exec(string(schema))
+	driver, err := sqliteDriver.WithInstance(Database, &sqliteDriver.Config{DatabaseName: "rtr"})
 	if err != nil {
-		return errors.Wrap(err, "unable to migrate database schema")
+		return errors.Wrap(err, "unable to create driver")
 	}
 
-	log.Info().Msg("migrated database schema")
+	m, err := migrate.NewWithInstance("iofs", embeddedFS, "rtr", driver)
+	if err != nil {
+		return errors.Wrap(err, "unable to create instance")
+	}
 
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		return errors.Wrap(err, "unable to execute migrations")
+	}
 	return nil
 }

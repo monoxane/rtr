@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS "destinations"
+CREATE TABLE "destinations"
 (
   "id"               INTEGER NOT NULL UNIQUE,
   "router_id"        INTEGER NOT NULL,
@@ -23,12 +23,12 @@ CREATE TABLE IF NOT EXISTS "destinations"
   FOREIGN KEY ("router_id") REFERENCES "routers" ("id")
 );
 
-CREATE TABLE IF NOT EXISTS "routers"
+CREATE TABLE "routers"
 (
   "id"             INTEGER NOT NULL UNIQUE,
   "label"          TEXT    NOT NULL,
-  "provider"       TEXT    NOT NULL,
-  "model"          TEXT    NULL    ,
+  "provider_id"    INTEGER NOT NULL,
+  "model_id"          TEXT    NULL    ,
   "ip_address"     TEXT    NOT NULL UNIQUE,
   -- used in NK
   "router_address" INTEGER NULL    ,
@@ -37,10 +37,12 @@ CREATE TABLE IF NOT EXISTS "routers"
   "updated_at"     TEXT    NULL    ,
   "updated_by"     TEXT    NULL    ,
   "deleted_at"     TEXT    NULL    ,
-  PRIMARY KEY ("id" AUTOINCREMENT)
+  PRIMARY KEY ("id" AUTOINCREMENT),
+  FOREIGN KEY ("provider_id") REFERENCES "router_providers" ("id")
+  FOREIGN KEY ("model_id") REFERENCES "router_models" ("id")
 );
 
-CREATE TABLE IF NOT EXISTS "salvo_destinations"
+CREATE TABLE "salvo_destinations"
 (
   "id"              INTEGER NOT NULL UNIQUE,
   "version_id"      INTEGER NOT NULL,
@@ -56,7 +58,7 @@ CREATE TABLE IF NOT EXISTS "salvo_destinations"
   FOREIGN KEY ("saved_source_id") REFERENCES "sources" ("id")
 );
 
-CREATE TABLE IF NOT EXISTS "salvo_versions"
+CREATE TABLE "salvo_versions"
 (
   "id"          INTEGER NOT NULL UNIQUE,
   "salvo_id"    INTEGER NOT NULL,
@@ -70,7 +72,7 @@ CREATE TABLE IF NOT EXISTS "salvo_versions"
   FOREIGN KEY ("salvo_id") REFERENCES "salvos" ("id")
 );
 
-CREATE TABLE IF NOT EXISTS "salvos"
+CREATE TABLE "salvos"
 (
   "id"          INTEGER NOT NULL UNIQUE,
   "label"       TEXT    NOT NULL,
@@ -82,7 +84,7 @@ CREATE TABLE IF NOT EXISTS "salvos"
   PRIMARY KEY ("id" AUTOINCREMENT)
 );
 
-CREATE TABLE IF NOT EXISTS "sources"
+CREATE TABLE "sources"
 (
   "id"            INTEGER NOT NULL UNIQUE,
   "router_id"     INTEGER NOT NULL,
@@ -101,7 +103,7 @@ CREATE TABLE IF NOT EXISTS "sources"
   FOREIGN KEY ("router_id") REFERENCES "routers" ("id")
 );
 
-CREATE TABLE IF NOT EXISTS "streams"
+CREATE TABLE "streams"
 (
   "id"             INTEGER NOT NULL UNIQUE,
   "label"          TEXT    NOT NULL,
@@ -118,7 +120,7 @@ CREATE TABLE IF NOT EXISTS "streams"
   FOREIGN KEY ("destination_id") REFERENCES "destinations" ("id")
 );
 
-CREATE TABLE IF NOT EXISTS "tally_connections"
+CREATE TABLE "tally_connections"
 (
   "id"                    INTEGER NOT NULL UNIQUE,
   -- boolean
@@ -139,7 +141,7 @@ CREATE TABLE IF NOT EXISTS "tally_connections"
   PRIMARY KEY ("id" AUTOINCREMENT)
 );
 
-CREATE TABLE IF NOT EXISTS "tally_states"
+CREATE TABLE "tally_states"
 (
   "id"                  INTEGER NOT NULL UNIQUE,
   "tally_connection_id" INTEGER NOT NULL,
@@ -156,7 +158,7 @@ CREATE TABLE IF NOT EXISTS "tally_states"
   FOREIGN KEY ("tally_connection_id") REFERENCES "tally_connections" ("id")
 );
 
-CREATE TABLE IF NOT EXISTS "user_router_bindings"
+CREATE TABLE "user_router_bindings"
 (
   "id"         INTEGER NOT NULL UNIQUE,
   "user_id"    INTEGER NOT NULL,
@@ -170,7 +172,7 @@ CREATE TABLE IF NOT EXISTS "user_router_bindings"
   FOREIGN KEY ("router_id") REFERENCES "routers" ("id")
 );
 
-CREATE TABLE IF NOT EXISTS "users"
+CREATE TABLE "users"
 (
   "id"            INTEGER NOT NULL UNIQUE,
   "username"      TEXT    NOT NULL UNIQUE,
@@ -184,3 +186,4 @@ CREATE TABLE IF NOT EXISTS "users"
   "deleted_at"    INTEGER    NULL    ,
   PRIMARY KEY ("id" AUTOINCREMENT)
 );
+

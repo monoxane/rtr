@@ -9,7 +9,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 	"github.com/monoxane/rtr/internal/connector/db"
 	"github.com/monoxane/rtr/internal/graph/model"
-	"github.com/monoxane/rtr/internal/repository"
+	"github.com/monoxane/rtr/internal/repository/common"
 	"github.com/pkg/errors"
 )
 
@@ -135,7 +135,7 @@ func GetByUsername(username string) (model.User, error) {
 
 	if err := row.Scan(&user.ID, &user.Username, &user.RealName, &user.Hash, &user.Role, &last, &cat, &uat, &user.UpdatedBy, &dat); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return model.User{}, repository.ErrNotExists
+			return model.User{}, common.ErrNotExists
 		}
 
 		return model.User{}, err
@@ -162,7 +162,7 @@ func GetByID(id int) (*model.User, error) {
 
 	if err := row.Scan(&user.ID, &user.Username, &user.RealName, &user.Hash, &user.Role, &last, &cat, &uat, &user.UpdatedBy, &dat); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repository.ErrNotExists
+			return nil, common.ErrNotExists
 		}
 
 		return nil, err
