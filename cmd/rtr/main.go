@@ -10,6 +10,7 @@ import (
 	"github.com/monoxane/rtr/internal/api"
 	"github.com/monoxane/rtr/internal/api/auth"
 	"github.com/monoxane/rtr/internal/connector/db"
+	"github.com/monoxane/rtr/internal/controller/routers"
 	"github.com/monoxane/rtr/internal/controller/streams"
 	"github.com/monoxane/rtr/internal/env"
 	"github.com/monoxane/rtr/internal/graph/model"
@@ -42,13 +43,14 @@ func main() {
 	db.SetLogger(log)
 	api.SetLogger(log)
 	streams.SetLogger(log)
+	routers.SetLogger(log)
 
 	err = db.Open("rtr.db")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open database")
 	}
 
-	err = db.MigrateSchema("internal/connector/db/schema.sql")
+	err = db.MigrateSchema("internal/connector/db/00_initial_schema.sql")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to migrate database schema")
 	}

@@ -11,6 +11,19 @@ const LIST_ROUTERS = gql`query routers {
   }
 }`;
 
+const LIST_PROVIDERS = gql`query providers {
+  routerProviders {
+    id
+    label
+    helperText
+    additionalConfiguration
+    models {
+      id
+      label
+    }
+  }
+}`;
+
 const CREATE_ROUTER = gql`mutation createRouter($router: RouterUpdate!) {
   createRouter(router: $router) {
     id
@@ -18,5 +31,5 @@ const CREATE_ROUTER = gql`mutation createRouter($router: RouterUpdate!) {
 }`;
 
 export {
-  LIST_ROUTERS, CREATE_ROUTER,
+  LIST_ROUTERS, LIST_PROVIDERS, CREATE_ROUTER,
 };

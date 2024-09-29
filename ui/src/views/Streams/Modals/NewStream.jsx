@@ -28,7 +28,7 @@ function NewStream({ refresh }) {
       setOpen,
     }) => (
       <Button renderIcon={Add} ref={button} onClick={() => setOpen(true)}>
-        New Stream
+        New Channel
       </Button>
     )}
     >

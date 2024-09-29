@@ -32,10 +32,10 @@ const Streams = function Streams() {
     <Grid>
       <Column sm={4} md={8} lg={16}>
         <DataTable
-          title="Streams"
+          title="Stream Channels"
           description="Streams are real-time audio and video signals visible from within rtr"
-          emptyTitle="There are no Streams yet."
-          emptyDescription="To get started, click New Stream."
+          emptyTitle="There are no Stream Channels yet."
+          emptyDescription="To get started, click New Channel."
           emptyAction={<NewStream refresh={refetch} />}
           headers={headers}
           data={data?.streams}

@@ -12,13 +12,22 @@ function SideNavStreamsList({ onClickSideNavExpand }) {
   const {
     data,
   } = useQuery(LIST_STREAMS);
+
+  if (!data) {
+    return (
+      <>
+        <SideNavDivider />
+        <CarbonSideNavLink large disabled>
+          <em>Loading Streams...</em>
+        </CarbonSideNavLink>
+      </>
+    );
+  }
+
   return (
     <>
+      {data.streams.length !== 0 && (
       <SideNavDivider />
-      {!data && (
-      <CarbonSideNavLink large disabled>
-        <em>Loading Streams...</em>
-      </CarbonSideNavLink>
       ) }
       {data && data.streams.map((stream) => (
         <SideNavLink key={stream.slug} to={`/streams/view/${stream.slug}`} label={stream.label} onClick={() => { onClickSideNavExpand(); }} />

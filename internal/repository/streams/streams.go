@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/mattn/go-sqlite3"
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
+
 	"github.com/monoxane/rtr/internal/connector/db"
 	"github.com/monoxane/rtr/internal/graph/model"
 	"github.com/monoxane/rtr/internal/repository"
-	"github.com/pkg/errors"
-	"github.com/rs/zerolog"
 )
 
 const (
@@ -103,7 +104,7 @@ func Create(stream model.Stream) (*model.Stream, error) {
 
 	newStream, err := GetByID(int(id))
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to get new user")
+		return nil, errors.Wrap(err, "unable to get new stream")
 	}
 
 	return newStream, nil

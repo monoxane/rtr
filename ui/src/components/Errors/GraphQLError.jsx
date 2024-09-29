@@ -41,9 +41,13 @@ const GraphQLError = function GraphQLError({ error }) {
               <br />
               <span>
                 {err.message}
-                :
-                {' '}
-                {err.path.join('.')}
+                {err.path && (
+                <>
+                  :
+                  {' '}
+                  {err.path.join('.')}
+                </>
+                )}
               </span>
             </>
           ))}
@@ -55,7 +59,11 @@ const GraphQLError = function GraphQLError({ error }) {
 
 GraphQLError.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
-  error: PropTypes.object.isRequired,
+  error: PropTypes.object,
+};
+
+GraphQLError.defaultProps = {
+  error: null,
 };
 
 export default GraphQLError;

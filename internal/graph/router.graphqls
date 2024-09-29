@@ -1,7 +1,7 @@
 type Router {
   id: ID!
   label: String!
-  provider: Int!
+  provider: String!
   ipAddress: String!
   routerAddress: Int
   level: Int!
@@ -15,11 +15,27 @@ type Router {
 
 input RouterUpdate {
   label: String!
-  provider: Int!
+  provider: String!
   ipAddress: String!
   routerAddress: Int
   level: Int!
   model: String!
+}
+
+type RouterProvider {
+  id: String!
+  label: String!
+  helperText: String
+  additionalConfiguration: [String]
+  models: [RouterModel!]!
+}
+
+type RouterModel {
+  id: String!
+  label: String!
+  helperText: String
+  inputs: Int!
+  outputs: Int!
 }
 
 type Destination {

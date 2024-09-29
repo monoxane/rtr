@@ -27,12 +27,12 @@ CREATE TABLE IF NOT EXISTS "routers"
 (
   "id"             INTEGER NOT NULL UNIQUE,
   "label"          TEXT    NOT NULL,
-  "provider"       INTEGER NOT NULL,
+  "provider"       TEXT    NOT NULL,
+  "model"          TEXT    NULL    ,
   "ip_address"     TEXT    NOT NULL UNIQUE,
   -- used in NK
   "router_address" INTEGER NULL    ,
   "level"          INTEGER NOT NULL,
-  "model"          TEXT    NULL    ,
   "created_at"     TEXT    NULL    ,
   "updated_at"     TEXT    NULL    ,
   "updated_by"     TEXT    NULL    ,

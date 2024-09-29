@@ -94,7 +94,7 @@ func Ingest(slug string, c *gin.Context) {
 
 func (s *streamInstance) Start() {
 	ctx, cancel := context.WithCancel(context.Background())
-	log.Debug().Str("stream", s.stream.Slug).Int("slug", s.stream.ID).Msg("starting stream channel")
+	log.Debug().Str("stream", s.stream.Slug).Int("id", s.stream.ID).Msg("starting stream channel")
 
 	s.handler = &ProbeClientHandler{
 		stream:     s.stream,

@@ -26,7 +26,7 @@ function Dashboard() {
         </Tile>
       </Column>
       <Column sm={4} md={8} lg={16}>
-        <Tile style={{ paddingLeft: '2.5em', paddingRight: '2.5em', paddingTop: '0' }}>
+        <Tile style={{ paddingLeft: '2.5em', paddingRight: '2.5em' }}>
           <Streams />
         </Tile>
       </Column>

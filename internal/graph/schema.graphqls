@@ -8,8 +8,7 @@ type Query {
   streams: [Stream!]!
   stream(id: ID, slug: String): Stream!
 
-  routerProviders: [String!]!
-  routerModels: [String!]!
+  routerProviders: [RouterProvider!]!
   routers: [Router!]!
 }
 

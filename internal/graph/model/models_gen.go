@@ -34,9 +34,25 @@ type Mutation struct {
 type Query struct {
 }
 
+type RouterModel struct {
+	ID         string  `json:"id"`
+	Label      string  `json:"label"`
+	HelperText *string `json:"helperText,omitempty"`
+	Inputs     int     `json:"inputs"`
+	Outputs    int     `json:"outputs"`
+}
+
+type RouterProvider struct {
+	ID                      string         `json:"id"`
+	Label                   string         `json:"label"`
+	HelperText              *string        `json:"helperText,omitempty"`
+	AdditionalConfiguration []*string      `json:"additionalConfiguration,omitempty"`
+	Models                  []*RouterModel `json:"models"`
+}
+
 type RouterUpdate struct {
 	Label         string `json:"label"`
-	Provider      int    `json:"provider"`
+	Provider      string `json:"provider"`
 	IPAddress     string `json:"ipAddress"`
 	RouterAddress *int   `json:"routerAddress,omitempty"`
 	Level         int    `json:"level"`

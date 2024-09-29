@@ -14,6 +14,7 @@ import {
 } from '@carbon/icons-react';
 
 import SideNavStreamsList from '../views/Streams/Menus/SideNavStreamsList.jsx';
+import SideNavRoutersList from '../views/Routers/Menus/SideNavRoutersList.jsx';
 import useAuth from '../hooks/useAuth.js';
 import SideNavLink from './SideNavLink.jsx';
 import SideNavGroup from './SideNavGroup.jsx';
@@ -26,16 +27,16 @@ function ComposedSideNav({ onClickSideNavExpand, isActive, isRail }) {
       <SideNavItems>
         <SideNavLink renderIcon={Home} to="/dashboard" label="Home" onClick={onClickSideNavExpand} />
 
-        <SideNavGroup group="/routers/*" renderIcon={Router} large title="Routers">
+        <SideNavGroup group="/routers/*" renderIcon={Router} large title="Routing">
           {auth?.role === 'ADMIN' && (
-          <SideNavLink to="/routers/config" label="Config" onClick={onClickSideNavExpand} />
+          <SideNavLink to="/routers/config" label="Routers" onClick={onClickSideNavExpand} />
           )}
-          <SideNavStreamsList onClickSideNavExpand={onClickSideNavExpand} />
+          <SideNavRoutersList onClickSideNavExpand={onClickSideNavExpand} />
         </SideNavGroup>
 
         <SideNavGroup group="/streams/*" renderIcon={View} large title="Streams">
           {auth?.role === 'ADMIN' && (
-            <SideNavLink to="/streams/config" label="Config" onClick={onClickSideNavExpand} />
+            <SideNavLink to="/streams/config" label="Channels" onClick={onClickSideNavExpand} />
           )}
           <SideNavStreamsList onClickSideNavExpand={onClickSideNavExpand} />
         </SideNavGroup>
