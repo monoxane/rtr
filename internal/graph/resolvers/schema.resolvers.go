@@ -188,14 +188,18 @@ func (r *mutationResolver) CreateRouter(ctx context.Context, router model.Router
 		return nil, err
 	}
 
-	newRouter, err := routers.Create(model.Router{
+	payload := model.Router{
 		Label:         router.Label,
 		ProviderID:    router.ProviderID,
 		IPAddress:     router.IPAddress,
 		RouterAddress: router.RouterAddress,
 		ModelID:       router.ModelID,
 		UpdatedBy:     &requester.ID,
-	})
+	}
+
+	log.Printf("%#v", payload)
+
+	newRouter, err := routers.Create(payload)
 
 	if err != nil {
 		return nil, err
@@ -203,6 +207,18 @@ func (r *mutationResolver) CreateRouter(ctx context.Context, router model.Router
 	// err = routerController.UpdateRouter(newRouter)
 
 	return newRouter, nil
+}
+
+// DeleteRouter is the resolver for the deleteRouter field.
+func (r *mutationResolver) DeleteRouter(ctx context.Context, id int) (*int, error) {
+	err := routers.Delete(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// err := routerController.DeleteRouter(id)
+
+	return nil, nil
 }
 
 // Roles is the resolver for the roles field.

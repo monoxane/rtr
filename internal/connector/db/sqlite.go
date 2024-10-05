@@ -35,6 +35,8 @@ func Open(uri string) error {
 }
 
 func MigrateUp() error {
+	defer Database.Exec("PRAGMA foreign_keys=ON;")
+
 	embeddedFS, err := iofs.New(migrations.EmbeddedFS, ".")
 	if err != nil {
 		return errors.Wrap(err, "unable to open iofs")

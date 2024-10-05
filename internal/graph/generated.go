@@ -40,6 +40,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Destination() DestinationResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Router() RouterResolver
@@ -54,7 +55,6 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Destination struct {
-		CreatedAt    func(childComplexity int) int
 		Description  func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Index        func(childComplexity int) int
@@ -65,8 +65,6 @@ type ComplexityRoot struct {
 		TallyRed     func(childComplexity int) int
 		TallyYellow  func(childComplexity int) int
 		UmdLabel     func(childComplexity int) int
-		UpdatedAt    func(childComplexity int) int
-		UpdatedBy    func(childComplexity int) int
 	}
 
 	Login struct {
@@ -84,6 +82,7 @@ type ComplexityRoot struct {
 		CreateStream       func(childComplexity int, stream model.StreamUpdate) int
 		CreateUser         func(childComplexity int, user model.UserUpdate) int
 		DeactivateUser     func(childComplexity int, id int) int
+		DeleteRouter       func(childComplexity int, id int) int
 		DeleteStream       func(childComplexity int, id int) int
 		Login              func(childComplexity int, username string, password string) int
 		ReactivateUser     func(childComplexity int, id int) int
@@ -243,6 +242,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type DestinationResolver interface {
+	RoutedSource(ctx context.Context, obj *model.Destination) (*model.Source, error)
+}
 type MutationResolver interface {
 	Login(ctx context.Context, username string, password string) (*model.LoginResponse, error)
 	CreateUser(ctx context.Context, user model.UserUpdate) (*model.User, error)
@@ -254,6 +256,7 @@ type MutationResolver interface {
 	UpdateStream(ctx context.Context, id int, stream model.StreamUpdate) (*model.Stream, error)
 	DeleteStream(ctx context.Context, id int) (*int, error)
 	CreateRouter(ctx context.Context, router model.RouterUpdate) (*model.Router, error)
+	DeleteRouter(ctx context.Context, id int) (*int, error)
 }
 type QueryResolver interface {
 	Roles(ctx context.Context) ([]string, error)
@@ -264,9 +267,9 @@ type QueryResolver interface {
 	Routers(ctx context.Context) ([]*model.Router, error)
 }
 type RouterResolver interface {
-	Provider(ctx context.Context, obj *model.Router) (string, error)
+	Provider(ctx context.Context, obj *model.Router) (*model.RouterProvider, error)
 
-	Model(ctx context.Context, obj *model.Router) (string, error)
+	Model(ctx context.Context, obj *model.Router) (*model.RouterModel, error)
 	CreatedAt(ctx context.Context, obj *model.Router) (*int, error)
 	UpdatedAt(ctx context.Context, obj *model.Router) (*int, error)
 	UpdatedBy(ctx context.Context, obj *model.Router) (*model.User, error)
@@ -313,13 +316,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
-
-	case "Destination.createdAt":
-		if e.complexity.Destination.CreatedAt == nil {
-			break
-		}
-
-		return e.complexity.Destination.CreatedAt(childComplexity), true
 
 	case "Destination.description":
 		if e.complexity.Destination.Description == nil {
@@ -390,20 +386,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Destination.UmdLabel(childComplexity), true
-
-	case "Destination.updatedAt":
-		if e.complexity.Destination.UpdatedAt == nil {
-			break
-		}
-
-		return e.complexity.Destination.UpdatedAt(childComplexity), true
-
-	case "Destination.updatedBy":
-		if e.complexity.Destination.UpdatedBy == nil {
-			break
-		}
-
-		return e.complexity.Destination.UpdatedBy(childComplexity), true
 
 	case "Login.password":
 		if e.complexity.Login.Password == nil {
@@ -480,6 +462,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeactivateUser(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteRouter":
+		if e.complexity.Mutation.DeleteRouter == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteRouter_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteRouter(childComplexity, args["id"].(int)), true
 
 	case "Mutation.deleteStream":
 		if e.complexity.Mutation.DeleteStream == nil {
@@ -1533,6 +1527,21 @@ func (ec *executionContext) field_Mutation_deactivateUser_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_deleteRouter_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_deleteStream_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2162,129 +2171,6 @@ func (ec *executionContext) fieldContext_Destination_tallyAddress(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Destination_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Destination) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Destination_createdAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Destination_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Destination",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Destination_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Destination) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Destination_updatedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpdatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Destination_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Destination",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Destination_updatedBy(ctx context.Context, field graphql.CollectedField, obj *model.Destination) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Destination_updatedBy(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpdatedBy, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Destination_updatedBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Destination",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Destination_routedSource(ctx context.Context, field graphql.CollectedField, obj *model.Destination) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Destination_routedSource(ctx, field)
 	if err != nil {
@@ -2299,7 +2185,7 @@ func (ec *executionContext) _Destination_routedSource(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.RoutedSource, nil
+		return ec.resolvers.Destination().RoutedSource(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2317,8 +2203,8 @@ func (ec *executionContext) fieldContext_Destination_routedSource(_ context.Cont
 	fc = &graphql.FieldContext{
 		Object:     "Destination",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -3187,6 +3073,58 @@ func (ec *executionContext) fieldContext_Mutation_createRouter(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_deleteRouter(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteRouter(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteRouter(rctx, fc.Args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteRouter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteRouter_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_roles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_roles(ctx, field)
 	if err != nil {
@@ -3820,9 +3758,9 @@ func (ec *executionContext) _Router_provider(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.RouterProvider)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNRouterProvider2ᚖgithubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐRouterProvider(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Router_provider(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3832,7 +3770,19 @@ func (ec *executionContext) fieldContext_Router_provider(_ context.Context, fiel
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_RouterProvider_id(ctx, field)
+			case "label":
+				return ec.fieldContext_RouterProvider_label(ctx, field)
+			case "helperText":
+				return ec.fieldContext_RouterProvider_helperText(ctx, field)
+			case "additionalConfiguration":
+				return ec.fieldContext_RouterProvider_additionalConfiguration(ctx, field)
+			case "models":
+				return ec.fieldContext_RouterProvider_models(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type RouterProvider", field.Name)
 		},
 	}
 	return fc, nil
@@ -3993,9 +3943,9 @@ func (ec *executionContext) _Router_model(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.RouterModel)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNRouterModel2ᚖgithubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐRouterModel(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Router_model(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4005,7 +3955,19 @@ func (ec *executionContext) fieldContext_Router_model(_ context.Context, field g
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_RouterModel_id(ctx, field)
+			case "label":
+				return ec.fieldContext_RouterModel_label(ctx, field)
+			case "helperText":
+				return ec.fieldContext_RouterModel_helperText(ctx, field)
+			case "inputs":
+				return ec.fieldContext_RouterModel_inputs(ctx, field)
+			case "outputs":
+				return ec.fieldContext_RouterModel_outputs(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type RouterModel", field.Name)
 		},
 	}
 	return fc, nil
@@ -4213,12 +4175,6 @@ func (ec *executionContext) fieldContext_Router_destinations(_ context.Context, 
 				return ec.fieldContext_Destination_tallyYellow(ctx, field)
 			case "tallyAddress":
 				return ec.fieldContext_Destination_tallyAddress(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Destination_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Destination_updatedAt(ctx, field)
-			case "updatedBy":
-				return ec.fieldContext_Destination_updatedBy(ctx, field)
 			case "routedSource":
 				return ec.fieldContext_Destination_routedSource(ctx, field)
 			}
@@ -5329,12 +5285,6 @@ func (ec *executionContext) fieldContext_SalvoDestination_destination(_ context.
 				return ec.fieldContext_Destination_tallyYellow(ctx, field)
 			case "tallyAddress":
 				return ec.fieldContext_Destination_tallyAddress(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Destination_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Destination_updatedAt(ctx, field)
-			case "updatedBy":
-				return ec.fieldContext_Destination_updatedBy(ctx, field)
 			case "routedSource":
 				return ec.fieldContext_Destination_routedSource(ctx, field)
 			}
@@ -6624,12 +6574,6 @@ func (ec *executionContext) fieldContext_Stream_destination(_ context.Context, f
 				return ec.fieldContext_Destination_tallyYellow(ctx, field)
 			case "tallyAddress":
 				return ec.fieldContext_Destination_tallyAddress(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Destination_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Destination_updatedAt(ctx, field)
-			case "updatedBy":
-				return ec.fieldContext_Destination_updatedBy(ctx, field)
 			case "routedSource":
 				return ec.fieldContext_Destination_routedSource(ctx, field)
 			}
@@ -10433,17 +10377,17 @@ func (ec *executionContext) _Destination(ctx context.Context, sel ast.SelectionS
 		case "id":
 			out.Values[i] = ec._Destination_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "index":
 			out.Values[i] = ec._Destination_index(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "label":
 			out.Values[i] = ec._Destination_label(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "description":
 			out.Values[i] = ec._Destination_description(ctx, field, obj)
@@ -10452,28 +10396,53 @@ func (ec *executionContext) _Destination(ctx context.Context, sel ast.SelectionS
 		case "tallyGreen":
 			out.Values[i] = ec._Destination_tallyGreen(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "tallyRed":
 			out.Values[i] = ec._Destination_tallyRed(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "tallyYellow":
 			out.Values[i] = ec._Destination_tallyYellow(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "tallyAddress":
 			out.Values[i] = ec._Destination_tallyAddress(ctx, field, obj)
-		case "createdAt":
-			out.Values[i] = ec._Destination_createdAt(ctx, field, obj)
-		case "updatedAt":
-			out.Values[i] = ec._Destination_updatedAt(ctx, field, obj)
-		case "updatedBy":
-			out.Values[i] = ec._Destination_updatedBy(ctx, field, obj)
 		case "routedSource":
-			out.Values[i] = ec._Destination_routedSource(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Destination_routedSource(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10646,6 +10615,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createRouter":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createRouter(ctx, field)
+			})
+		case "deleteRouter":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteRouter(ctx, field)
 			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -12802,6 +12775,10 @@ func (ec *executionContext) marshalNRouter2ᚖgithubᚗcomᚋmonoxaneᚋrtrᚋin
 	return ec._Router(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNRouterModel2githubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐRouterModel(ctx context.Context, sel ast.SelectionSet, v model.RouterModel) graphql.Marshaler {
+	return ec._RouterModel(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNRouterModel2ᚕᚖgithubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐRouterModelᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.RouterModel) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -12854,6 +12831,10 @@ func (ec *executionContext) marshalNRouterModel2ᚖgithubᚗcomᚋmonoxaneᚋrtr
 		return graphql.Null
 	}
 	return ec._RouterModel(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNRouterProvider2githubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐRouterProvider(ctx context.Context, sel ast.SelectionSet, v model.RouterProvider) graphql.Marshaler {
+	return ec._RouterProvider(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNRouterProvider2ᚕᚖgithubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐRouterProviderᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.RouterProvider) graphql.Marshaler {

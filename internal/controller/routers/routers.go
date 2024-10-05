@@ -5,7 +5,6 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/monoxane/rtr/internal/controller/streams"
 	"github.com/monoxane/rtr/internal/graph/model"
 	"github.com/monoxane/rtr/internal/repository/routers"
 )
@@ -21,7 +20,7 @@ const PROVIDER_ROSS_NK = 0
 
 func SetLogger(logger zerolog.Logger) {
 	log = logger.With().Str("controller", "routers").Logger()
-	streams.SetLogger(logger)
+	log.Info().Msg("logger active")
 }
 
 type routerInterface interface {
@@ -62,7 +61,7 @@ func UpdateRouter(router *model.Router) {
 	}
 }
 
-func DeleteStream(router int) {
+func DeleteRouter(router int) {
 	routerInstancesMux.Lock()
 	defer routerInstancesMux.Unlock()
 

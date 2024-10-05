@@ -2,22 +2,6 @@
 
 package model
 
-type Destination struct {
-	ID           int     `json:"id"`
-	Index        int     `json:"index"`
-	Label        string  `json:"label"`
-	Description  *string `json:"description,omitempty"`
-	UmdLabel     *string `json:"umdLabel,omitempty"`
-	TallyGreen   bool    `json:"tallyGreen"`
-	TallyRed     bool    `json:"tallyRed"`
-	TallyYellow  bool    `json:"tallyYellow"`
-	TallyAddress *int    `json:"tallyAddress,omitempty"`
-	CreatedAt    *string `json:"createdAt,omitempty"`
-	UpdatedAt    *string `json:"updatedAt,omitempty"`
-	UpdatedBy    *string `json:"updatedBy,omitempty"`
-	RoutedSource *Source `json:"routedSource,omitempty"`
-}
-
 type Login struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

@@ -1,11 +1,11 @@
 type Router {
   id: ID!
   label: String!
-  provider: String!
+  provider: RouterProvider!
   ipAddress: String!
   routerAddress: Int
   level: Int!
-  model: String!
+  model: RouterModel!
   createdAt: Int
   updatedAt: Int
   updatedBy: User
@@ -48,9 +48,6 @@ type Destination {
   tallyRed: Boolean!
   tallyYellow: Boolean!
   tallyAddress: Int
-  createdAt: String
-  updatedAt: String
-  updatedBy: String
   routedSource: Source
 }
 

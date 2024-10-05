@@ -162,23 +162,23 @@ function NewRouterModal({
             value={newRouter.ipAddress}
             onChange={(e) => setNewRouter({ ...newRouter, ipAddress: e.target.value })}
           />
-          {newRouter.provider.additionalConfiguration?.map((ac) => {
+          {/* {newRouter.provider.additionalConfiguration?.map((ac) => {
             if (ac === 'routerAddress') {
-              return (
-                <TextInput
-                  key={ac}
-                  id="routerAddress"
-                  type="text"
-                  placeholder="1"
-                  labelText="Router Address"
-                  required
-                  value={newRouter.routerAddress}
-                  onChange={(e) => setNewRouter({ ...newRouter, routerAddress: e.target.value })}
-                />
-              );
+              return ( */}
+          <TextInput
+            // key={ac}
+            id="routerAddress"
+            type="text"
+            placeholder="1"
+            labelText="Router Address"
+            required
+            value={newRouter.routerAddress}
+            onChange={(e) => setNewRouter({ ...newRouter, routerAddress: e.target.value })}
+          />
+          {/* );
             }
             return null;
-          })}
+          })} */}
         </Stack>
         )}
         <GraphQLError error={error || providerError} />
@@ -193,7 +193,7 @@ function NewRouterModal({
             const payload = {
               variables: {
                 router: {
-                  label: newRouter.label, provider: newRouter.provider.id, ipAddress: newRouter.ipAddress, routerAddress: newRouter.routerAddress, level: newRouter.level, model: newRouter.model.id,
+                  label: newRouter.label, providerId: newRouter.provider.id, ipAddress: newRouter.ipAddress, routerAddress: newRouter.routerAddress, level: newRouter.level, modelId: newRouter.model.id,
                 },
               },
             };

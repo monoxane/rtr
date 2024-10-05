@@ -1,5 +1,5 @@
 INSERT INTO `router_providers` 
-VALUES (0, "Ross NK Series");
+VALUES (0, "Ross NK Series", "Connection requires NK-IPS or NK-NET Gateway");
 
 INSERT INTO `router_models` (`label`, `inputs`, `outputs`, `provider_id`)
 VALUES ("NK-3G72", 72, 72, 0);

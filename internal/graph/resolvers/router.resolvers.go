@@ -11,17 +11,27 @@ import (
 	"github.com/monoxane/rtr/internal/graph"
 	"github.com/monoxane/rtr/internal/graph/model"
 	"github.com/monoxane/rtr/internal/repository/routers"
+	"github.com/monoxane/rtr/internal/repository/spigots"
 	"github.com/monoxane/rtr/internal/repository/users"
 )
 
+// RoutedSource is the resolver for the routedSource field.
+func (r *destinationResolver) RoutedSource(ctx context.Context, obj *model.Destination) (*model.Source, error) {
+	if obj.RoutedSourceID == nil {
+		return nil, nil
+	}
+
+	return spigots.GetSource(*obj.RoutedSourceID)
+}
+
 // Provider is the resolver for the provider field.
-func (r *routerResolver) Provider(ctx context.Context, obj *model.Router) (string, error) {
-	panic(fmt.Errorf("not implemented: Provider - provider"))
+func (r *routerResolver) Provider(ctx context.Context, obj *model.Router) (*model.RouterProvider, error) {
+	return routers.GetProvider(obj.ProviderID)
 }
 
 // Model is the resolver for the model field.
-func (r *routerResolver) Model(ctx context.Context, obj *model.Router) (string, error) {
-	panic(fmt.Errorf("not implemented: Model - model"))
+func (r *routerResolver) Model(ctx context.Context, obj *model.Router) (*model.RouterModel, error) {
+	return routers.GetModel(obj.ModelID)
 }
 
 // CreatedAt is the resolver for the createdAt field.
@@ -43,12 +53,12 @@ func (r *routerResolver) UpdatedBy(ctx context.Context, obj *model.Router) (*mod
 
 // Destinations is the resolver for the destinations field.
 func (r *routerResolver) Destinations(ctx context.Context, obj *model.Router) ([]*model.Destination, error) {
-	panic(fmt.Errorf("not implemented: Destinations - destinations"))
+	return spigots.ListDestinationsForRouter(obj.ID)
 }
 
 // Sources is the resolver for the sources field.
 func (r *routerResolver) Sources(ctx context.Context, obj *model.Router) ([]*model.Source, error) {
-	panic(fmt.Errorf("not implemented: Sources - sources"))
+	return spigots.ListSourcesForRouter(obj.ID)
 }
 
 // AdditionalConfiguration is the resolver for the additionalConfiguration field.
@@ -61,11 +71,15 @@ func (r *routerProviderResolver) Models(ctx context.Context, obj *model.RouterPr
 	return routers.ListProviderModels(obj.ID)
 }
 
+// Destination returns graph.DestinationResolver implementation.
+func (r *Resolver) Destination() graph.DestinationResolver { return &destinationResolver{r} }
+
 // Router returns graph.RouterResolver implementation.
 func (r *Resolver) Router() graph.RouterResolver { return &routerResolver{r} }
 
 // RouterProvider returns graph.RouterProviderResolver implementation.
 func (r *Resolver) RouterProvider() graph.RouterProviderResolver { return &routerProviderResolver{r} }
 
+type destinationResolver struct{ *Resolver }
 type routerResolver struct{ *Resolver }
 type routerProviderResolver struct{ *Resolver }

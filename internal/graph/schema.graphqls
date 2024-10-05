@@ -26,6 +26,7 @@ type Mutation {
   deleteStream(id: Int!): Int
 
   createRouter(router: RouterUpdate!): Router
+  deleteRouter(id: ID!): Int
 }
 
 type Subscription {

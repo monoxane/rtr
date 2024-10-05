@@ -58,7 +58,7 @@ const errorLink = onError(({
 }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(((err) => {
-      if (err.extensions.code === 'AUTH_ERROR') {
+      if (err.extensions?.code === 'AUTH_ERROR') {
         localStorage.removeItem('auth');
         window.location.replace('/login');
         return null;

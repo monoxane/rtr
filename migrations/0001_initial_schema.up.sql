@@ -1,28 +1,3 @@
-CREATE TABLE "destinations"
-(
-  "id"               INTEGER NOT NULL UNIQUE,
-  "router_id"        INTEGER NOT NULL,
-  "index"            INTEGER NOT NULL,
-  "label"            TEXT    NOT NULL,
-  "description"      TEXT    NULL    ,
-  "umd_label"        TEXT    NULL    ,
-  -- boolean
-  "tally_green"      INTEGER NOT NULL DEFAULT 0,
-  -- boolean
-  "tally_red"        INTEGER NOT NULL DEFAULT 0,
-  -- boolean
-  "tally_yellow"     INTEGER NOT NULL DEFAULT 0,
-  "tally_address"    INTEGER NULL    ,
-  "routed_source_id" INTEGER NULL    ,
-  "created_at"       TEXT    NULL    ,
-  "updated_at"       TEXT    NULL    ,
-  "updated_by"       TEXT    NULL    ,
-  "deleted_at"       TEXT    NULL    ,
-  PRIMARY KEY ("id" AUTOINCREMENT),
-  FOREIGN KEY ("routed_source_id") REFERENCES "sources" ("id"),
-  FOREIGN KEY ("router_id") REFERENCES "routers" ("id")
-);
-
 CREATE TABLE "routers"
 (
   "id"             INTEGER NOT NULL UNIQUE,
@@ -92,14 +67,29 @@ CREATE TABLE "sources"
   "label"         TEXT    NOT NULL,
   "description"   TEXT    NULL    ,
   "umd_label"     TEXT    NULL    ,
-  -- boolean
   "tally_green"   INTEGER NOT NULL DEFAULT 0,
-  -- boolean
   "tally_red"     INTEGER NOT NULL DEFAULT 0,
-  -- boolean
   "tally_yellow"  INTEGER NOT NULL DEFAULT 0,
   "tally_address" INTEGER NULL    ,
   PRIMARY KEY ("id" AUTOINCREMENT),
+  FOREIGN KEY ("router_id") REFERENCES "routers" ("id")
+);
+
+CREATE TABLE "destinations"
+(
+  "id"               INTEGER NOT NULL UNIQUE,
+  "router_id"        INTEGER NOT NULL,
+  "index"            INTEGER NOT NULL,
+  "label"            TEXT    NOT NULL,
+  "description"      TEXT    NULL    ,
+  "umd_label"        TEXT    NULL    ,
+  "tally_green"      INTEGER NOT NULL DEFAULT 0,
+  "tally_red"        INTEGER NOT NULL DEFAULT 0,
+  "tally_yellow"     INTEGER NOT NULL DEFAULT 0,
+  "tally_address"    INTEGER NULL    ,
+  "routed_source_id" INTEGER NULL    ,
+  PRIMARY KEY ("id" AUTOINCREMENT),
+  FOREIGN KEY ("routed_source_id") REFERENCES "sources" ("id"),
   FOREIGN KEY ("router_id") REFERENCES "routers" ("id")
 );
 

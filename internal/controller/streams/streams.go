@@ -25,7 +25,7 @@ var (
 
 func SetLogger(logger zerolog.Logger) {
 	log = logger.With().Str("controller", "stream").Logger()
-	streams.SetLogger(logger)
+	log.Info().Msg("logger active")
 }
 
 type streamInstance struct {

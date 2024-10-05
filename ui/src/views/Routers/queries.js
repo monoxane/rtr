@@ -4,7 +4,14 @@ const LIST_ROUTERS = gql`query routers {
   routers {
     id
     label
-    provider
+    provider {
+      id
+      label
+    }
+    model {
+      id
+      label
+    }
     ipAddress
     routerAddress
     level
@@ -26,11 +33,13 @@ const LIST_PROVIDERS = gql`query providers {
 const CREATE_ROUTER = gql`mutation createRouter($router: RouterUpdate!) {
   createRouter(router: $router) {
     id
-    providerId
-    modelId
   }
 }`;
 
+const DELETE_ROUTER = gql`mutation deleteRouter($id:ID!) {
+  deleteRouter(id:$id)
+}`;
+
 export {
-  LIST_ROUTERS, LIST_PROVIDERS, CREATE_ROUTER,
+  LIST_ROUTERS, LIST_PROVIDERS, CREATE_ROUTER, DELETE_ROUTER,
 };

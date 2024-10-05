@@ -36,6 +36,7 @@ var (
 
 func SetLogger(logger zerolog.Logger) {
 	log = logger.With().Str("repository", "streams").Logger()
+	log.Info().Msg("logger active")
 }
 
 func Watch(streamId int, ctx context.Context) (chan *model.Stream, error) {

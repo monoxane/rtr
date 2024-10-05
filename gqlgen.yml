@@ -104,3 +104,7 @@ models:
     model:
       - github.com/monoxane/rtr/internal/graph/model.RouterModel
   
+  Destination:
+    model:
+      - github.com/monoxane/rtr/internal/graph/model.Destination
+  
