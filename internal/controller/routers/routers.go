@@ -46,7 +46,6 @@ func LoadRouters() error {
 
 func UpdateRouter(router *model.Router) {
 	routerInstancesMux.Lock()
-	defer routerInstancesMux.Unlock()
 
 	if _, exists := routerInstances[router.ID]; exists {
 		routerInstances[router.ID].Stop()
@@ -56,9 +55,13 @@ func UpdateRouter(router *model.Router) {
 
 	switch router.ProviderID {
 	case PROVIDER_ROSS_NK:
-		routerInstances[router.ID] = &NKRouter{}
-		routerInstances[router.ID].Start()
+		routerInstances[router.ID] = &NKRouter{
+			router: router,
+		}
 	}
+
+	routerInstancesMux.Unlock()
+	go routerInstances[router.ID].Start()
 }
 
 func DeleteRouter(router int) {
@@ -67,4 +70,8 @@ func DeleteRouter(router int) {
 
 	routerInstances[router].Stop()
 	delete(routerInstances, router)
+}
+
+func Route(routerId, destination, source int) error {
+	return routerInstances[routerId].Route(destination, source)
 }

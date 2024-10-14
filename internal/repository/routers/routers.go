@@ -16,10 +16,11 @@ import (
 )
 
 const (
-	queryRouters       = "SELECT * from routers;"
-	queryRouterDelete  = "DELETE FROM routers WHERE id = ?;"
-	queryRouterByID    = "SELECT id, label, provider_id, model_id, ip_address, router_address, level, created_at, updated_at, updated_by FROM routers WHERE id = ?;"
-	queryRoutersInsert = "INSERT INTO routers(label, provider_id, model_id, ip_address, router_address, level, created_at, updated_at, updated_by) values(?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	queryRouters            = "SELECT * from routers;"
+	queryRouterDelete       = "DELETE FROM routers WHERE id = ?;"
+	queryRouterByID         = "SELECT id, label, provider_id, model_id, ip_address, router_address, level, is_connected, created_at, updated_at, updated_by FROM routers WHERE id = ?;"
+	queryRoutersInsert      = "INSERT INTO routers(label, provider_id, model_id, ip_address, router_address, level, created_at, updated_at, updated_by) values(?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	queryRouterUpdateStatus = "UPDATE `routers` SET `is_connected` = ? WHERE `id` = ?;"
 )
 
 var (
@@ -101,7 +102,7 @@ func GetByID(id int) (*model.Router, error) {
 	var cat int64
 	var uat int64
 
-	if err := row.Scan(&router.ID, &router.Label, &router.ProviderID, &router.ModelID, &router.IPAddress, &router.RouterAddress, &router.Level, &cat, &uat, &router.UpdatedBy); err != nil {
+	if err := row.Scan(&router.ID, &router.Label, &router.ProviderID, &router.ModelID, &router.IPAddress, &router.RouterAddress, &router.Level, &router.IsConnected, &cat, &uat, &router.UpdatedBy); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, common.ErrNotExists
 		}
@@ -128,7 +129,7 @@ func List() ([]*model.Router, error) {
 		var uat int64
 		var dat *int64
 
-		if err := rows.Scan(&router.ID, &router.Label, &router.ProviderID, &router.ModelID, &router.IPAddress, &router.RouterAddress, &router.Level, &cat, &uat, &router.UpdatedBy, &dat); err != nil {
+		if err := rows.Scan(&router.ID, &router.Label, &router.ProviderID, &router.ModelID, &router.IPAddress, &router.RouterAddress, &router.Level, &router.IsConnected, &cat, &uat, &router.UpdatedBy, &dat); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				continue
 			}
@@ -147,4 +148,12 @@ func List() ([]*model.Router, error) {
 	}
 
 	return routers, nil
+}
+
+func UpdateRouterConnectionStatus(routerId int, connected bool) error {
+	res, err := db.Database.Exec(queryRouterUpdateStatus, connected, routerId)
+	ra, _ := res.RowsAffected()
+	log.Debug().Int64("rows_affected", ra).Msg("updated router connection status")
+
+	return err
 }

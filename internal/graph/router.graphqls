@@ -6,6 +6,7 @@ type Router {
   routerAddress: Int
   level: Int!
   model: RouterModel!
+  isConnected: Boolean!
   createdAt: Int
   updatedAt: Int
   updatedBy: User

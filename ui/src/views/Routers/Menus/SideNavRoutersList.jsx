@@ -30,7 +30,7 @@ function SideNavRoutersList({ onClickSideNavExpand }) {
       <SideNavDivider />
       ) }
       {data && data.routers.map((router) => (
-        <SideNavLink key={router.slug} to={`/routers/${router.id}/control`} label={router.label} onClick={() => { onClickSideNavExpand(); }} />
+        <SideNavLink key={router.label} to={`/routers/${router.id}/control`} label={router.label} onClick={() => { onClickSideNavExpand(); }} />
       ))}
     </>
   );

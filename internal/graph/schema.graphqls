@@ -10,6 +10,7 @@ type Query {
 
   routerProviders: [RouterProvider!]!
   routers: [Router!]!
+  router(id: ID!): Router!
 }
 
 type Mutation {
@@ -27,8 +28,11 @@ type Mutation {
 
   createRouter(router: RouterUpdate!): Router
   deleteRouter(id: ID!): Int
+
+  route(routerId: ID!, destination: Int!, source: Int!): Int
 }
 
 type Subscription {
   stream(id: ID, slug: String): Stream
+  destinationUpdate(routerId: ID): Destination
 }

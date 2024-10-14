@@ -10,10 +10,12 @@ import (
 	"log"
 
 	"github.com/monoxane/rtr/internal/auth"
+	routerController "github.com/monoxane/rtr/internal/controller/routers"
 	streamsController "github.com/monoxane/rtr/internal/controller/streams"
 	"github.com/monoxane/rtr/internal/graph"
 	"github.com/monoxane/rtr/internal/graph/model"
 	"github.com/monoxane/rtr/internal/repository/routers"
+	"github.com/monoxane/rtr/internal/repository/spigots"
 	"github.com/monoxane/rtr/internal/repository/streams"
 	"github.com/monoxane/rtr/internal/repository/users"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -204,7 +206,8 @@ func (r *mutationResolver) CreateRouter(ctx context.Context, router model.Router
 	if err != nil {
 		return nil, err
 	}
-	// err = routerController.UpdateRouter(newRouter)
+
+	routerController.UpdateRouter(newRouter)
 
 	return newRouter, nil
 }
@@ -216,9 +219,14 @@ func (r *mutationResolver) DeleteRouter(ctx context.Context, id int) (*int, erro
 		return nil, err
 	}
 
-	// err := routerController.DeleteRouter(id)
+	routerController.DeleteRouter(id)
 
 	return nil, nil
+}
+
+// Route is the resolver for the route field.
+func (r *mutationResolver) Route(ctx context.Context, routerID int, destination int, source int) (*int, error) {
+	return nil, routerController.Route(routerID, destination, source)
 }
 
 // Roles is the resolver for the roles field.
@@ -300,6 +308,17 @@ func (r *queryResolver) Routers(ctx context.Context) ([]*model.Router, error) {
 	return routers.List()
 }
 
+// Router is the resolver for the router field.
+func (r *queryResolver) Router(ctx context.Context, id int) (*model.Router, error) {
+	_, err := auth.FromContext(ctx, auth.ROLE_OPERATOR)
+	if err != nil {
+		log.Printf("error authorizing user: %s", err)
+		return nil, err
+	}
+
+	return routers.GetByID(id)
+}
+
 // Stream is the resolver for the Stream field.
 func (r *subscriptionResolver) Stream(ctx context.Context, id *int, slug *string) (<-chan *model.Stream, error) {
 	if id == nil && slug != nil {
@@ -312,6 +331,11 @@ func (r *subscriptionResolver) Stream(ctx context.Context, id *int, slug *string
 	}
 
 	return streams.Watch(*id, ctx)
+}
+
+// DestinationUpdate is the resolver for the destinationUpdate field.
+func (r *subscriptionResolver) DestinationUpdate(ctx context.Context, routerID *int) (<-chan *model.Destination, error) {
+	return spigots.WatchRouterDestinations(*routerID, ctx)
 }
 
 // Mutation returns graph.MutationResolver implementation.

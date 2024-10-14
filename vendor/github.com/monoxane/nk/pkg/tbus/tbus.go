@@ -54,7 +54,7 @@ func NewGateway(ip net.IP, onRouteUpdate func(RouteUpdate), onStatusUpdate func(
 func (tbus *TBusGateway) Connect() error {
 	conn, err := net.Dial("tcp", tbus.IP.String()+":5000")
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	tbus.conn = conn
 	defer tbus.conn.Close()

@@ -10,7 +10,14 @@ import {
 
 import {
   Renew,
+  CheckmarkOutline,
+  MisuseOutline,
 } from '@carbon/icons-react';
+
+import {
+  green,
+  red,
+} from '@carbon/colors';
 
 import { useQuery } from '@apollo/client';
 import DataTable from '../../components/DataTable/DataTable.jsx';
@@ -24,7 +31,7 @@ const Routers = function Streams() {
     loading, error, data, refetch,
   } = useQuery(LIST_ROUTERS);
 
-  const headers = ['Name', 'Provider', 'Model', 'IP', 'Actions'];
+  const headers = ['Name', 'Provider', 'Model', 'IP', 'Connected', 'Actions'];
 
   return (
     <Grid>
@@ -53,6 +60,9 @@ const Routers = function Streams() {
               <TableCell>{row.provider.label}</TableCell>
               <TableCell>{row.model.label}</TableCell>
               <TableCell>{row.ipAddress}</TableCell>
+              <TableCell>
+                <span style={{ color: row.isConnected ? green[40] : red[60] }}>{row.isConnected ? <CheckmarkOutline size={20} /> : <MisuseOutline size={20} />}</span>
+              </TableCell>
               <TableCell>
                 <RouterMenu refresh={refetch} router={row} />
               </TableCell>

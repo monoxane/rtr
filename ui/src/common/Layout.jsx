@@ -62,7 +62,7 @@ function Layout() {
             )}
           </Header>
           {auth && auth.user
-            && <ComposedSideNav onClickSideNavExpand={onClickSideNavExpand} isActive={isSideNavExpanded} /> }
+            && <ComposedSideNav onClickSideNavExpand={onClickSideNavExpand} isActive={isSideNavExpanded} isRail={false} /> }
           <Content className={`main-content ${!auth?.user && 'unauthenticated'}`} style={{ background: gray[80] }}>
             <Suspense fallback={<Loading />}>
               <ErrorBoundary fallback={<ReactError />}>

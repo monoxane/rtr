@@ -17,30 +17,16 @@ body {
 }
 
 .main-content {
-  margin-left: 0px;
   transition: margin-left 0.1s;
   overflow: auto;
   height: 100%;
+  margin-left: 0 !important;
 }
 
 @media only screen and (min-width: 1056px)  {
   .main-content:not(.unauthenticated){
-    margin-left: 256px;
+    margin-left: 256px !important;
     transition: margin-left 0.1s;
-  }
-
-  .routerMeta.hasTake {
-    .routerStatus {
-      height: 20em
-    }
-  
-    .routerProbe {
-      height: calc(100% - 20em - 1px);
-    }
-  }
-  
-  .routerStatus {
-    height: 16em;
   }
   
   .routerProbe {
@@ -55,10 +41,6 @@ body {
   }
 }
 
-.cds--tile {
-  margin-bottom: 1px;
-}
-
 .destinations, .sources {
   height: calc(100%);
   max-height: 100%;
@@ -66,8 +48,15 @@ body {
 }
 
 .iolist {
-  height: calc(100% - 59px);
-  overflow-y: auto
+  height: calc(35vh);
+  overflow-y: auto;
+  padding-top: 0;
+  padding-bottom: 0;
+  scroll-behavior: smooth;
+
+  .cds--tile {
+    margin-bottom: 1px;
+  }
 }
 
 .ioButton {

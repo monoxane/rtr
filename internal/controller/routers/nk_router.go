@@ -3,8 +3,11 @@ package routers
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/monoxane/rtr/internal/graph/model"
+	"github.com/monoxane/rtr/internal/repository/routers"
+	"github.com/monoxane/rtr/internal/repository/spigots"
 	"github.com/rs/zerolog"
 
 	"github.com/monoxane/nk/pkg/tbus"
@@ -22,25 +25,34 @@ type NKRouter struct {
 	connecting bool
 }
 
-func (rtr *NKRouter) Start() {
-	_, cancel := context.WithCancel(context.Background())
-	rtr.log = log.With().Str("router", rtr.router.Label).Int("id", rtr.router.ID).Logger()
-	rtr.log.Debug().Msg("starting router instance")
+func (nk *NKRouter) Start() {
+	context, cancel := context.WithCancel(context.Background())
+	nk.log = log.With().Str("router", nk.router.Label).Int("id", nk.router.ID).Logger()
+	nk.log.Info().Msg("starting router instance")
+	routers.UpdateRouterConnectionStatus(nk.router.ID, false)
+	nk.cancel = cancel
 
-	rtr.cancel = cancel
+	ipAddr := net.ParseIP(nk.router.IPAddress)
 
-	ipAddr := net.ParseIP(rtr.router.IPAddress)
+	gw := tbus.NewGateway(ipAddr, nk.onRouteUpdate, nk.onStatusUpdate)
 
-	gw := tbus.NewGateway(ipAddr, rtr.onRouteUpdate, rtr.onStatusUpdate)
+	nk.gateway = gw
 
-	rtr.gateway = gw
+	for {
+		err := nk.gateway.Connect()
+		if err != nil {
+			nk.log.Error().Err(err).Msg("unable to connect to gateway, retrying in 10 seconds")
+		} else {
+			nk.connecting = false
+			return
+		}
 
-	err := rtr.gateway.Connect()
-	if err != nil {
-		rtr.log.Error().Err(err).Msg("unable to connect to gateway, retrying")
-	} else {
-		rtr.connecting = false
-		return
+		select {
+		case <-context.Done():
+			return
+		default:
+			time.Sleep(10 * time.Second)
+		}
 	}
 }
 
@@ -50,18 +62,22 @@ func (nk *NKRouter) Stop() {
 }
 
 func (nk *NKRouter) Route(dst, src int) error {
-
-	return nil
+	return nk.gateway.Route(uint8(*nk.router.RouterAddress), uint32(nk.router.Level), uint16(dst), uint16(src))
 }
 
-func (rtr *NKRouter) Disconnect() {
-	rtr.gateway.Disconnect()
+func (nk *NKRouter) Disconnect() {
+	nk.gateway.Disconnect()
 }
 
 func (nk *NKRouter) onRouteUpdate(update tbus.RouteUpdate) {
-
+	err := spigots.UpdateRoutedSourceForDestination(nk.router.ID, update.Destination, update.Source)
+	if err != nil {
+		nk.log.Error().Err(err).Int("destination", update.Destination).Int("source", update.Source).Msg("failed to update routed source of destination")
+		return
+	}
+	nk.log.Info().Int("destination", update.Destination).Int("source", update.Source).Msg("updated routed source for destination")
 }
 
 func (nk *NKRouter) onStatusUpdate(update tbus.StatusUpdate) {
-
+	routers.UpdateRouterConnectionStatus(nk.router.ID, update.Connected)
 }

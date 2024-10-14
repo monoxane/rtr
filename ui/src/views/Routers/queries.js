@@ -15,6 +15,7 @@ const LIST_ROUTERS = gql`query routers {
     ipAddress
     routerAddress
     level
+    isConnected
   }
 }`;
 
@@ -40,6 +41,60 @@ const DELETE_ROUTER = gql`mutation deleteRouter($id:ID!) {
   deleteRouter(id:$id)
 }`;
 
+const GET_ROUTER = gql`query router($id: ID!) {
+  router(id: $id) {
+    id
+    label
+    provider {
+      id
+      label
+    }
+    model {
+      id
+      label
+    }
+    ipAddress
+    routerAddress
+    level
+    isConnected
+    destinations {
+      id
+      index
+      label
+      description
+      routedSource {
+        id
+        index
+        label
+      }
+    }
+    sources {
+      id
+      index
+      label
+      description
+    }
+  }
+}`;
+
+const ROUTER_DESTINATIONS_SUBSCRIPTION = gql`subscription routerDestinations($routerId: ID!) {
+  destinationUpdate(routerId: $routerId) {
+    id
+    index
+    label
+    description
+    routedSource {
+      id
+      index
+      label
+    }
+  }
+}`;
+
+const ROUTE = gql`mutation route($routerId: ID!, $destination: Int!, $source: Int!) {
+  route(routerId: $routerId, destination: $destination, source: $source) 
+}`;
+
 export {
-  LIST_ROUTERS, LIST_PROVIDERS, CREATE_ROUTER, DELETE_ROUTER,
+  LIST_ROUTERS, LIST_PROVIDERS, CREATE_ROUTER, DELETE_ROUTER, GET_ROUTER, ROUTER_DESTINATIONS_SUBSCRIPTION, ROUTE,
 };

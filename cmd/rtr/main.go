@@ -72,6 +72,12 @@ func main() {
 	}
 	log.Info().Msg("loaded streams")
 
+	err = routers.LoadRouters()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to load routers")
+	}
+	log.Info().Msg("loaded routers")
+
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 

@@ -12,6 +12,7 @@ type Router struct {
 	IPAddress     string `json:"ipAddress"`
 	RouterAddress *int   `json:"routerAddress,omitempty"`
 	Level         int    `json:"level"`
+	IsConnected   bool   `json:"is_connected"`
 	UpdatedBy     *int   `json:"updated_by"`
 	common.CommonMetadata
 }

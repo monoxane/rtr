@@ -5,14 +5,16 @@ import (
 
 	"github.com/monoxane/rtr/internal/connector/db"
 	"github.com/monoxane/rtr/internal/graph/model"
+	"github.com/monoxane/rtr/internal/repository/common"
 
 	"github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
 )
 
 var (
-	queryInsertDestination  = "INSERT INTO `destinations` (`router_id`, `index`, `label`) VALUES (?, ?, ?);"
-	queryRouterDestinations = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id` FROM `destinations` WHERE `router_id` = ?;"
+	queryInsertDestination        = "INSERT INTO `destinations` (`router_id`, `index`, `label`) VALUES (?, ?, ?);"
+	queryRouterDestinations       = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id` FROM `destinations` WHERE `router_id` = ?;"
+	queryRouterDestinationByIndex = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id` FROM `destinations` WHERE `router_id` = ? AND `index` = ?;"
 )
 
 func CreateDestination(router_id int64, destination model.Destination) error {
@@ -27,6 +29,8 @@ func CreateDestination(router_id int64, destination model.Destination) error {
 		}
 		return errors.Wrap(err, "unable to insert destination")
 	}
+
+	notifyDestination(int(router_id), destination.Index)
 
 	return nil
 }
@@ -54,4 +58,20 @@ func ListDestinationsForRouter(id int) ([]*model.Destination, error) {
 	}
 
 	return destinations, nil
+}
+
+func GetDestinationByIndex(routerId, index int) (*model.Destination, error) {
+	row := db.Database.QueryRow(queryRouterDestinationByIndex, routerId, index)
+
+	var destination model.Destination
+
+	if err := row.Scan(&destination.ID, &destination.Index, &destination.Label, &destination.Description, &destination.UmdLabel, &destination.TallyGreen, &destination.TallyRed, &destination.TallyYellow, &destination.TallyAddress, &destination.RoutedSourceID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, common.ErrNotExists
+		}
+
+		return nil, err
+	}
+
+	return &destination, nil
 }
