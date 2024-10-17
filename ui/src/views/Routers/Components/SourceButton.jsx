@@ -14,7 +14,7 @@ import {
 } from '@carbon/colors';
 
 function Source({
-  source, onClick, onEdit, selected = false, routed = false,
+  source, onClick, onEdit, selected = false, routed = false, allowEdit = true, disabled = false,
 }) {
   const el = useRef(null);
   const menuProps = useContextMenu(el);
@@ -34,15 +34,18 @@ function Source({
         style={{
           background: getBackground(),
         }}
-        size="xl"
         className="ioButton"
+        disabled={disabled}
       >
         <strong title={`Input ${source.index} - ${source.label}`}>{source.label}</strong>
       </Button>
-      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-      <Menu {...menuProps}>
-        <MenuItem onClick={onEdit} label="Edit" />
-      </Menu>
+      {allowEdit
+        && (
+      // eslint-disable-next-line react/jsx-props-no-spreading
+        <Menu {...menuProps}>
+          <MenuItem onClick={onEdit} label="Edit" />
+        </Menu>
+        )}
     </>
   );
 }
@@ -54,11 +57,15 @@ Source.propTypes = {
   onEdit: PropTypes.func.isRequired,
   selected: PropTypes.bool,
   routed: PropTypes.bool,
+  allowEdit: PropTypes.bool,
+  disabled: PropTypes.bool,
 };
 
 Source.defaultProps = {
   selected: false,
   routed: false,
+  allowEdit: true,
+  disabled: true,
 };
 
 export default Source;

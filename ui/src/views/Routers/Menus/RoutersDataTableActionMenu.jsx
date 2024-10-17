@@ -25,7 +25,8 @@ const RoutersDataTableActionMenu = function RoutersDataTableActionMenu({ refresh
 
       <OverflowMenu flipped={document?.dir === 'rtl'} iconDescription="Actions" aria-label="overflow-menu">
         {/* <OverflowMenuItem onClick={() => setEditOpen(true)} itemText="Edit Stream" /> */}
-        <OverflowMenuItem onClick={() => navigate(`/routers/xpt/${router.slug}`)} itemText="Open" />
+        <OverflowMenuItem onClick={() => navigate(`/routers/${router.id}/control`)} itemText="Routing View" />
+        <OverflowMenuItem onClick={() => navigate(`/routers/${router.id}/spigots`)} itemText="Spigots" />
         <OverflowMenuItem onClick={() => { setDeleteOpen(true); }} itemText="Delete Router" hasDivider isDelete />
       </OverflowMenu>
     </>

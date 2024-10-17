@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 
@@ -14,11 +14,13 @@ import {
 } from '@carbon/colors';
 
 function Destination({
-  destination, onClick, onEdit, selected = false,
+  destination, onClick, onEdit, selected = false, disabled = false,
 }) {
   const el = useRef(null);
   const menuProps = useContextMenu(el);
   const navigate = useNavigate();
+
+  const { routerId } = useParams();
 
   return (
     <>
@@ -26,15 +28,10 @@ function Destination({
         ref={el}
         onClick={onClick}
         style={{
-          minWidth: '10px',
-          padding: '10px',
-          width: '100%',
-          display: 'table',
-          marginBottom: '1px',
           background: selected ? blue[60] : gray[70],
         }}
-        size="xl"
         className="ioButton"
+        disabled={disabled}
       >
         <>
           <strong title={`Output ${destination.index} - ${destination.label}`}>
@@ -44,11 +41,14 @@ function Destination({
           <em className="source" title={destination.routedSource?.label}>{destination.routedSource?.label}</em>
         </>
       </Button>
-      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-      <Menu {...menuProps}>
-        <MenuItem onClick={onEdit} label="Edit" />
-        <MenuItem label="Solo" onClick={() => navigate(`/router/${destination.id}`)} />
-      </Menu>
+      {!disabled
+      && (
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        <Menu {...menuProps}>
+          <MenuItem onClick={onEdit} label="Edit" />
+          <MenuItem label="Solo" onClick={() => navigate(`/routers/${routerId}/control/${destination.index}`)} />
+        </Menu>
+      )}
     </>
   );
 }
@@ -59,10 +59,12 @@ Destination.propTypes = {
   onClick: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   selected: PropTypes.bool,
+  disabled: PropTypes.bool,
 };
 
 Destination.defaultProps = {
   selected: false,
+  disabled: false,
 };
 
 export default Destination;

@@ -48,7 +48,7 @@ body {
 }
 
 .iolist {
-  height: calc(35vh);
+  max-height: calc(35vh);
   overflow-y: auto;
   padding-top: 0;
   padding-bottom: 0;
@@ -68,6 +68,7 @@ body {
   width: 100%;
   display: table;
   margin-bottom: 1px;
+  font-size: 0.75rem;
 }
 
 .probePlayer,.probeSlate{

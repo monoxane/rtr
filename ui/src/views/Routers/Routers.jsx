@@ -26,7 +26,7 @@ import { LIST_ROUTERS } from './queries';
 import NewRouter from './Modals/NewRouter.jsx';
 import RouterMenu from './Menus/RoutersDataTableActionMenu.jsx';
 
-const Routers = function Streams() {
+const Routers = function Routers() {
   const {
     loading, error, data, refetch,
   } = useQuery(LIST_ROUTERS);

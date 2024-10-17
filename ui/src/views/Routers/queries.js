@@ -62,6 +62,8 @@ const GET_ROUTER = gql`query router($id: ID!) {
       index
       label
       description
+      tallyGreen
+      tallyRed
       routedSource {
         id
         index

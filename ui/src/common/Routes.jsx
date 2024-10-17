@@ -21,10 +21,8 @@ const Streams = lazy(() => import('../views/Streams/Streams.jsx'));
 const Stream = lazy(() => import('../views/Streams/Stream.jsx'));
 const Routers = lazy(() => import('../views/Routers/Routers.jsx'));
 const Router = lazy(() => import('../views/Routers/Router.jsx'));
+const Spigots = lazy(() => import('../views/Routers/Views/Spigots.jsx'));
 
-// const Router = lazy(() => import('../views/OldRouter/Router.jsx'));
-// const RouterSingle = lazy(() => import('../views/OldRouter/RouterSingle.jsx'));
-// const Probe = lazy(() => import('../views/OldProbe/Probe.jsx'));
 // const Salvos = lazy(() => import('../views/OldSalvos/Salvos.jsx'));
 // const Salvo = lazy(() => import('../views/OldSalvos/Salvo.jsx'));
 // const RouterConfig = lazy(() => import('../views/OldConfig/RouterConfig.jsx'));
@@ -51,8 +49,9 @@ export default createBrowserRouter(
 
         <Route element={<RequireAuth allowedRoles={['ADMIN', 'OPERATOR']} />}>
           <Route path="/routers/config" element={<Routers />} />
-          <Route path="/routers/:id/control" element={<Router />} />
-          {/* <Route path="/routers/:id/control/:destination" element={<RouterSingle />} /> */}
+          <Route path="/routers/:routerId/control" element={<Router />} />
+          <Route path="/routers/:routerId/spigots" element={<Spigots />} />
+          <Route path="/routers/:routerId/control/:destinationIndex" element={<Router />} />
         </Route>
 
         <Route path="/unauthorized" element={<NotAllowed />} />
