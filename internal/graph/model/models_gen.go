@@ -2,6 +2,13 @@
 
 package model
 
+type DestinationUpdate struct {
+	ID           int     `json:"id"`
+	Label        string  `json:"label"`
+	Description  *string `json:"description,omitempty"`
+	TallyAddress *int    `json:"tallyAddress,omitempty"`
+}
+
 type Login struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -67,6 +74,14 @@ type Source struct {
 	TallyGreen   bool    `json:"tallyGreen"`
 	TallyRed     bool    `json:"tallyRed"`
 	TallyYellow  bool    `json:"tallyYellow"`
+	TallyAddress *int    `json:"tallyAddress,omitempty"`
+}
+
+type SourceUpdate struct {
+	ID           int     `json:"id"`
+	Label        string  `json:"label"`
+	Description  *string `json:"description,omitempty"`
+	UmdLabel     *string `json:"umdLabel,omitempty"`
 	TallyAddress *int    `json:"tallyAddress,omitempty"`
 }
 

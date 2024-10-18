@@ -28,8 +28,10 @@ type Mutation {
 
   createRouter(router: RouterUpdate!): Router
   deleteRouter(id: ID!): Int
-
   route(routerId: ID!, destination: Int!, source: Int!): Int
+
+  updateDestination(destination: DestinationUpdate!): Destination
+  updateSource(source: SourceUpdate!): Source
 }
 
 type Subscription {

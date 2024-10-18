@@ -87,6 +87,8 @@ type ComplexityRoot struct {
 		Login              func(childComplexity int, username string, password string) int
 		ReactivateUser     func(childComplexity int, id int) int
 		Route              func(childComplexity int, routerID int, destination int, source int) int
+		UpdateDestination  func(childComplexity int, destination model.DestinationUpdate) int
+		UpdateSource       func(childComplexity int, source model.SourceUpdate) int
 		UpdateStream       func(childComplexity int, id int, stream model.StreamUpdate) int
 		UpdateUser         func(childComplexity int, id int, user model.UserUpdate) int
 		UpdateUserPassword func(childComplexity int, id int, password string) int
@@ -262,6 +264,8 @@ type MutationResolver interface {
 	CreateRouter(ctx context.Context, router model.RouterUpdate) (*model.Router, error)
 	DeleteRouter(ctx context.Context, id int) (*int, error)
 	Route(ctx context.Context, routerID int, destination int, source int) (*int, error)
+	UpdateDestination(ctx context.Context, destination model.DestinationUpdate) (*model.Destination, error)
+	UpdateSource(ctx context.Context, source model.SourceUpdate) (*model.Source, error)
 }
 type QueryResolver interface {
 	Roles(ctx context.Context) ([]string, error)
@@ -530,6 +534,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Route(childComplexity, args["routerId"].(int), args["destination"].(int), args["source"].(int)), true
+
+	case "Mutation.updateDestination":
+		if e.complexity.Mutation.UpdateDestination == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateDestination_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateDestination(childComplexity, args["destination"].(model.DestinationUpdate)), true
+
+	case "Mutation.updateSource":
+		if e.complexity.Mutation.UpdateSource == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateSource_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateSource(childComplexity, args["source"].(model.SourceUpdate)), true
 
 	case "Mutation.updateStream":
 		if e.complexity.Mutation.UpdateStream == nil {
@@ -1377,7 +1405,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputDestinationUpdate,
 		ec.unmarshalInputRouterUpdate,
+		ec.unmarshalInputSourceUpdate,
 		ec.unmarshalInputStreamUpdate,
 		ec.unmarshalInputUserUpdate,
 	)
@@ -1677,6 +1707,36 @@ func (ec *executionContext) field_Mutation_route_args(ctx context.Context, rawAr
 		}
 	}
 	args["source"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateDestination_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.DestinationUpdate
+	if tmp, ok := rawArgs["destination"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("destination"))
+		arg0, err = ec.unmarshalNDestinationUpdate2githubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐDestinationUpdate(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["destination"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateSource_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.SourceUpdate
+	if tmp, ok := rawArgs["source"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("source"))
+		arg0, err = ec.unmarshalNSourceUpdate2githubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐSourceUpdate(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["source"] = arg0
 	return args, nil
 }
 
@@ -3287,6 +3347,152 @@ func (ec *executionContext) fieldContext_Mutation_route(ctx context.Context, fie
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_route_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateDestination(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateDestination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateDestination(rctx, fc.Args["destination"].(model.DestinationUpdate))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Destination)
+	fc.Result = res
+	return ec.marshalODestination2ᚖgithubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐDestination(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateDestination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Destination_id(ctx, field)
+			case "index":
+				return ec.fieldContext_Destination_index(ctx, field)
+			case "label":
+				return ec.fieldContext_Destination_label(ctx, field)
+			case "description":
+				return ec.fieldContext_Destination_description(ctx, field)
+			case "umdLabel":
+				return ec.fieldContext_Destination_umdLabel(ctx, field)
+			case "tallyGreen":
+				return ec.fieldContext_Destination_tallyGreen(ctx, field)
+			case "tallyRed":
+				return ec.fieldContext_Destination_tallyRed(ctx, field)
+			case "tallyYellow":
+				return ec.fieldContext_Destination_tallyYellow(ctx, field)
+			case "tallyAddress":
+				return ec.fieldContext_Destination_tallyAddress(ctx, field)
+			case "routedSource":
+				return ec.fieldContext_Destination_routedSource(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Destination", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateDestination_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateSource(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateSource(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateSource(rctx, fc.Args["source"].(model.SourceUpdate))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Source)
+	fc.Result = res
+	return ec.marshalOSource2ᚖgithubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐSource(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateSource(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Source_id(ctx, field)
+			case "index":
+				return ec.fieldContext_Source_index(ctx, field)
+			case "label":
+				return ec.fieldContext_Source_label(ctx, field)
+			case "description":
+				return ec.fieldContext_Source_description(ctx, field)
+			case "umdLabel":
+				return ec.fieldContext_Source_umdLabel(ctx, field)
+			case "tallyGreen":
+				return ec.fieldContext_Source_tallyGreen(ctx, field)
+			case "tallyRed":
+				return ec.fieldContext_Source_tallyRed(ctx, field)
+			case "tallyYellow":
+				return ec.fieldContext_Source_tallyYellow(ctx, field)
+			case "tallyAddress":
+				return ec.fieldContext_Source_tallyAddress(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Source", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateSource_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -10586,6 +10792,54 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputDestinationUpdate(ctx context.Context, obj interface{}) (model.DestinationUpdate, error) {
+	var it model.DestinationUpdate
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "label", "description", "tallyAddress"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "label":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("label"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Label = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "tallyAddress":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tallyAddress"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TallyAddress = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputRouterUpdate(ctx context.Context, obj interface{}) (model.RouterUpdate, error) {
 	var it model.RouterUpdate
 	asMap := map[string]interface{}{}
@@ -10642,6 +10896,61 @@ func (ec *executionContext) unmarshalInputRouterUpdate(ctx context.Context, obj 
 				return it, err
 			}
 			it.Level = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSourceUpdate(ctx context.Context, obj interface{}) (model.SourceUpdate, error) {
+	var it model.SourceUpdate
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "label", "description", "umdLabel", "tallyAddress"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "label":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("label"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Label = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "umdLabel":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("umdLabel"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UmdLabel = data
+		case "tallyAddress":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tallyAddress"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TallyAddress = data
 		}
 	}
 
@@ -11012,6 +11321,14 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "route":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_route(ctx, field)
+			})
+		case "updateDestination":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateDestination(ctx, field)
+			})
+		case "updateSource":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateSource(ctx, field)
 			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -13014,6 +13331,11 @@ func (ec *executionContext) marshalNDestination2ᚖgithubᚗcomᚋmonoxaneᚋrtr
 	return ec._Destination(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNDestinationUpdate2githubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐDestinationUpdate(ctx context.Context, v interface{}) (model.DestinationUpdate, error) {
+	res, err := ec.unmarshalInputDestinationUpdate(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNID2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -13482,6 +13804,11 @@ func (ec *executionContext) marshalNSource2ᚖgithubᚗcomᚋmonoxaneᚋrtrᚋin
 		return graphql.Null
 	}
 	return ec._Source(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSourceUpdate2githubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐSourceUpdate(ctx context.Context, v interface{}) (model.SourceUpdate, error) {
+	res, err := ec.unmarshalInputSourceUpdate(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNStream2githubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐStream(ctx context.Context, sel ast.SelectionSet, v model.Stream) graphql.Marshaler {

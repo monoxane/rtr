@@ -97,6 +97,30 @@ const ROUTE = gql`mutation route($routerId: ID!, $destination: Int!, $source: In
   route(routerId: $routerId, destination: $destination, source: $source) 
 }`;
 
+const UPDATE_DESTINATION = gql`mutation updateDestination($destination: DestinationUpdate!) {
+  updateDestination(destination: $destination) {
+    id
+  }
+}`;
+
+const UPDATE_SOURCE = gql`mutation updateSource($source: SourceUpdate!) {
+  updateSource(source: $source) {
+    id
+  }
+}`;
+
 export {
-  LIST_ROUTERS, LIST_PROVIDERS, CREATE_ROUTER, DELETE_ROUTER, GET_ROUTER, ROUTER_DESTINATIONS_SUBSCRIPTION, ROUTE,
+  LIST_ROUTERS,
+  LIST_PROVIDERS,
+
+  CREATE_ROUTER,
+  DELETE_ROUTER,
+  GET_ROUTER,
+
+  ROUTER_DESTINATIONS_SUBSCRIPTION,
+
+  ROUTE,
+
+  UPDATE_DESTINATION,
+  UPDATE_SOURCE,
 };

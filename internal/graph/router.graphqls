@@ -52,6 +52,13 @@ type Destination {
   routedSource: Source
 }
 
+input DestinationUpdate {
+  id: ID!
+  label: String!
+  description: String
+  tallyAddress: Int
+}
+
 type Source {
   id: ID!
   index: Int!
@@ -61,5 +68,13 @@ type Source {
   tallyGreen: Boolean!
   tallyRed: Boolean!
   tallyYellow: Boolean!
+  tallyAddress: Int
+}
+
+input SourceUpdate {
+  id: ID!
+  label: String!
+  description: String
+  umdLabel: String
   tallyAddress: Int
 }

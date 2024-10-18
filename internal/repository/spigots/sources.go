@@ -15,6 +15,7 @@ var (
 	queryInsertSource  = "INSERT INTO `sources`(`router_id`, `index`, `label`) values (?, ?, ?);"
 	queryRouterSource  = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address` FROM `sources` WHERE `id` = ?;"
 	queryRouterSources = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address` FROM `sources` WHERE `router_id` = ?;"
+	querySourceUpdate  = "UPDATE `sources` SET `label` = ?, `description` = ?, `tally_address` = ?, `umd_label` = ? WHERE `id` = ?;"
 )
 
 func CreateSource(router_id int64, source model.Source) error {
@@ -72,4 +73,20 @@ func GetSource(id int) (*model.Source, error) {
 	}
 
 	return &source, nil
+}
+
+func UpdateSource(source model.SourceUpdate) (*model.Source, error) {
+	_, err := db.Database.Exec(querySourceUpdate, source.Label, source.Description, source.TallyAddress, source.UmdLabel, source.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to update source")
+	}
+
+	updatedSource, err := GetSource(source.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get updated source")
+	}
+
+	// notifySource(routerId, updatedSource.Index)
+
+	return updatedSource, nil
 }

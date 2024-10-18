@@ -229,6 +229,28 @@ func (r *mutationResolver) Route(ctx context.Context, routerID int, destination 
 	return nil, routerController.Route(routerID, destination, source)
 }
 
+// UpdateDestination is the resolver for the updateDestination field.
+func (r *mutationResolver) UpdateDestination(ctx context.Context, destination model.DestinationUpdate) (*model.Destination, error) {
+	_, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
+	if err != nil {
+		log.Printf("error authorizing user: %s", err)
+		return nil, err
+	}
+
+	return spigots.UpdateDestination(destination)
+}
+
+// UpdateSource is the resolver for the updateSource field.
+func (r *mutationResolver) UpdateSource(ctx context.Context, source model.SourceUpdate) (*model.Source, error) {
+	_, err := auth.FromContext(ctx, auth.ROLE_ADMIN)
+	if err != nil {
+		log.Printf("error authorizing user: %s", err)
+		return nil, err
+	}
+
+	return spigots.UpdateSource(source)
+}
+
 // Roles is the resolver for the roles field.
 func (r *queryResolver) Roles(ctx context.Context) ([]string, error) {
 	_, err := auth.FromContext(ctx, auth.ROLE_ADMIN)

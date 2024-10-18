@@ -15,6 +15,8 @@ var (
 	queryInsertDestination        = "INSERT INTO `destinations` (`router_id`, `index`, `label`) VALUES (?, ?, ?);"
 	queryRouterDestinations       = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id` FROM `destinations` WHERE `router_id` = ?;"
 	queryRouterDestinationByIndex = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id` FROM `destinations` WHERE `router_id` = ? AND `index` = ?;"
+	queryRouterDestination        = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id`, `router_id` FROM `destinations` WHERE `id` = ?;"
+	queryDestinationUpdate        = "UPDATE destinations SET `label` = ?, `description` = ?, `tally_address` = ? WHERE `id` = ?;"
 )
 
 func CreateDestination(router_id int64, destination model.Destination) error {
@@ -74,4 +76,37 @@ func GetDestinationByIndex(routerId, index int) (*model.Destination, error) {
 	}
 
 	return &destination, nil
+}
+
+func GetDestination(id int) (*model.Destination, int, error) {
+	row := db.Database.QueryRow(queryRouterDestination, id)
+
+	var destination model.Destination
+	var routerId int
+
+	if err := row.Scan(&destination.ID, &destination.Index, &destination.Label, &destination.Description, &destination.UmdLabel, &destination.TallyGreen, &destination.TallyRed, &destination.TallyYellow, &destination.TallyAddress, &destination.RoutedSourceID, &routerId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, 0, common.ErrNotExists
+		}
+
+		return nil, 0, err
+	}
+
+	return &destination, routerId, nil
+}
+
+func UpdateDestination(destination model.DestinationUpdate) (*model.Destination, error) {
+	_, err := db.Database.Exec(queryDestinationUpdate, destination.Label, destination.Description, destination.TallyAddress, destination.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to update destination")
+	}
+
+	updatedDestination, routerId, err := GetDestination(destination.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get updated destination")
+	}
+
+	notifyDestination(routerId, updatedDestination.Index)
+
+	return updatedDestination, nil
 }

@@ -21,20 +21,21 @@ import {
 import {
   green,
   red,
-  blue,
-  yellow,
+  // blue,
+  // yellow,
   gray,
 } from '@carbon/colors';
 
 import { useQuery } from '@apollo/client';
 import { GET_ROUTER } from '../queries';
+import EditSpigotModal from '../Modals/EditSpigotModal.jsx';
 import DataTable from '../../../components/DataTable/DataTable.jsx';
-
 // import RouterMenu from './Menus/RoutersDataTableActionMenu.jsx';
 
 const Spigots = function Spigots() {
   const { routerId } = useParams();
   const [selectedType, setSelectedType] = useState('destinations');
+  const [editState, setEditState] = useState({ open: false, type: null, spigot: null });
 
   const {
     loading, error, data, refetch,
@@ -44,6 +45,7 @@ const Spigots = function Spigots() {
 
   return (
     <Grid>
+      <EditSpigotModal refresh={refetch} open={editState.open} setOpen={() => setEditState({ open: false, type: null, spigot: null })} spigot={editState.spigot} type={editState.type} />
       <Column sm={4} md={8} lg={16}>
         <DataTable
           title={`Spigots on ${data?.router.label}`}
@@ -79,12 +81,12 @@ const Spigots = function Spigots() {
               <TableCell>
                 <span style={{ color: row.tallyGreen ? green[40] : gray[60] }}>{row.tallyGreen ? <LightFilled size={20} /> : <Light size={20} />}</span>
                 <span style={{ color: row.tallyRed ? red[40] : gray[60] }}>{row.tallyRed ? <LightFilled size={20} /> : <Light size={20} />}</span>
-                {/* <span style={{ color: row.tally3 ? blue[40] : gray[60] }}>{row.tally3 ? <LightFilled size={20} /> : <Light size={20} />}</span>
-                <span style={{ color: row.tally4 ? yellow[40] : gray[60] }}>{row.tally4 ? <LightFilled size={20} /> : <Light size={20} />}</span> */}
+                {/* <span style={{ color: row.tally3 ? blue[40] : gray[60] }}>{row.tally3 ? <LightFilled size={20} /> : <Light size={20} />}</span> */}
+                {/* <span style={{ color: row.tally4 ? yellow[40] : gray[60] }}>{row.tally4 ? <LightFilled size={20} /> : <Light size={20} />}</span> */}
               </TableCell>
               {selectedType === 'destinations' && <TableCell>{row.routedSource?.label || 'Disconnected'}</TableCell>}
               <TableCell>
-                <IconButton label="Edit Spigot" kind="ghost" size="sm">
+                <IconButton label="Edit Spigot" kind="ghost" size="sm" onClick={() => setEditState({ open: true, type: selectedType, spigot: row })}>
                   <Edit />
                 </IconButton>
               </TableCell>
