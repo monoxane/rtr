@@ -12,10 +12,11 @@ import (
 )
 
 var (
-	queryInsertSource  = "INSERT INTO `sources`(`router_id`, `index`, `label`) values (?, ?, ?);"
-	queryRouterSource  = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address` FROM `sources` WHERE `id` = ?;"
-	queryRouterSources = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address` FROM `sources` WHERE `router_id` = ?;"
-	querySourceUpdate  = "UPDATE `sources` SET `label` = ?, `description` = ?, `tally_address` = ?, `umd_label` = ? WHERE `id` = ?;"
+	queryInsertSource            = "INSERT INTO `sources`(`router_id`, `index`, `label`) values (?, ?, ?);"
+	queryRouterSource            = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address` FROM `sources` WHERE `id` = ?;"
+	queryRouterSources           = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address` FROM `sources` WHERE `router_id` = ?;"
+	querySourceUpdate            = "UPDATE `sources` SET `label` = ?, `description` = ?, `tally_address` = ?, `umd_label` = ? WHERE `id` = ?;"
+	queryRouterSourceLabelUpdate = "UPDATE `sources` SET `label` = ?, `description` = ? WHERE `router_id` = ? AND `index` = ?"
 )
 
 func CreateSource(router_id int64, source model.Source) error {
@@ -89,4 +90,20 @@ func UpdateSource(source model.SourceUpdate) (*model.Source, error) {
 	// notifySource(routerId, updatedSource.Index)
 
 	return updatedSource, nil
+}
+
+func UpdateLabelsForRouterSource(router, source int, label, description string) error {
+	_, err := db.Database.Exec(queryRouterSourceLabelUpdate, label, description, router, source)
+	if err != nil {
+		return errors.Wrap(err, "unable to update source")
+	}
+
+	// updatedSource, err := GetSource(source.ID)
+	// if err != nil {
+	// 	return  errors.Wrap(err, "unable to get updated source")
+	// }
+
+	// notifySource(routerId, updatedSource.Index)
+
+	return nil
 }

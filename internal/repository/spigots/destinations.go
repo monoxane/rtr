@@ -12,11 +12,12 @@ import (
 )
 
 var (
-	queryInsertDestination        = "INSERT INTO `destinations` (`router_id`, `index`, `label`) VALUES (?, ?, ?);"
-	queryRouterDestinations       = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id` FROM `destinations` WHERE `router_id` = ?;"
-	queryRouterDestinationByIndex = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id` FROM `destinations` WHERE `router_id` = ? AND `index` = ?;"
-	queryRouterDestination        = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id`, `router_id` FROM `destinations` WHERE `id` = ?;"
-	queryDestinationUpdate        = "UPDATE destinations SET `label` = ?, `description` = ?, `tally_address` = ? WHERE `id` = ?;"
+	queryInsertDestination            = "INSERT INTO `destinations` (`router_id`, `index`, `label`) VALUES (?, ?, ?);"
+	queryRouterDestinations           = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id` FROM `destinations` WHERE `router_id` = ?;"
+	queryRouterDestinationByIndex     = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id` FROM `destinations` WHERE `router_id` = ? AND `index` = ?;"
+	queryRouterDestination            = "SELECT `id`, `index`, `label`, `description`, `umd_label`, `tally_green`, `tally_red`, `tally_yellow`, `tally_address`, `routed_source_id`, `router_id` FROM `destinations` WHERE `id` = ?;"
+	queryDestinationUpdate            = "UPDATE destinations SET `label` = ?, `description` = ?, `tally_address` = ? WHERE `id` = ?;"
+	queryRouterDestinationLabelUpdate = "UPDATE `destinations` SET `label` = ?, `description` = ? WHERE `router_id` = ? AND `index` = ?"
 )
 
 func CreateDestination(router_id int64, destination model.Destination) error {
@@ -109,4 +110,15 @@ func UpdateDestination(destination model.DestinationUpdate) (*model.Destination,
 	notifyDestination(routerId, updatedDestination.Index)
 
 	return updatedDestination, nil
+}
+
+func UpdateLabelsForRouterDestination(router, destination int, label, description string) error {
+	_, err := db.Database.Exec(queryRouterDestinationLabelUpdate, label, description, router, destination)
+	if err != nil {
+		return errors.Wrap(err, "unable to update source")
+	}
+
+	notifyDestination(router, destination)
+
+	return nil
 }

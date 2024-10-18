@@ -42,24 +42,8 @@ func Serve() {
 	svc.POST("/v1/streams/source/:slug", HandleStreamSource) // Receive Stream Source
 	svc.GET("/v1/streams/client/:slug", HandleStreamClient)  // Get Stream Media
 
-	// svc.GET("/v1/ws/rtr", HandleRtrWS)
-
-	// svc.GET("/v1/matrix", HandleMatrix)
-
-	// svc.POST("/v1/salvos", HandleSalvoPost)
-
-	// svc.GET("/v1/config", HandleGetConfig)
-	// svc.PUT("/v1/config/router", HandleUpdateRouter)
-	// svc.POST("/v1/config/labels/dashboard", HandleDashboardLabels)
-	// svc.PUT("/v1/config/source/:id", HandleUpdateSource)
-	// svc.PUT("/v1/config/destination/:id", HandleUpdateDestination)
-	// svc.POST("/v1/config/probe", HandleNewProbe)
-	// svc.PUT("/v1/config/probe/:slug", HandleUpdateProbe)
-	// svc.DELETE("/v1/config/probe/:slug", HandleDeleteProbe)
-
-	// svc.GET("/v1/ws/probe/:slug", HandleProbeClient)
-	// svc.GET("/v1/probe/statuses", HandleGetProbeStatuses)
-	// svc.POST("/v1/probe/stream/:slug", HandleHTTPProbeStream)
+	// Label Uploads
+	svc.POST("/v1/api/labels", HandleLabelImport)
 
 	log.Info().Msg("starting api service")
 	err := svc.Run(":8080")

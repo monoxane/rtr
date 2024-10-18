@@ -16,6 +16,7 @@ import {
   LightFilled,
   Edit, PortInput,
   PortOutput,
+  DocumentImport,
 } from '@carbon/icons-react';
 
 import {
@@ -28,13 +29,15 @@ import {
 
 import { useQuery } from '@apollo/client';
 import { GET_ROUTER } from '../queries';
+import ImportLabelsModal from '../Modals/ImportLabelsModal.jsx';
 import EditSpigotModal from '../Modals/EditSpigotModal.jsx';
 import DataTable from '../../../components/DataTable/DataTable.jsx';
 // import RouterMenu from './Menus/RoutersDataTableActionMenu.jsx';
 
 const Spigots = function Spigots() {
   const { routerId } = useParams();
-  const [selectedType, setSelectedType] = useState('destinations');
+  const [importLabelsOpen, setImportLabelsOpen] = useState(false);
+  const [selectedType, setSelectedType] = useState('sources');
   const [editState, setEditState] = useState({ open: false, type: null, spigot: null });
 
   const {
@@ -46,6 +49,7 @@ const Spigots = function Spigots() {
   return (
     <Grid>
       <EditSpigotModal refresh={refetch} open={editState.open} setOpen={() => setEditState({ open: false, type: null, spigot: null })} spigot={editState.spigot} type={editState.type} />
+      <ImportLabelsModal open={importLabelsOpen} setOpen={setImportLabelsOpen} refresh={refetch} routerId={routerId} />
       <Column sm={4} md={8} lg={16}>
         <DataTable
           title={`Spigots on ${data?.router.label}`}
@@ -56,6 +60,9 @@ const Spigots = function Spigots() {
           data={data?.router[selectedType]}
           toolbarItems={(
             <>
+              <Button hasIconOnly kind="ghost" iconDescription="Import Labels" renderIcon={DocumentImport} onClick={() => setImportLabelsOpen(true)}>
+                Import Labels
+              </Button>
               <Button kind={selectedType === 'sources' ? 'primary' : 'secondary'} iconDescription="Inputs" renderIcon={PortInput} onClick={() => setSelectedType('sources')}>
                 Inputs
               </Button>

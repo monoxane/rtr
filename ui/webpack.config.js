@@ -114,6 +114,9 @@ module.exports = (_, argv) => {
           target: 'http://localhost:8080',
           ws: true,
         },
+        '/v1/api': {
+          target: 'http://localhost:8080',
+        },
         '/v1/streams': {
           target: 'http://localhost:8080',
           ws: true,
