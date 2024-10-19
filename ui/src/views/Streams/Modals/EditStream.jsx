@@ -6,11 +6,12 @@ import {
   TextInput,
   Stack,
   Toggle,
+  ComboBox,
 } from '@carbon/react';
 
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 
-import { UPDATE_STREAM } from '../queries.js';
+import { UPDATE_STREAM, LIST_ROUTERS } from '../queries.js';
 
 import streamPropTypes from '../propTypes';
 
@@ -23,6 +24,10 @@ function EditStreamModal({
   const [error, setErr] = useState();
 
   const [updateStream] = useMutation(UPDATE_STREAM);
+
+  const {
+    data,
+  } = useQuery(LIST_ROUTERS);
 
   useEffect(() => {
     if (!open) {
@@ -47,7 +52,7 @@ function EditStreamModal({
               label: streamData.label,
               slug: streamData.slug,
               isRoutable: streamData.isRoutable,
-              destination: streamData.destination,
+              destination: streamData.destination?.id || null,
             },
           },
         };
@@ -79,14 +84,34 @@ function EditStreamModal({
           disabled
           value={streamData.slug}
         />
+        <ComboBox
+          id="router"
+          titleText="Router"
+          placeholder="Select a Router"
+          helperText="The Router this Stream is attached to"
+          disabled={!data?.routers}
+          items={data?.routers || []}
+          selectedItem={streamData?.router}
+          onChange={(e) => setStreamData({ ...streamData, router: e.selectedItem })}
+        />
+        <ComboBox
+          id="destination"
+          titleText="Router Destination"
+          placeholder="Select a Destination"
+          helperText="The Router Destination feeding this stream"
+          disabled={!streamData.router}
+          items={streamData?.router?.destinations || []}
+          selectedItem={streamData?.destination}
+          onChange={(e) => setStreamData({ ...streamData, destination: e.selectedItem })}
+          direction="up"
+        />
         <Toggle
           labelText="Allow users to route this Stream"
           labelA="Stream is Not Routable"
           labelB="Stream is Routable"
           value={streamData.isRoutable}
-          disabled
           id="is_routable"
-          onToggle={(toggled) => setStreamData({ ...streamData, is_routable: toggled })}
+          onToggle={(toggled) => setStreamData({ ...streamData, isRoutable: toggled })}
         />
         <GraphQLError error={error} />
       </Stack>

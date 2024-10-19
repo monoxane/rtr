@@ -24,6 +24,11 @@ func (r *destinationResolver) RoutedSource(ctx context.Context, obj *model.Desti
 	return spigots.GetSource(*obj.RoutedSourceID)
 }
 
+// Router is the resolver for the router field.
+func (r *destinationResolver) Router(ctx context.Context, obj *model.Destination) (*model.Router, error) {
+	return routers.GetByID(obj.RouterID)
+}
+
 // Provider is the resolver for the provider field.
 func (r *routerResolver) Provider(ctx context.Context, obj *model.Router) (*model.RouterProvider, error) {
 	return routers.GetProvider(obj.ProviderID)

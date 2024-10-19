@@ -8,6 +8,15 @@ const LIST_STREAMS = gql`query streams {
     isRoutable
     destination {
       id
+      label
+      router {
+        id
+      }
+      routedSource {
+        id
+        index
+        label
+      }
     }
     clients
     isActive
@@ -22,6 +31,16 @@ const GET_STREAM = gql`query stream($id: ID, $slug: String) {
     isRoutable
     destination {
       id
+      label
+      index
+      router {
+        id
+      }
+      routedSource {
+        id
+        index
+        label
+      }
     }
     clients
     isActive
@@ -40,6 +59,17 @@ const UPDATE_STREAM = gql`mutation updateStream($id: ID!, $stream: StreamUpdate!
   }
 }`;
 
+const LIST_ROUTERS = gql`query routers {
+  routers {
+    id
+    label
+    destinations {
+      id
+      label
+    }
+  }
+}`;
+
 export {
-  LIST_STREAMS, GET_STREAM, CREATE_STREAM, UPDATE_STREAM,
+  LIST_STREAMS, GET_STREAM, CREATE_STREAM, UPDATE_STREAM, LIST_ROUTERS,
 };

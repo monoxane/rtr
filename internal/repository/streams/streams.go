@@ -13,6 +13,7 @@ import (
 	"github.com/monoxane/rtr/internal/connector/db"
 	"github.com/monoxane/rtr/internal/graph/model"
 	"github.com/monoxane/rtr/internal/repository/common"
+	"github.com/monoxane/rtr/internal/repository/spigots"
 )
 
 const (
@@ -57,6 +58,17 @@ func Watch(streamId int, ctx context.Context) (chan *model.Stream, error) {
 		}
 
 		ch <- stream
+
+		if stream.Destination != nil {
+			dCh, err := spigots.WatchDestination(*stream.Destination, ctx)
+			if err != nil {
+				return
+			}
+
+			for range dCh {
+				notify(streamId)
+			}
+		}
 	}()
 
 	go func() {

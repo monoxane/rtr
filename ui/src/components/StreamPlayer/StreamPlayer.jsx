@@ -17,6 +17,14 @@ const STREAM_SUBSCRIPTION = gql`subscription streamUpdates($slug: String) {
   stream(slug: $slug) {
     isActive
     label
+    destination {
+      id
+      label
+      routedSource {
+        id
+        label
+      }
+    }
   }
 }`;
 
@@ -103,6 +111,14 @@ function StreamPlayer({ slug, showUMD }) {
         }}
         >
           {stream.label?.toUpperCase() || slug}
+          {' '}
+          -
+          {' '}
+          {stream.destination?.label}
+          {' '}
+          -
+          {' '}
+          {stream.destination?.routedSource?.label}
         </p>
         <div style={{
           aspectRatio: '1/1', height: '100%', right: '0', backgroundColor: stream?.routedSource?.tally1 ? '#ff0000' : '#000000',

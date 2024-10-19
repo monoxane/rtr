@@ -60,6 +60,7 @@ type ComplexityRoot struct {
 		Index        func(childComplexity int) int
 		Label        func(childComplexity int) int
 		RoutedSource func(childComplexity int) int
+		Router       func(childComplexity int) int
 		TallyAddress func(childComplexity int) int
 		TallyGreen   func(childComplexity int) int
 		TallyRed     func(childComplexity int) int
@@ -172,6 +173,7 @@ type ComplexityRoot struct {
 		ID           func(childComplexity int) int
 		Index        func(childComplexity int) int
 		Label        func(childComplexity int) int
+		Router       func(childComplexity int) int
 		TallyAddress func(childComplexity int) int
 		TallyGreen   func(childComplexity int) int
 		TallyRed     func(childComplexity int) int
@@ -250,6 +252,7 @@ type ComplexityRoot struct {
 
 type DestinationResolver interface {
 	RoutedSource(ctx context.Context, obj *model.Destination) (*model.Source, error)
+	Router(ctx context.Context, obj *model.Destination) (*model.Router, error)
 }
 type MutationResolver interface {
 	Login(ctx context.Context, username string, password string) (*model.LoginResponse, error)
@@ -363,6 +366,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Destination.RoutedSource(childComplexity), true
+
+	case "Destination.router":
+		if e.complexity.Destination.Router == nil {
+			break
+		}
+
+		return e.complexity.Destination.Router(childComplexity), true
 
 	case "Destination.tallyAddress":
 		if e.complexity.Destination.TallyAddress == nil {
@@ -1001,6 +1011,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Source.Label(childComplexity), true
+
+	case "Source.router":
+		if e.complexity.Source.Router == nil {
+			break
+		}
+
+		return e.complexity.Source.Router(childComplexity), true
 
 	case "Source.tallyAddress":
 		if e.complexity.Source.TallyAddress == nil {
@@ -2399,8 +2416,79 @@ func (ec *executionContext) fieldContext_Destination_routedSource(_ context.Cont
 				return ec.fieldContext_Source_tallyYellow(ctx, field)
 			case "tallyAddress":
 				return ec.fieldContext_Source_tallyAddress(ctx, field)
+			case "router":
+				return ec.fieldContext_Source_router(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Source", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Destination_router(ctx context.Context, field graphql.CollectedField, obj *model.Destination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Destination_router(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Destination().Router(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Router)
+	fc.Result = res
+	return ec.marshalORouter2ᚖgithubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐRouter(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Destination_router(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Destination",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Router_id(ctx, field)
+			case "label":
+				return ec.fieldContext_Router_label(ctx, field)
+			case "provider":
+				return ec.fieldContext_Router_provider(ctx, field)
+			case "ipAddress":
+				return ec.fieldContext_Router_ipAddress(ctx, field)
+			case "routerAddress":
+				return ec.fieldContext_Router_routerAddress(ctx, field)
+			case "level":
+				return ec.fieldContext_Router_level(ctx, field)
+			case "model":
+				return ec.fieldContext_Router_model(ctx, field)
+			case "isConnected":
+				return ec.fieldContext_Router_isConnected(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Router_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Router_updatedAt(ctx, field)
+			case "updatedBy":
+				return ec.fieldContext_Router_updatedBy(ctx, field)
+			case "destinations":
+				return ec.fieldContext_Router_destinations(ctx, field)
+			case "sources":
+				return ec.fieldContext_Router_sources(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Router", field.Name)
 		},
 	}
 	return fc, nil
@@ -3409,6 +3497,8 @@ func (ec *executionContext) fieldContext_Mutation_updateDestination(ctx context.
 				return ec.fieldContext_Destination_tallyAddress(ctx, field)
 			case "routedSource":
 				return ec.fieldContext_Destination_routedSource(ctx, field)
+			case "router":
+				return ec.fieldContext_Destination_router(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Destination", field.Name)
 		},
@@ -3481,6 +3571,8 @@ func (ec *executionContext) fieldContext_Mutation_updateSource(ctx context.Conte
 				return ec.fieldContext_Source_tallyYellow(ctx, field)
 			case "tallyAddress":
 				return ec.fieldContext_Source_tallyAddress(ctx, field)
+			case "router":
+				return ec.fieldContext_Source_router(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Source", field.Name)
 		},
@@ -4680,6 +4772,8 @@ func (ec *executionContext) fieldContext_Router_destinations(_ context.Context, 
 				return ec.fieldContext_Destination_tallyAddress(ctx, field)
 			case "routedSource":
 				return ec.fieldContext_Destination_routedSource(ctx, field)
+			case "router":
+				return ec.fieldContext_Destination_router(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Destination", field.Name)
 		},
@@ -4744,6 +4838,8 @@ func (ec *executionContext) fieldContext_Router_sources(_ context.Context, field
 				return ec.fieldContext_Source_tallyYellow(ctx, field)
 			case "tallyAddress":
 				return ec.fieldContext_Source_tallyAddress(ctx, field)
+			case "router":
+				return ec.fieldContext_Source_router(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Source", field.Name)
 		},
@@ -5790,6 +5886,8 @@ func (ec *executionContext) fieldContext_SalvoDestination_destination(_ context.
 				return ec.fieldContext_Destination_tallyAddress(ctx, field)
 			case "routedSource":
 				return ec.fieldContext_Destination_routedSource(ctx, field)
+			case "router":
+				return ec.fieldContext_Destination_router(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Destination", field.Name)
 		},
@@ -5851,6 +5949,8 @@ func (ec *executionContext) fieldContext_SalvoDestination_source(_ context.Conte
 				return ec.fieldContext_Source_tallyYellow(ctx, field)
 			case "tallyAddress":
 				return ec.fieldContext_Source_tallyAddress(ctx, field)
+			case "router":
+				return ec.fieldContext_Source_router(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Source", field.Name)
 		},
@@ -6614,6 +6714,75 @@ func (ec *executionContext) fieldContext_Source_tallyAddress(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Source_router(ctx context.Context, field graphql.CollectedField, obj *model.Source) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Source_router(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Router, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Router)
+	fc.Result = res
+	return ec.marshalORouter2ᚖgithubᚗcomᚋmonoxaneᚋrtrᚋinternalᚋgraphᚋmodelᚐRouter(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Source_router(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Source",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Router_id(ctx, field)
+			case "label":
+				return ec.fieldContext_Router_label(ctx, field)
+			case "provider":
+				return ec.fieldContext_Router_provider(ctx, field)
+			case "ipAddress":
+				return ec.fieldContext_Router_ipAddress(ctx, field)
+			case "routerAddress":
+				return ec.fieldContext_Router_routerAddress(ctx, field)
+			case "level":
+				return ec.fieldContext_Router_level(ctx, field)
+			case "model":
+				return ec.fieldContext_Router_model(ctx, field)
+			case "isConnected":
+				return ec.fieldContext_Router_isConnected(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Router_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Router_updatedAt(ctx, field)
+			case "updatedBy":
+				return ec.fieldContext_Router_updatedBy(ctx, field)
+			case "destinations":
+				return ec.fieldContext_Router_destinations(ctx, field)
+			case "sources":
+				return ec.fieldContext_Router_sources(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Router", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Stream_id(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Stream_id(ctx, field)
 	if err != nil {
@@ -7079,6 +7248,8 @@ func (ec *executionContext) fieldContext_Stream_destination(_ context.Context, f
 				return ec.fieldContext_Destination_tallyAddress(ctx, field)
 			case "routedSource":
 				return ec.fieldContext_Destination_routedSource(ctx, field)
+			case "router":
+				return ec.fieldContext_Destination_router(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Destination", field.Name)
 		},
@@ -7244,6 +7415,8 @@ func (ec *executionContext) fieldContext_Subscription_destinationUpdate(ctx cont
 				return ec.fieldContext_Destination_tallyAddress(ctx, field)
 			case "routedSource":
 				return ec.fieldContext_Destination_routedSource(ctx, field)
+			case "router":
+				return ec.fieldContext_Destination_router(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Destination", field.Name)
 		},
@@ -11141,6 +11314,39 @@ func (ec *executionContext) _Destination(ctx context.Context, sel ast.SelectionS
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "router":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Destination_router(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12246,6 +12452,8 @@ func (ec *executionContext) _Source(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "tallyAddress":
 			out.Values[i] = ec._Source_tallyAddress(ctx, field, obj)
+		case "router":
+			out.Values[i] = ec._Source_router(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

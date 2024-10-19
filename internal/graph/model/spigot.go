@@ -11,4 +11,5 @@ type Destination struct {
 	TallyYellow    bool    `json:"tallyYellow"`
 	TallyAddress   *int    `json:"tallyAddress,omitempty"`
 	RoutedSourceID *int    `json:"routedSourceID,omitempty"`
+	RouterID       int     `json:"router_id"`
 }

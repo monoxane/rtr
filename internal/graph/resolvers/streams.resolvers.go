@@ -9,6 +9,7 @@ import (
 
 	"github.com/monoxane/rtr/internal/graph"
 	"github.com/monoxane/rtr/internal/graph/model"
+	"github.com/monoxane/rtr/internal/repository/spigots"
 	"github.com/monoxane/rtr/internal/repository/users"
 )
 
@@ -31,7 +32,8 @@ func (r *streamResolver) UpdatedBy(ctx context.Context, obj *model.Stream) (*mod
 
 // Destination is the resolver for the destination field.
 func (r *streamResolver) Destination(ctx context.Context, obj *model.Stream) (*model.Destination, error) {
-	return nil, nil
+	d, err := spigots.GetDestination(*obj.Destination)
+	return d, err
 }
 
 // Stream returns graph.StreamResolver implementation.

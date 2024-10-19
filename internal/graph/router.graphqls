@@ -50,6 +50,7 @@ type Destination {
   tallyYellow: Boolean!
   tallyAddress: Int
   routedSource: Source
+  router: Router
 }
 
 input DestinationUpdate {
@@ -69,6 +70,7 @@ type Source {
   tallyRed: Boolean!
   tallyYellow: Boolean!
   tallyAddress: Int
+  router: Router
 }
 
 input SourceUpdate {

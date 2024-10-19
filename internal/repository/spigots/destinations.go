@@ -33,7 +33,7 @@ func CreateDestination(router_id int64, destination model.Destination) error {
 		return errors.Wrap(err, "unable to insert destination")
 	}
 
-	notifyDestination(int(router_id), destination.Index)
+	notifyDestination(&destination)
 
 	return nil
 }
@@ -79,21 +79,20 @@ func GetDestinationByIndex(routerId, index int) (*model.Destination, error) {
 	return &destination, nil
 }
 
-func GetDestination(id int) (*model.Destination, int, error) {
+func GetDestination(id int) (*model.Destination, error) {
 	row := db.Database.QueryRow(queryRouterDestination, id)
 
 	var destination model.Destination
-	var routerId int
 
-	if err := row.Scan(&destination.ID, &destination.Index, &destination.Label, &destination.Description, &destination.UmdLabel, &destination.TallyGreen, &destination.TallyRed, &destination.TallyYellow, &destination.TallyAddress, &destination.RoutedSourceID, &routerId); err != nil {
+	if err := row.Scan(&destination.ID, &destination.Index, &destination.Label, &destination.Description, &destination.UmdLabel, &destination.TallyGreen, &destination.TallyRed, &destination.TallyYellow, &destination.TallyAddress, &destination.RoutedSourceID, &destination.RouterID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, 0, common.ErrNotExists
+			return nil, common.ErrNotExists
 		}
 
-		return nil, 0, err
+		return nil, err
 	}
 
-	return &destination, routerId, nil
+	return &destination, nil
 }
 
 func UpdateDestination(destination model.DestinationUpdate) (*model.Destination, error) {
@@ -102,12 +101,12 @@ func UpdateDestination(destination model.DestinationUpdate) (*model.Destination,
 		return nil, errors.Wrap(err, "unable to update destination")
 	}
 
-	updatedDestination, routerId, err := GetDestination(destination.ID)
+	updatedDestination, err := GetDestination(destination.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get updated destination")
 	}
 
-	notifyDestination(routerId, updatedDestination.Index)
+	notifyDestination(updatedDestination)
 
 	return updatedDestination, nil
 }
@@ -115,10 +114,15 @@ func UpdateDestination(destination model.DestinationUpdate) (*model.Destination,
 func UpdateLabelsForRouterDestination(router, destination int, label, description string) error {
 	_, err := db.Database.Exec(queryRouterDestinationLabelUpdate, label, description, router, destination)
 	if err != nil {
-		return errors.Wrap(err, "unable to update source")
+		return errors.Wrap(err, "unable to update destination")
 	}
 
-	notifyDestination(router, destination)
+	updatedDestination, err := GetDestinationByIndex(router, destination)
+	if err != nil {
+		return errors.Wrap(err, "unable to get updated destination")
+	}
+
+	notifyDestination(updatedDestination)
 
 	return nil
 }

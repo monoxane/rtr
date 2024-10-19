@@ -75,6 +75,7 @@ type Source struct {
 	TallyRed     bool    `json:"tallyRed"`
 	TallyYellow  bool    `json:"tallyYellow"`
 	TallyAddress *int    `json:"tallyAddress,omitempty"`
+	Router       *Router `json:"router,omitempty"`
 }
 
 type SourceUpdate struct {
