@@ -1,4 +1,4 @@
-FROM golang:latest AS api
+FROM golang:1.22 AS api
 
 ENV GO111MODULE=on \
     CGO_ENABLED=1
@@ -7,11 +7,10 @@ WORKDIR /build
 
 COPY go.mod .
 COPY go.sum .
-RUN go mod download
 
 COPY . .
 
-RUN go build -trimpath -o rtr .
+RUN go build -trimpath -o rtr ./cmd/rtr
 
 WORKDIR /dist
 RUN cp /build/rtr ./rtr

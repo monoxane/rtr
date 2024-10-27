@@ -17,18 +17,19 @@ var (
 )
 
 func LoadFromEnvironment() error {
-	viper.SetConfigName(".env") // name of config file, not required when using real ENV vars
-	viper.SetConfigType("env")  // type
-	viper.AddConfigPath(".")    // in current directory
-	viper.AutomaticEnv()        // read real ENV vars if applicable
+	viper.SetConfigName(".env") // Read a config file
+	viper.SetConfigType("env")  // Of type env
+	viper.AddConfigPath(".")    // From the current directory
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return fmt.Errorf("env does not exist: %s", err)
+			// log.Printf("env does not exist: %s, reading from env directly", err)
 		} else {
 			return fmt.Errorf("failed to read env: %s", err)
 		}
 	}
+
+	viper.AutomaticEnv() // And also read the real env vars where possible
 
 	if viper.IsSet("LOG_LEVEL") {
 		LogLevel = viper.GetString("LOG_LEVEL")

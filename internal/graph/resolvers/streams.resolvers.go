@@ -32,6 +32,10 @@ func (r *streamResolver) UpdatedBy(ctx context.Context, obj *model.Stream) (*mod
 
 // Destination is the resolver for the destination field.
 func (r *streamResolver) Destination(ctx context.Context, obj *model.Stream) (*model.Destination, error) {
+	if obj.Destination == nil {
+		return nil, nil
+	}
+
 	d, err := spigots.GetDestination(*obj.Destination)
 	return d, err
 }

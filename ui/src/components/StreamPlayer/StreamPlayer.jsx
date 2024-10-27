@@ -107,7 +107,7 @@ function StreamPlayer({ slug, showUMD }) {
       >
         <div style={{ aspectRatio: '1/1', height: '100%', backgroundColor: stream?.routedSource?.tally2 ? '#ff0000' : '#000000' }}>&nbsp;</div>
         <p style={{
-          flexGrow: 1, color: 'white', position: 'relative', fontSize: 24, top: '-5px',
+          flexGrow: 1, color: 'white', position: 'relative', fontSize: 'auto', top: '-5px',
         }}
         >
           {stream.label?.toUpperCase() || slug}
