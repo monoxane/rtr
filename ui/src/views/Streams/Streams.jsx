@@ -58,7 +58,7 @@ const Streams = function Streams() {
               </TableCell>
               <TableCell>{row.clients}</TableCell>
               <TableCell>{row.destination?.label || <em>None</em>}</TableCell>
-              <TableCell>{row.isRoutable ? 'Yes' : 'No'}</TableCell>
+              <TableCell>{row.isRoutable ? <CheckmarkOutline /> : <MisuseOutline />}</TableCell>
               <TableCell>
                 <StreamMenu refresh={refetch} stream={row} />
               </TableCell>
