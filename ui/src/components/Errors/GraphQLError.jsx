@@ -7,7 +7,6 @@ import {
 } from '@carbon/react';
 
 const GraphQLError = function GraphQLError({ error }) {
-  console.log(JSON.stringify(error));
   if (!error) {
     return (null);
   }
