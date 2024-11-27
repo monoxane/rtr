@@ -7,6 +7,7 @@ import {
 } from '@carbon/react';
 
 const GraphQLError = function GraphQLError({ error }) {
+  console.log(JSON.stringify(error));
   if (!error) {
     return (null);
   }
@@ -22,7 +23,7 @@ const GraphQLError = function GraphQLError({ error }) {
         marginBottom: '.5rem',
         minWidth: '55rem',
       }}
-      title="GraphQL Errors"
+      title="rtr experienced an error"
       subtitle={(
         <>
           {error.graphQLErrors.map((err) => (
@@ -36,7 +37,16 @@ const GraphQLError = function GraphQLError({ error }) {
               </span>
             </>
           ))}
-          {error.networkError?.result.errors.map((err) => (
+          {error.networkError?.statusCode === 504
+            && (
+            <>
+              <br />
+              <span>
+                The rtr UI cannot connect to the server.
+              </span>
+            </>
+            )}
+          {error.networkError?.result?.errors?.map((err) => (
             <>
               <br />
               <span>
