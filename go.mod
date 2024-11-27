@@ -4,7 +4,7 @@ go 1.22.0
 
 toolchain go1.22.4
 
-// replace github.com/monoxane/nk => ../../../monoxane/nk
+// replace github.com/monoxane/nk => ../nk
 
 require (
 	github.com/99designs/gqlgen v0.17.49
@@ -13,7 +13,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/gorilla/websocket v1.5.0
 	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/monoxane/nk v1.2.0
+	github.com/monoxane/nk v1.2.1
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.18.0

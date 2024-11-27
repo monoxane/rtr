@@ -106,8 +106,8 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
-github.com/monoxane/nk v1.2.0 h1:NEPNQGJ2YvCX9VME2DrqZTOgGtz7pxcCfSxuGBtrOUA=
-github.com/monoxane/nk v1.2.0/go.mod h1:gQr9ThfP+OlhCztaP3aHI4fR6XOV4O6olt3H7NP3sBo=
+github.com/monoxane/nk v1.2.1 h1:27gm+offbQDkAesFXSYssa4ikiP3ONfQm6X1W42iXlQ=
+github.com/monoxane/nk v1.2.1/go.mod h1:gQr9ThfP+OlhCztaP3aHI4fR6XOV4O6olt3H7NP3sBo=
 github.com/pelletier/go-toml/v2 v2.2.2 h1:aYUidT7k73Pcl9nb2gScu7NSrKCSHIDE89b3+6Wq+LM=
 github.com/pelletier/go-toml/v2 v2.2.2/go.mod h1:1t835xjRzz80PqgE6HHgN2JOsmgYu/h4qDAS4n929Rs=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
