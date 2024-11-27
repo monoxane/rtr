@@ -14,7 +14,7 @@ import (
 	"github.com/monoxane/rtr/internal/controller/streams"
 	"github.com/monoxane/rtr/internal/env"
 	"github.com/monoxane/rtr/internal/graph/model"
-	repository "github.com/monoxane/rtr/internal/repository"
+	"github.com/monoxane/rtr/internal/repository"
 	"github.com/monoxane/rtr/internal/repository/users"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
