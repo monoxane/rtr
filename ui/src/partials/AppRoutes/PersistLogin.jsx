@@ -5,7 +5,7 @@ import {
   InlineLoading,
 } from '@carbon/react';
 
-import useAuth from '../hooks/useAuth';
+import useAuth from '../../hooks/useAuth';
 
 const PersistLogin = function PersistLogin() {
   const navigate = useNavigate();

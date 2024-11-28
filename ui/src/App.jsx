@@ -16,10 +16,10 @@ import {
   ApolloClient, createHttpLink, ApolloProvider, InMemoryCache, from, split,
 } from '@apollo/client';
 
+import Routes from './partials/AppRoutes/Routes.jsx';
 import { AuthProvider } from './context/AuthProvider';
 
-import Routes from './common/Routes.jsx';
-import ReactError from './common/ReactError.jsx';
+import ReactError from './components/Errors/ReactError.jsx';
 import imgs from './common/imgs.js';
 
 const httpLink = createHttpLink({

@@ -118,7 +118,7 @@ function Streams() {
   return (
     <Grid condensed>
       { data.streams.map((stream) => (
-        <Column sm={4} md={8} lg={8}>
+        <Column sm={4} md={4} lg={4}>
           <StreamPlayer slug={stream.slug} showUMD />
         </Column>
       ))}

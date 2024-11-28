@@ -25,12 +25,11 @@ import {
 
 import { useQuery, useMutation } from '@apollo/client';
 
-import GraphQLError from '../../components/Errors/GraphQLError.jsx';
-
-import { GET_ROUTER, ROUTER_DESTINATIONS_SUBSCRIPTION, ROUTE } from './queries';
-import Source from './Components/SourceButton.jsx';
-import RoutingStatusBox from './Components/RoutingStatusBox.jsx';
-import Destination from './Components/DestinationButton.jsx';
+import { GET_ROUTER, ROUTER_DESTINATIONS_SUBSCRIPTION, ROUTE } from '../queries.js';
+import Source from '../Components/SourceButton.jsx';
+import RoutingStatusBox from '../Components/RoutingStatusBox.jsx';
+import Destination from '../Components/DestinationButton.jsx';
+import GraphQLError from '../../../components/Errors/GraphQLError.jsx';
 
 function RouterWrapper() {
   const { routerId, destinationIndex } = useParams();

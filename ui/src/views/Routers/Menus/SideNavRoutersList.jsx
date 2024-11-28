@@ -6,7 +6,7 @@ import { SideNavLink as CarbonSideNavLink, SideNavDivider } from '@carbon/react'
 import { useQuery } from '@apollo/client';
 
 import { LIST_ROUTERS } from '../queries.js';
-import SideNavLink from '../../../common/SideNavLink.jsx';
+import SideNavLink from '../../../components/SideNav/SideNavLink.jsx';
 
 function SideNavRoutersList({ onClickSideNavExpand }) {
   const {

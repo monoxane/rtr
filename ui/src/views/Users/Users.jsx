@@ -13,8 +13,8 @@ import { gql, useQuery } from '@apollo/client';
 
 import useAuth from '../../hooks/useAuth';
 
+import Time from '../../components/DateTime/Time.jsx';
 import DataTable from '../../components/DataTable/DataTable.jsx';
-import Time from '../../common/Time.jsx';
 import UserMenu from './UserMenu.jsx';
 import NewUser from './NewUser.jsx';
 

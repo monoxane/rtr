@@ -13,9 +13,9 @@ import {
   Router,
 } from '@carbon/icons-react';
 
-import SideNavStreamsList from '../views/Streams/Menus/SideNavStreamsList.jsx';
-import SideNavRoutersList from '../views/Routers/Menus/SideNavRoutersList.jsx';
-import useAuth from '../hooks/useAuth.js';
+import SideNavStreamsList from '../../views/Streams/Menus/SideNavStreamsList.jsx';
+import SideNavRoutersList from '../../views/Routers/Menus/SideNavRoutersList.jsx';
+import useAuth from '../../hooks/useAuth.js';
 import SideNavLink from './SideNavLink.jsx';
 import SideNavGroup from './SideNavGroup.jsx';
 

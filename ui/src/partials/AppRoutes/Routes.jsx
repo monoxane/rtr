@@ -5,23 +5,23 @@ import {
 } from 'react-router-dom';
 import React, { lazy } from 'react';
 
+import Layout from '../Layout/Layout.jsx';
 import RequireAuth from './RequireAuth.jsx';
 import PersistLogin from './PersistLogin.jsx';
-import Layout from './Layout.jsx';
 
 // Errors
-const NotFound = lazy(() => import('../views/Errors/NotFound.jsx'));
-const NotAllowed = lazy(() => import('../views/Errors/NotAllowed.jsx'));
+const NotFound = lazy(() => import('../../views/Errors/NotFound.jsx'));
+const NotAllowed = lazy(() => import('../../views/Errors/NotAllowed.jsx'));
 
 // App Views Pages
-const Login = lazy(() => import('../views/Login/Login.jsx'));
-const Dashboard = lazy(() => import('../views/Dashboard/Dashboard.jsx'));
-const Users = lazy(() => import('../views/Users/Users.jsx'));
-const Streams = lazy(() => import('../views/Streams/Streams.jsx'));
-const Stream = lazy(() => import('../views/Streams/Stream.jsx'));
-const Routers = lazy(() => import('../views/Routers/Routers.jsx'));
-const Router = lazy(() => import('../views/Routers/Router.jsx'));
-const Spigots = lazy(() => import('../views/Routers/Views/Spigots.jsx'));
+const Login = lazy(() => import('../../views/Login/Login.jsx'));
+const Dashboard = lazy(() => import('../../views/Dashboard/Dashboard.jsx'));
+const Users = lazy(() => import('../../views/Users/Users.jsx'));
+const Streams = lazy(() => import('../../views/Streams/Streams.jsx'));
+const Stream = lazy(() => import('../../views/Streams/Stream.jsx'));
+const Routers = lazy(() => import('../../views/Routers/Routers.jsx'));
+const Routing = lazy(() => import('../../views/Routers/Router/RoutingView.jsx'));
+const Spigots = lazy(() => import('../../views/Routers/Views/Spigots.jsx'));
 
 // const Salvos = lazy(() => import('../views/OldSalvos/Salvos.jsx'));
 // const Salvo = lazy(() => import('../views/OldSalvos/Salvo.jsx'));
@@ -49,9 +49,9 @@ export default createBrowserRouter(
 
         <Route element={<RequireAuth allowedRoles={['ADMIN', 'OPERATOR']} />}>
           <Route path="/routers/config" element={<Routers />} />
-          <Route path="/routers/:routerId/control" element={<Router />} />
+          <Route path="/routers/:routerId/control" element={<Routing />} />
           <Route path="/routers/:routerId/spigots" element={<Spigots />} />
-          <Route path="/routers/:routerId/control/:destinationIndex" element={<Router />} />
+          <Route path="/routers/:routerId/control/:destinationIndex" element={<Routing />} />
         </Route>
 
         <Route path="/unauthorized" element={<NotAllowed />} />

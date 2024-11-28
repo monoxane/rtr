@@ -26,11 +26,11 @@ import {
   gray,
 } from '@carbon/colors';
 
-import useLogout from '../hooks/useLogout';
-import useAuth from '../hooks/useAuth';
+import ComposedSideNav from '../../components/SideNav/SideNav.jsx';
+import useLogout from '../../hooks/useLogout.js';
+import useAuth from '../../hooks/useAuth.js';
 
-import ComposedSideNav from './SideNav.jsx';
-import ReactError from './ReactError.jsx';
+import ReactError from '../../components/Errors/ReactError.jsx';
 
 function Layout() {
   const { auth } = useAuth();
