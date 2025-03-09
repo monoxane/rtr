@@ -21,6 +21,7 @@ const Streams = lazy(() => import('../../views/Streams/Streams.jsx'));
 const Stream = lazy(() => import('../../views/Streams/Stream.jsx'));
 const Routers = lazy(() => import('../../views/Routers/Routers.jsx'));
 const Routing = lazy(() => import('../../views/Routers/Router/RoutingView.jsx'));
+const RouterConfig = lazy(() => import('../../views/Routers/Router/Config.jsx'));
 const Spigots = lazy(() => import('../../views/Routers/Views/Spigots.jsx'));
 
 // const Salvos = lazy(() => import('../views/OldSalvos/Salvos.jsx'));
@@ -39,7 +40,7 @@ export default createBrowserRouter(
         </Route>
 
         <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
-          <Route path="/users" element={<Users />} />
+          <Route path="/admin/users" element={<Users />} />
         </Route>
 
         <Route element={<RequireAuth allowedRoles={['ADMIN', 'OPERATOR']} />}>
@@ -49,6 +50,7 @@ export default createBrowserRouter(
 
         <Route element={<RequireAuth allowedRoles={['ADMIN', 'OPERATOR']} />}>
           <Route path="/routers/config" element={<Routers />} />
+          <Route path="/routers/:routerId/config" element={<RouterConfig />} />
           <Route path="/routers/:routerId/control" element={<Routing />} />
           <Route path="/routers/:routerId/spigots" element={<Spigots />} />
           <Route path="/routers/:routerId/control/:destinationIndex" element={<Routing />} />
