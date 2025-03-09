@@ -24,10 +24,10 @@ body {
 }
 
 @media only screen and (min-width: 1056px)  {
-  .main-content:not(.unauthenticated){
-    margin-left: 256px !important;
-    transition: margin-left 0.1s;
-  }
+  // .main-content:not(.unauthenticated){
+  //   margin-left: 256px !important;
+  //   transition: margin-left 0.1s;
+  // }
   
   .routerProbe {
     height: calc(100% - 16em - 1px);
