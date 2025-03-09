@@ -1,7 +1,10 @@
+import {
+  useNavigate,
+} from 'react-router-dom';
 import React from 'react';
 
 import {
-  Tile, Grid, Column, Loading, Layer,
+  ClickableTile, Grid, Column, Loading,
 } from '@carbon/react';
 
 import {
@@ -24,35 +27,40 @@ import GraphQLError from '../../components/Errors/GraphQLError.jsx';
 function Dashboard() {
   return (
     <Grid>
-      <Column sm={4} md={8} lg={16}>
-        <Tile>
-          {/* <Tile style={{ minHeight: 'calc(100vh - 48px - 64px)' }}> */}
-          <h1>
-            {' '}
-            Welcome to
-            {' '}
-            <strong>rtr</strong>
-            , the Route Broker
-          </h1>
-        </Tile>
+      <Column sm={4} md={8} lg={16} style={{ textAlign: 'center' }}>
+        <h1>
+          {' '}
+          Welcome to
+          {' '}
+          <strong>rtr</strong>
+          , The Route Broker
+        </h1>
       </Column>
       <br />
+      <Column sm={4} md={8} lg={16} style={{ textAlign: 'center' }}>
+        <h4>
+          Routers
+        </h4>
+      </Column>
       <Column sm={4} md={8} lg={16}>
-        <Tile style={{ paddingLeft: '2.5em', paddingRight: '2.5em' }}>
-          <Routers />
-        </Tile>
+        <Routers />
       </Column>
       <br />
+      <Column sm={4} md={8} lg={16} style={{ textAlign: 'center' }}>
+        <h4>
+          Streams
+        </h4>
+      </Column>
       <Column sm={4} md={8} lg={16}>
-        <Tile style={{ paddingLeft: '2.5em', paddingRight: '2.5em' }}>
-          <Streams />
-        </Tile>
+        <Streams />
       </Column>
     </Grid>
   );
 }
 
 function Routers() {
+  const navigate = useNavigate();
+
   const {
     loading, error, data,
   } = useQuery(LIST_ROUTERS);
@@ -74,10 +82,10 @@ function Routers() {
   }
 
   return (
-    <Grid condensed>
+    <Grid>
       { data.routers.map((router) => (
         <Column sm={4} md={4} lg={4}>
-          <Layer>
+          <ClickableTile onClick={() => navigate(`/routers/${router.id}/control`)}>
             <h3>
               <span
                 style={{ color: router.isConnected ? green[40] : red[40] }}
@@ -87,7 +95,7 @@ function Routers() {
               {' '}
               {router.label}
             </h3>
-          </Layer>
+          </ClickableTile>
         </Column>
       ))}
     </Grid>
@@ -116,9 +124,9 @@ function Streams() {
   }
 
   return (
-    <Grid condensed>
+    <Grid condensed style={{ paddingLeft: '1em', paddingRight: '1em' }}>
       { data.streams.map((stream) => (
-        <Column sm={4} md={4} lg={4}>
+        <Column sm={4} md={4} lg={8}>
           <StreamPlayer slug={stream.slug} showUMD />
         </Column>
       ))}
