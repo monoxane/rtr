@@ -74,7 +74,9 @@ func Watch(streamId int, ctx context.Context) (chan *model.Stream, error) {
 	go func() {
 		<-ctx.Done()
 		log.Debug().Int("id", streamId).Str("method", "watch").Msg("watch context done")
+		watchersMux.Lock()
 		delete(watchers, ch)
+		watchersMux.Unlock()
 		close(ch)
 	}()
 
