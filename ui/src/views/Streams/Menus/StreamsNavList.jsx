@@ -1,14 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import { SideNavLink as CarbonSideNavLink, SideNavDivider } from '@carbon/react';
 
 import { useQuery } from '@apollo/client';
 
-import { LIST_STREAMS } from '../queries';
-import SideNavLink from '../../../components/SideNav/SideNavLink.jsx';
+import { LIST_STREAMS } from '../queries.js';
+import HeaderMenuItem from '../../../partials/Layout/HeaderMenuItem.jsx';
 
-function SideNavStreamsList({ onClickSideNavExpand }) {
+function StreamsNavList() {
   const {
     data,
   } = useQuery(LIST_STREAMS);
@@ -30,12 +29,10 @@ function SideNavStreamsList({ onClickSideNavExpand }) {
       <SideNavDivider />
       ) }
       {data && data.streams.map((stream) => (
-        <SideNavLink key={stream.slug} to={`/streams/view/${stream.slug}`} label={stream.label} onClick={() => { onClickSideNavExpand(); }} />
+        <HeaderMenuItem key={stream.slug} to={`/streams/view/${stream.slug}`} label={stream.label} />
       ))}
     </>
   );
 }
 
-SideNavStreamsList.propTypes = { onClickSideNavExpand: PropTypes.func.isRequired };
-
-export default SideNavStreamsList;
+export default StreamsNavList;

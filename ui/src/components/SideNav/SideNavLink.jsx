@@ -14,13 +14,13 @@ function CustomSideNavLink({
 
   if (match) {
     return (
-      <SideNavLink large aria-current="page" renderIcon={renderIcon} onClick={() => { onClick(); navigate(to); }}>
+      <SideNavLink aria-current="page" renderIcon={renderIcon} onClick={() => { onClick(); navigate(to); }}>
         {label}
       </SideNavLink>
     );
   }
   return (
-    <SideNavLink large renderIcon={renderIcon} onClick={() => { onClick(); navigate(to); }}>
+    <SideNavLink renderIcon={renderIcon} onClick={() => { onClick(); navigate(to); }}>
       {label}
     </SideNavLink>
   );

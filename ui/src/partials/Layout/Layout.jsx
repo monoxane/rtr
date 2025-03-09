@@ -1,5 +1,7 @@
 import {
   Outlet,
+
+  useNavigate,
 } from 'react-router-dom';
 import React, {
   Suspense,
@@ -11,12 +13,11 @@ import {
   Header,
   HeaderContainer,
   HeaderGlobalBar,
-  HeaderMenuButton,
   HeaderName,
   Loading,
-  SkipToContent,
   OverflowMenu,
   OverflowMenuItem,
+  HeaderNavigation,
 } from '@carbon/react';
 
 import {
@@ -26,43 +27,57 @@ import {
   gray,
 } from '@carbon/colors';
 
-import ComposedSideNav from '../../components/SideNav/SideNav.jsx';
+import StreamsNavList from '../../views/Streams/Menus/StreamsNavList.jsx';
+import RoutersNavList from '../../views/Routers/Menus/RoutersNavList.jsx';
 import useLogout from '../../hooks/useLogout.js';
 import useAuth from '../../hooks/useAuth.js';
 
 import ReactError from '../../components/Errors/ReactError.jsx';
+import HeaderMenuItem from './HeaderMenuItem.jsx';
+import HeaderMenu from './HeaderMenu.jsx';
 
 function Layout() {
   const { auth } = useAuth();
   const logout = useLogout();
+  const navigate = useNavigate();
 
   return (
     <HeaderContainer
-      render={({ isSideNavExpanded, onClickSideNavExpand }) => (
+      render={() => (
         <>
-          <Header aria-label="rtr //">
-            <SkipToContent />
-            <HeaderMenuButton
-              aria-label="Open Menu"
-              onClick={onClickSideNavExpand}
-              isActive={isSideNavExpanded}
-            />
-            <HeaderName prefix="rtr //">
-              Route Broker
+          <Header aria-label="The Route Broker">
+            <HeaderName prefix="rtr" href="/dashboard" onClick={() => { navigate('/dashboard'); }}>
+              The Route Broker
             </HeaderName>
             {auth && auth.user
             && (
-              <HeaderGlobalBar>
-                  {/* <ExpandableSearch size="lg" labelText="Search" closeButtonLabelText="Clear search input" id="search-expandable-1" onChange={() => {}} onKeyDown={() => {}} /> */}
-                <OverflowMenu flipped renderIcon={User} className="cds--header__action" sx={{ zIndex: 8001 }}>
-                  <OverflowMenuItem itemText={auth.user} disabled sx={{ color: 'white' }} />
-                  <OverflowMenuItem itemText="Log out" onClick={logout} />
-                </OverflowMenu>
-              </HeaderGlobalBar>
+              <>
+                <HeaderNavigation>
+                  <HeaderMenuItem to="/dashboard" label="Dashboard" />
+                  <HeaderMenu group="/routers/*" title="Routing">
+                    <HeaderMenuItem to="/routers/config" label="Routers" />
+                    <RoutersNavList />
+                  </HeaderMenu>
+                  <HeaderMenu group="/streams/*" title="Streams">
+                    <HeaderMenuItem to="/streams/config" label="Streams" />
+                    <StreamsNavList />
+                  </HeaderMenu>
+
+                  {auth.role === 'ADMIN' && (
+                    <HeaderMenu group="/admin/*" title="Admin">
+                      <HeaderMenuItem to="/admin/users" label="Users" />
+                    </HeaderMenu>
+                  )}
+                </HeaderNavigation>
+                <HeaderGlobalBar>
+                  <OverflowMenu flipped renderIcon={User} className="cds--header__action" sx={{ zIndex: 8001 }}>
+                    <OverflowMenuItem itemText={auth.user} disabled sx={{ color: 'white' }} />
+                    <OverflowMenuItem itemText="Log out" onClick={logout} />
+                  </OverflowMenu>
+                </HeaderGlobalBar>
+              </>
             )}
           </Header>
-          {auth && auth.user
-            && <ComposedSideNav onClickSideNavExpand={onClickSideNavExpand} isActive={isSideNavExpanded} isRail={false} /> }
           <Content className={`main-content ${!auth?.user && 'unauthenticated'}`} style={{ background: gray[80] }}>
             <Suspense fallback={<Loading />}>
               <ErrorBoundary fallback={<ReactError />}>

@@ -12,13 +12,13 @@ function CustomSideNavMenu({
 
   if (match) {
     return (
-      <SideNavMenu large defaultExpanded title={title} renderIcon={renderIcon}>
+      <SideNavMenu defaultExpanded title={title} renderIcon={renderIcon}>
         {children}
       </SideNavMenu>
     );
   }
   return (
-    <SideNavMenu large title={title} renderIcon={renderIcon}>
+    <SideNavMenu defaultExpanded title={title} renderIcon={renderIcon}>
       {children}
     </SideNavMenu>
   );
