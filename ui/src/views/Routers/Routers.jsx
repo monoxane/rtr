@@ -1,3 +1,6 @@
+import {
+  useNavigate,
+} from 'react-router-dom';
 import React from 'react';
 
 import {
@@ -6,12 +9,14 @@ import {
   TableRow,
   TableCell,
   Button,
+  IconButton,
 } from '@carbon/react';
 
 import {
   Renew,
   CheckmarkOutline,
   MisuseOutline,
+  Router,
 } from '@carbon/icons-react';
 
 import {
@@ -27,6 +32,8 @@ import NewRouter from './Modals/NewRouter.jsx';
 import RouterMenu from './Menus/RoutersDataTableActionMenu.jsx';
 
 const Routers = function Routers() {
+  const navigate = useNavigate();
+
   const {
     loading, error, data, refetch,
   } = useQuery(LIST_ROUTERS);
@@ -62,6 +69,11 @@ const Routers = function Routers() {
               <TableCell>{row.ipAddress}</TableCell>
               <TableCell>
                 <span style={{ color: row.isConnected ? green[40] : red[60] }}>{row.isConnected ? <CheckmarkOutline size={20} /> : <MisuseOutline size={20} />}</span>
+              </TableCell>
+              <TableCell>
+                <IconButton kind="ghost" size="md" label="Routing View" onClick={() => navigate(`/routers/${row.id}/control`)}>
+                  <Router />
+                </IconButton>
               </TableCell>
               <TableCell>
                 <RouterMenu refresh={refetch} router={row} />

@@ -23,7 +23,7 @@ const RoutersDataTableActionMenu = function RoutersDataTableActionMenu({ refresh
       <DeleteRouterModal refresh={refresh} router={router} setOpen={setDeleteOpen} open={deleteOpen} />
       {/* <EditStreamModal refresh={refresh} stream={router} setOpen={setEditOpen} open={editOpen} /> */}
 
-      <OverflowMenu flipped={document?.dir === 'rtl'} iconDescription="Actions" aria-label="overflow-menu">
+      <OverflowMenu flipped={document?.dir === 'rtl'} iconDescription="More Actions" aria-label="overflow-menu">
         {/* <OverflowMenuItem onClick={() => setEditOpen(true)} itemText="Edit Stream" /> */}
         <OverflowMenuItem onClick={() => navigate(`/routers/${router.id}/control`)} itemText="Routing View" />
         <OverflowMenuItem onClick={() => navigate(`/routers/${router.id}/spigots`)} itemText="Spigots" />
