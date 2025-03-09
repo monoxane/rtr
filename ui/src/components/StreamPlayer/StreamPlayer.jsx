@@ -4,12 +4,15 @@ import PropTypes from 'prop-types';
 import JSMpeg from '@cycjimmy/jsmpeg-player';
 import {
   Button,
+  Tooltip,
 } from '@carbon/react';
 import {
   Minimize,
   FitToScreen,
 } from '@carbon/icons-react';
 import { useSubscription, gql } from '@apollo/client';
+
+import './umd.scss';
 
 import imgs from '../../common/imgs';
 
@@ -23,6 +26,8 @@ const STREAM_SUBSCRIPTION = gql`subscription streamUpdates($slug: String) {
       routedSource {
         id
         label
+        tallyRed
+        tallyGreen
       }
     }
   }
@@ -97,36 +102,40 @@ function StreamPlayer({ slug, showUMD }) {
       />
       {showUMD
       && (
-      <div
-        style={{
-          marginTop: '1px',
-          textAlign: 'center',
-          display: 'flex',
-          height: '2em',
-        }}
-      >
-        <div style={{ aspectRatio: '1/1', height: '100%', backgroundColor: stream?.routedSource?.tally2 ? '#ff0000' : '#000000' }}>&nbsp;</div>
-        <p style={{
-          flexGrow: 1, color: 'white', position: 'relative', fontSize: 'auto', top: '-5px',
-        }}
-        >
-          {stream.label?.toUpperCase() || slug}
-          {' '}
-          -
-          {' '}
-          {stream.destination?.label}
-          {' '}
-          -
-          {' '}
-          {stream.destination?.routedSource?.label}
-        </p>
-        <div style={{
-          aspectRatio: '1/1', height: '100%', right: '0', backgroundColor: stream?.routedSource?.tally1 ? '#ff0000' : '#000000',
-        }}
-        >
+        <div className="umd">
+          <div
+            className={`leftLamp ${stream.destination?.routedSource?.tallyGreen && 'green'}`}
+          >
             &nbsp;
+          </div>
+          <Tooltip
+            className="label"
+            label={(
+              <>
+                Stream:
+                {' '}
+                {stream.label?.toUpperCase() || slug || 'Unknown'}
+                <br />
+                Destination:
+                {' '}
+                {stream.destination?.label || 'None'}
+                <br />
+                Source:
+                {' '}
+                {stream.destination?.routedSource?.label || 'None'}
+              </>
+          )}
+          >
+            <p className="label">
+              {stream.destination?.routedSource?.label || stream.destination?.label || stream.label?.toUpperCase() || slug}
+            </p>
+          </Tooltip>
+          <div
+            className={`rightLamp ${stream.destination?.routedSource?.tallyRed && 'red'}`}
+          >
+            &nbsp;
+          </div>
         </div>
-      </div>
       )}
     </div>
   );
